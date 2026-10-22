@@ -105,7 +105,7 @@
       top: 0;
       left: 0;
       right: 0;
-      height: 70px;
+      height: 80px;
       padding: 12px 24px;
       display: flex;
       justify-content: space-between;
@@ -161,9 +161,11 @@
     }
 
     .top-right-box {
-      border: 2px solid #880000;
-      background: rgba(10, 0, 0, 0.85);
-      padding: 8px 14px;
+      border-top: 3px solid #cc0000;
+      border-bottom: 3px solid #cc0000;
+      border-left: 3px solid #cc0000;
+      background: rgba(10, 0, 0, 0.92);
+      padding: 8px 16px;
       display: flex;
       align-items: center;
       gap: 16px;
@@ -171,35 +173,38 @@
     }
 
     .credits-text {
-      font-size: 10px;
+      font-size: 11px;
       line-height: 1.5;
       text-align: right;
-      text-shadow: none;
     }
 
-    .credits-orig { color: #ffffff; text-shadow: none; }
-    .credits-author { color: #ff3333; text-shadow: none; }
-    .credits-made { color: #888888; font-size: 9px; text-shadow: none; }
-    .credits-team { color: #cc2222; font-size: 9px; text-shadow: none; }
+    .credits-orig { color: #ffffff; }
+    .credits-author { color: #ff3333; }
+    .credits-made { color: #888888; font-size: 9px; }
+    .credits-team { color: #cc2222; font-size: 9px; }
 
-    .top-icons { display: flex; gap: 8px; }
+    .top-icons {
+      display: flex;
+      align-items: center;
+    }
 
-    .icon-btn {
-      width: 26px;
-      height: 26px;
-      background: #440000;
-      border: 1px solid #aa0000;
+    .f11-btn {
+      height: 30px;
+      padding: 0 10px;
+      background: #770000;
+      border: 2px solid #ff2222;
       display: flex;
       align-items: center;
       justify-content: center;
       cursor: pointer;
-      color: #fff;
+      color: #ffffff;
+      font-family: 'Press Start 2P', monospace;
       font-size: 11px;
       border-radius: 2px;
       transition: background 0.15s;
     }
 
-    .icon-btn:hover { background: #770000; }
+    .f11-btn:hover { background: #aa0000; }
 
     .title-group {
       position: absolute;
@@ -336,13 +341,170 @@
     }
 
     /* =========================================================================
-       2. VIEW: OPTIONS
+       2. VIEW: JOIN GAME (КАРТА С ОДНОЙ СТРЕЛОЧКОЙ НА РОССИЮ)
+       ========================================================================= */
+    #viewJoinGame {
+      position: absolute;
+      inset: 0;
+      z-index: 40;
+      display: none;
+      background: transparent;
+    }
+
+    .join-title {
+      position: absolute;
+      top: 3.5vh;
+      left: 2.5vw;
+      font-size: 38px;
+      font-weight: bold;
+      color: #ffffff;
+      letter-spacing: 2px;
+      text-shadow: none;
+      z-index: 25;
+    }
+
+    .join-top-note {
+      position: absolute;
+      top: 3.5vh;
+      right: 3vw;
+      font-size: 11px;
+      line-height: 1.6;
+      color: #888888;
+      max-width: 560px;
+      text-align: right;
+      letter-spacing: 1px;
+      z-index: 25;
+    }
+
+    .join-ip-container {
+      position: absolute;
+      top: 15vh;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      z-index: 30;
+    }
+
+    .join-ip-label {
+      font-size: 18px;
+      color: #cc2222;
+      letter-spacing: 2px;
+    }
+
+    .join-ip-box {
+      background: #2b1212;
+      border: 3px solid #5a1e1e;
+      padding: 10px 18px;
+      min-width: 380px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .join-ip-box:focus-within {
+      border-color: #aa0000;
+      outline: 2px solid #ff2222;
+    }
+
+    #joinIpInput {
+      width: 100%;
+      background: transparent;
+      border: none;
+      outline: none;
+      font-family: 'Press Start 2P', monospace;
+      font-size: 16px;
+      text-align: center;
+      color: #ffffff;
+      letter-spacing: 2px;
+      user-select: text;
+      -webkit-user-select: text;
+    }
+
+    /* Интерактивная карта мира */
+    .world-map-wrapper {
+      position: absolute;
+      top: 25vh;
+      left: 3vw;
+      right: 3vw;
+      bottom: 12vh;
+      z-index: 20;
+    }
+
+    .world-map-svg {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    /* Маркер региона Россия */
+    .map-pin {
+      cursor: pointer;
+      transition: transform 0.15s ease-out;
+      filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.8));
+    }
+
+    .map-pin:hover {
+      transform: scale(1.25);
+    }
+
+    /* Нижняя левая кнопка BACK в JOIN GAME */
+    .join-back-box {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      border-top: 3px solid #880000;
+      border-right: 3px solid #880000;
+      background: #000000;
+      padding: 14px 28px;
+      z-index: 30;
+      cursor: pointer;
+    }
+
+    .join-back-text {
+      font-size: 18px;
+      letter-spacing: 2px;
+      color: #ffffff;
+    }
+
+    .join-back-box:hover .join-back-text {
+      color: #ff2222;
+    }
+
+    /* Правая нижняя кнопка [ ! ] */
+    .join-info-box {
+      position: absolute;
+      bottom: 2.5vh;
+      right: 2.5vw;
+      width: 38px;
+      height: 38px;
+      border: 3px solid #880000;
+      background: rgba(10, 0, 0, 0.85);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      color: #cc2222;
+      cursor: pointer;
+      z-index: 30;
+    }
+
+    .join-info-box:hover {
+      border-color: #ff2222;
+      color: #ffffff;
+    }
+
+    /* =========================================================================
+       3. VIEW: OPTIONS
        ========================================================================= */
     #viewOptions {
       position: absolute;
       inset: 0;
-      z-index: 20;
+      z-index: 40;
       display: none;
+      background: transparent;
     }
 
     .options-title {
@@ -566,13 +728,14 @@
     .reset-ctrls-btn:hover { color: #cc2222; }
 
     /* =========================================================================
-       3. VIEW: EXTRA
+       4. VIEW: EXTRA
        ========================================================================= */
     #viewExtra {
       position: absolute;
       inset: 0;
-      z-index: 20;
+      z-index: 40;
       display: none;
+      background: transparent;
     }
 
     .extra-title {
@@ -780,9 +943,7 @@
       cursor: pointer;
     }
 
-    .page-tab-btn.active {
-      color: #cc2222;
-    }
+    .page-tab-btn.active { color: #cc2222; }
 
     .icons-grid-container {
       display: grid;
@@ -842,10 +1003,9 @@
       gap: 6px;
     }
 
-    /* Иконка монеты внутри карточки иконки */
     .action-coin-img {
-      width: 14px;
-      height: 14px;
+      width: 16px;
+      height: 16px;
       object-fit: contain;
       image-rendering: pixelated;
       image-rendering: crisp-edges;
@@ -932,14 +1092,14 @@
     }
 
     /* =========================================================================
-       4. VIEW: ABOUT (CREDITS)
+       5. VIEW: ABOUT (CREDITS)
        ========================================================================= */
     #viewAbout {
       position: absolute;
       inset: 0;
-      z-index: 20;
-      display: none;
-      background: transparent;
+      z-index: 50;
+      display: none !important;
+      background: #050005;
     }
 
     .about-header-title {
@@ -955,7 +1115,6 @@
       z-index: 25;
     }
 
-    /* Две красные горизонтальные полосы-разделители */
     .about-horizontal-line-top {
       position: absolute;
       top: 13vh;
@@ -976,7 +1135,6 @@
       z-index: 22;
     }
 
-    /* Контейнер бегущих титров */
     .about-credits-scroll-window {
       position: absolute;
       top: 14vh;
@@ -1001,12 +1159,8 @@
     }
 
     @keyframes creditsRoll {
-      0% {
-        transform: translateY(0);
-      }
-      100% {
-        transform: translateY(-130%);
-      }
+      0% { transform: translateY(0); }
+      100% { transform: translateY(-130%); }
     }
 
     .credits-group {
@@ -1030,15 +1184,15 @@
       gap: 2px;
     }
 
-    .credits-name-mega {
-      color: #39ff14;
+    .credits-orig-outlaik {
+      color: #ffffff;
+      font-size: 15px;
+      letter-spacing: 2px;
     }
 
-    .credits-name-gandon {
-      color: #ff2222;
-    }
+    .credits-name-mega { color: #39ff14; }
+    .credits-name-gandon { color: #ff2222; }
 
-    /* Нижняя панель навигации в CREDITS */
     .about-bottom-nav {
       position: absolute;
       bottom: 0;
@@ -1060,16 +1214,11 @@
       cursor: pointer;
     }
 
-    .about-nav-item.active {
-      color: #cc2222 !important;
-    }
-
-    .about-nav-item:hover {
-      color: #ff3333;
-    }
+    .about-nav-item.active { color: #cc2222 !important; }
+    .about-nav-item:hover { color: #ff3333; }
 
     /* =========================================================================
-       5. ИНТРО ЗАСТАВКА И БЕЛАЯ ВСПЫШКА
+       6. ИНТРО ЗАСТАВКА И БЕЛАЯ ВСПЫШКА
        ========================================================================= */
     #introScreen {
       position: absolute;
@@ -1223,7 +1372,7 @@
         <div class="build-info">
           <div class="build-row">
             <span class="build-label">GAME BUILD:</span>
-            <span class="build-val">v2.6</span>
+            <span class="build-val">v2.8</span>
           </div>
         </div>
 
@@ -1235,6 +1384,7 @@
           </div>
         </div>
 
+        <!-- Плашка с двумя красными линиями и кнопкой F11 -->
         <div class="top-right-box">
           <div class="credits-text">
             <div class="credits-orig">ORIGINAL GAME</div>
@@ -1243,7 +1393,7 @@
             <div class="credits-team">EXE EMPIRE</div>
           </div>
           <div class="top-icons">
-            <button class="icon-btn" id="fsBtn" title="На весь экран">⛶</button>
+            <button class="f11-btn" id="fsBtn" title="На весь экран (F11)">F11</button>
           </div>
         </div>
       </header>
@@ -1290,7 +1440,61 @@
     </div>
 
     <!-- =====================================================================
-         2. ЭКРАН НАСТРОЕК (OPTIONS)
+         2. ЭКРАН JOIN GAME (КАРТА С ОДНОЙ СТРЕЛОЧКОЙ НА РОССИЮ)
+         ===================================================================== -->
+    <div id="viewJoinGame">
+      <div class="join-title">JOIN GAME</div>
+
+      <svg class="options-top-stripe" xmlns="http://www.w3.org/2000/svg">
+        <line x1="0%" y1="24%" x2="28%" y2="0%" stroke="#aa0000" stroke-width="2.5" />
+      </svg>
+
+      <div class="join-top-note">
+        NOTE: CHOOSE THE CLOSEST REGION TO<br>YOUR LOCATION FOR BETTER EXPERIENCE
+      </div>
+
+      <div class="join-ip-container">
+        <div class="join-ip-label">ENTER IP ADDRESS</div>
+        <div class="join-ip-box">
+          <input type="text" id="joinIpInput" maxlength="32" placeholder="ENTER IP..." autocomplete="off" spellcheck="false" />
+        </div>
+      </div>
+
+      <!-- Контурная карта мира с единственным белым маркером на Россию -->
+      <div class="world-map-wrapper">
+        <svg class="world-map-svg" viewBox="0 0 1000 500" preserveAspectRatio="xMidYMid meet">
+          <!-- Контуры континентов -->
+          <!-- Северная Америка -->
+          <path d="M 50 140 Q 90 90 180 80 Q 230 100 240 130 Q 220 180 180 190 Q 150 210 160 250 Q 120 230 100 180 Z" fill="none" stroke="#aa0000" stroke-width="2" />
+          <path d="M 160 250 Q 190 280 200 320 Q 180 320 170 280 Z" fill="none" stroke="#aa0000" stroke-width="2" />
+          <!-- Южная Америка -->
+          <path d="M 210 320 Q 260 330 290 370 Q 270 440 230 480 Q 200 440 200 380 Z" fill="none" stroke="#aa0000" stroke-width="2" />
+          <!-- Евразия -->
+          <path d="M 440 120 Q 520 80 680 80 Q 820 90 920 160 Q 860 210 780 220 Q 720 240 680 190 Q 600 190 560 170 Q 480 180 440 140 Z" fill="none" stroke="#aa0000" stroke-width="2" />
+          <!-- Африка -->
+          <path d="M 450 210 Q 540 200 580 270 Q 550 380 490 420 Q 440 340 430 260 Z" fill="none" stroke="#aa0000" stroke-width="2" />
+          <!-- Австралия -->
+          <path d="M 800 370 Q 870 360 890 410 Q 860 450 810 440 Q 780 410 800 370 Z" fill="none" stroke="#aa0000" stroke-width="2" />
+
+          <!-- СТРОГО ОДИН МАРКЕР НА ТЕРРИТОРИИ РОССИИ -->
+          <g class="map-pin" id="russiaPin" transform="translate(620, 110)">
+            <path d="M 0 0 L 16 0 L 16 12 L 8 22 L 0 12 Z" fill="#ffffff" stroke="#000000" stroke-width="1.5" />
+            <circle cx="8" cy="8" r="3.5" fill="#000000" />
+          </g>
+        </svg>
+      </div>
+
+      <!-- Нижняя левая кнопка BACK -->
+      <div class="join-back-box" id="btnJoinBack">
+        <span class="join-back-text">BACK</span>
+      </div>
+
+      <!-- Правая нижняя кнопка [ ! ] -->
+      <div class="join-info-box" id="btnJoinInfo">!</div>
+    </div>
+
+    <!-- =====================================================================
+         3. ЭКРАН НАСТРОЕК (OPTIONS)
          ===================================================================== -->
     <div id="viewOptions">
       <div class="options-title">OPTIONS</div>
@@ -1373,7 +1577,7 @@
     </div>
 
     <!-- =====================================================================
-         3. ЭКРАН EXTRA (ACHIEVEMENTS, ICONS, PETS, SKINS, TAUNTS)
+         4. ЭКРАН EXTRA
          ===================================================================== -->
     <div id="viewExtra">
       <div class="extra-title">EXTRA</div>
@@ -1383,7 +1587,7 @@
       </svg>
 
       <div class="coin-balance-box">
-        <img src="./assets/sprites/money.png" class="coin-icon-img" id="coinIconImg" alt="coin" />
+        <img class="coin-icon-img" id="coinIconImg" alt="coin" />
         <span class="coin-count-text" id="coinCountDisplay">× 32</span>
       </div>
 
@@ -1406,7 +1610,7 @@
       </div>
 
       <div class="extra-content-area">
-        <!-- 3.1. ACHIEVEMENTS -->
+        <!-- 4.1. ACHIEVEMENTS -->
         <div id="tabAchievements">
           <div class="achieve-scroll-arrows">
             <div>▲</div>
@@ -1418,7 +1622,7 @@
             <div class="achieve-reward">
               <span class="reward-label">REWARD</span>
               <div class="reward-amount">
-                <img src="./assets/sprites/money.png" class="reward-coin-img" alt="coin" />
+                <img class="reward-coin-img coin-dyn-img" alt="coin" />
                 <span>× 50</span>
               </div>
             </div>
@@ -1429,7 +1633,7 @@
             <div class="achieve-reward">
               <span class="reward-label">REWARD</span>
               <div class="reward-amount">
-                <img src="./assets/sprites/money.png" class="reward-coin-img" alt="coin" />
+                <img class="reward-coin-img coin-dyn-img" alt="coin" />
                 <span>× 250</span>
               </div>
             </div>
@@ -1440,14 +1644,14 @@
             <div class="achieve-reward">
               <span class="reward-label">REWARD</span>
               <div class="reward-amount">
-                <img src="./assets/sprites/money.png" class="reward-coin-img" alt="coin" />
+                <img class="reward-coin-img coin-dyn-img" alt="coin" />
                 <span>× 500</span>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- 3.2. ICONS (С правильной картинкой coin вместо знака вопроса) -->
+        <!-- 4.2. ICONS -->
         <div id="tabIcons">
           <div class="icons-pagination-header">
             <span class="page-tab-btn active" data-page="1" id="iconPage1Btn">PAGE 1</span>
@@ -1458,14 +1662,13 @@
           <div class="icons-grid-container" id="iconsGrid"></div>
         </div>
 
-        <!-- 3.3. PETS -->
+        <!-- 4.3. PETS -->
         <div id="tabPets">
           <div class="pets-grid-container">
             <div class="pet-card active-pet equipped-red">
               <span class="pet-title">NONE</span>
               <div class="pet-preview-box">
-                <img src="./assets/sprites/none.png" class="pet-custom-img" id="nonePetImg" alt="None" onerror="this.style.display='none'; document.getElementById('nonePetFallback').style.display='block';" />
-                <span id="nonePetFallback" style="display: none;">🚫</span>
+                <img class="pet-custom-img" id="nonePetImg" alt="None" />
               </div>
               <span class="pet-status-text">EQUIPPED</span>
             </div>
@@ -1479,8 +1682,8 @@
     </div>
 
     <!-- =====================================================================
-         4. VIEW: ABOUT (CREDITS)
-         ===================================================================== -->
+         5. VIEW: ABOUT (CREDITS)
+         ========================================================================= -->
     <div id="viewAbout">
       <div class="about-header-title">CREDITS</div>
 
@@ -1489,12 +1692,10 @@
 
       <div class="about-credits-scroll-window">
         <div class="about-credits-content">
-          <!-- ORIGINAL GAME -->
+          <!-- ORIGINAL GAME (OUTLAIK БЕЛЫМ ЦВЕТОМ) -->
           <div class="credits-group">
             <span class="credits-category-title">ORIGINAL GAME:</span>
-            <div class="credits-person-name">
-              <span class="credits-name-mega">Mega</span><span class="credits-name-gandon">Gandon</span>
-            </div>
+            <div class="credits-orig-outlaik">OUTLAIK</div>
           </div>
 
           <!-- CODING -->
@@ -1563,7 +1764,6 @@
         </div>
       </div>
 
-      <!-- Нижняя навигационная панель -->
       <div class="about-bottom-nav">
         <span class="about-nav-item" id="aboutNavMechanics">GAME MECHANICS</span>
         <span class="about-nav-item" id="aboutNavCharInfo">CHARACTER INFO</span>
@@ -1599,7 +1799,7 @@
 
   <script>
     const CONFIG = {
-      build: "v2.6",
+      build: "v2.9",
       charSwitchInterval: 2000,
       chars: [
         { id: "knuckles", path: "./assets/sprites/knuckles.png" },
@@ -1613,6 +1813,79 @@
     };
 
     let currentCharIdx = 0;
+
+    /* Смарт-загрузка картинок с пиксельным fallback */
+    const FALLBACK_COIN_DATA = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 16 16" shape-rendering="crispEdges"><rect x="3" y="1" width="10" height="14" fill="%239a7000"/><rect x="4" y="2" width="8" height="12" fill="%23ffd700"/><rect x="5" y="3" width="6" height="10" fill="%23ffee55"/><rect x="6" y="5" width="4" height="6" fill="%23cc9900"/></svg>';
+    const FALLBACK_NONE_DATA = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 16 16" shape-rendering="crispEdges"><circle cx="8" cy="8" r="6.5" stroke="%23ff1a1a" stroke-width="2" fill="none"/><line x1="3.5" y1="12.5" x2="12.5" y2="3.5" stroke="%23ff1a1a" stroke-width="2"/></svg>';
+
+    let verifiedMoneyUrl = null;
+    let verifiedNoneUrl = null;
+
+    function applySmartImage(imgEl, candidatePaths, fallbackData, onResolved) {
+      let idx = 0;
+      function tryNext() {
+        if (idx < candidatePaths.length) {
+          imgEl.src = candidatePaths[idx++];
+        } else {
+          imgEl.src = fallbackData;
+          if (onResolved) onResolved(fallbackData);
+        }
+      }
+      imgEl.onload = function() {
+        if (onResolved && !imgEl.src.startsWith('data:')) {
+          onResolved(imgEl.src);
+        }
+      };
+      imgEl.onerror = tryNext;
+      tryNext();
+    }
+
+    function initMoneyImage(imgEl) {
+      if (verifiedMoneyUrl) {
+        imgEl.src = verifiedMoneyUrl;
+        return;
+      }
+      const paths = [
+        './assets/sprites/money.png',
+        './assets/sprites/Money.png',
+        'assets/sprites/money.png',
+        'assets/sprites/Money.png',
+        './assets/money.png',
+        './assets/Money.png',
+        'money.png',
+        'Money.png'
+      ];
+      applySmartImage(imgEl, paths, FALLBACK_COIN_DATA, (url) => {
+        verifiedMoneyUrl = url;
+        document.querySelectorAll('.coin-dyn-img, #coinIconImg').forEach(el => el.src = url);
+      });
+    }
+
+    function initNoneImage(imgEl) {
+      if (verifiedNoneUrl) {
+        imgEl.src = verifiedNoneUrl;
+        return;
+      }
+      const paths = [
+        './assets/sprites/None.png',
+        './assets/sprites/none.png',
+        'assets/sprites/None.png',
+        'assets/sprites/none.png',
+        './assets/sprites/icons/None.png',
+        './assets/sprites/icons/none.png',
+        './assets/None.png',
+        './assets/none.png',
+        'None.png',
+        'none.png'
+      ];
+      applySmartImage(imgEl, paths, FALLBACK_NONE_DATA, (url) => {
+        verifiedNoneUrl = url;
+      });
+    }
+
+    initMoneyImage(document.getElementById('coinIconImg'));
+    initNoneImage(document.getElementById('nonePetImg'));
+    document.querySelectorAll('.coin-dyn-img').forEach(el => initMoneyImage(el));
 
     /* Аудио-движок */
     const menuBgm = document.getElementById('menuBgm');
@@ -1879,11 +2152,22 @@
     renderCharacterFile(0);
     setInterval(cycleCharacterWithBlackout, CONFIG.charSwitchInterval);
 
-    /* Меню и навигация */
+    /* =========================================================================
+       МЕНЮ И НАВИГАЦИЯ МЕЖДУ ЭКРАНАМИ
+       ========================================================================= */
     const viewMainMenu = document.getElementById('viewMainMenu');
+    const viewJoinGame = document.getElementById('viewJoinGame');
     const viewOptions = document.getElementById('viewOptions');
     const viewExtra = document.getElementById('viewExtra');
     const viewAbout = document.getElementById('viewAbout');
+
+    function hideAllViews() {
+      viewMainMenu.style.display = 'none';
+      viewJoinGame.style.display = 'none';
+      viewOptions.style.display = 'none';
+      viewExtra.style.display = 'none';
+      viewAbout.style.setProperty('display', 'none', 'important');
+    }
 
     const menuItems = Array.from(document.querySelectorAll('.menu-item'));
     let selectedMenuIndex = -1;
@@ -1919,7 +2203,7 @@
     function handleMenuAction(action) {
       switch (action) {
         case 'join':
-          alert('ПОДКЛЮЧЕНИЕ К ЛОББИ TD2DR...');
+          openJoinGameView();
           break;
         case 'options':
           openOptionsView();
@@ -1936,7 +2220,42 @@
       }
     }
 
-    /* Настройки */
+    /* 1. Экран JOIN GAME */
+    function openJoinGameView() {
+      hideAllViews();
+      viewJoinGame.style.display = 'block';
+    }
+
+    function closeJoinGameView() {
+      hideAllViews();
+      viewMainMenu.style.display = 'block';
+      selectedMenuIndex = -1;
+      updateMenuSelection();
+    }
+
+    const btnJoinBack = document.getElementById('btnJoinBack');
+    const btnJoinInfo = document.getElementById('btnJoinInfo');
+    const russiaPin = document.getElementById('russiaPin');
+
+    btnJoinBack.addEventListener('mouseenter', playHoverSfx);
+    btnJoinBack.addEventListener('click', () => {
+      playSelectSfx();
+      closeJoinGameView();
+    });
+
+    btnJoinInfo.addEventListener('mouseenter', playHoverSfx);
+    btnJoinInfo.addEventListener('click', () => {
+      playSelectSfx();
+      alert('ВЫБЕРИТЕ БЛИЖАЙШИЙ РЕГИОН ДЛЯ НАИМЕНЬШЕГО ПИНГА.');
+    });
+
+    russiaPin.addEventListener('mouseenter', playHoverSfx);
+    russiaPin.addEventListener('click', () => {
+      playSelectSfx();
+      alert('[В РАЗРАБОТКЕ]');
+    });
+
+    /* 2. Настройки (OPTIONS) */
     const btnTabGeneral = document.getElementById('btnTabGeneral');
     const btnTabControls = document.getElementById('btnTabControls');
     const btnOptionsBack = document.getElementById('btnOptionsBack');
@@ -1967,9 +2286,7 @@
     }
 
     function openOptionsView() {
-      viewMainMenu.style.display = 'none';
-      viewExtra.style.display = 'none';
-      viewAbout.style.display = 'none';
+      hideAllViews();
       viewOptions.style.display = 'block';
       inlineNickInput.value = savedNick;
       switchOptionsTab('general');
@@ -1979,7 +2296,7 @@
 
     function closeOptionsView() {
       inlineNickInput.blur();
-      viewOptions.style.display = 'none';
+      hideAllViews();
       viewMainMenu.style.display = 'block';
       selectedMenuIndex = -1;
       updateMenuSelection();
@@ -2137,7 +2454,7 @@
       renderControlsUI();
     });
 
-    /* Extra */
+    /* 3. Extra */
     let userCoins = parseInt(localStorage.getItem('td2dr_coins') || '32');
     function updateCoinDisplay() {
       document.getElementById('coinCountDisplay').textContent = `× ${userCoins}`;
@@ -2225,13 +2542,18 @@
         const actionText = document.createElement('span');
         actionText.className = 'icon-action-text';
 
-        // ПОЧИНЕНО: Картинка коина вместо нечитаемого эмодзи/знака вопроса
         if (isEquipped) {
           actionText.textContent = 'EQUIPPED';
         } else if (isPurchased) {
           actionText.textContent = 'EQUIP';
         } else {
-          actionText.innerHTML = `<img src="./assets/sprites/money.png" class="action-coin-img" alt="coin"> <span>${item.price}</span>`;
+          const coinImg = document.createElement('img');
+          coinImg.className = 'action-coin-img';
+          initMoneyImage(coinImg);
+          const priceSpan = document.createElement('span');
+          priceSpan.textContent = item.price;
+          actionText.appendChild(coinImg);
+          actionText.appendChild(priceSpan);
         }
 
         card.appendChild(actionText);
@@ -2302,6 +2624,7 @@
       if (tab === 'achievements') {
         tabAchievements.style.display = 'flex';
         btnTabAchievements.classList.add('active-tab');
+        document.querySelectorAll('.coin-dyn-img').forEach(el => initMoneyImage(el));
       } else if (tab === 'icons') {
         tabIcons.style.display = 'flex';
         btnTabIcons.classList.add('active-tab');
@@ -2309,6 +2632,7 @@
       } else if (tab === 'pets') {
         tabPets.style.display = 'flex';
         btnTabPets.classList.add('active-tab');
+        initNoneImage(document.getElementById('nonePetImg'));
       } else if (tab === 'skins') {
         tabGenericExtraPlaceholder.style.display = 'block';
         tabGenericExtraPlaceholder.textContent = 'SKINS (В РАЗРАБОТКЕ)';
@@ -2330,16 +2654,15 @@
     btnTabTaunts.addEventListener('click', () => { playSelectSfx(); switchExtraTab('taunts'); });
 
     function openExtraView() {
-      viewMainMenu.style.display = 'none';
-      viewOptions.style.display = 'none';
-      viewAbout.style.display = 'none';
+      hideAllViews();
       viewExtra.style.display = 'block';
       updateCoinDisplay();
+      initMoneyImage(document.getElementById('coinIconImg'));
       switchExtraTab('achievements');
     }
 
     function closeExtraView() {
-      viewExtra.style.display = 'none';
+      hideAllViews();
       viewMainMenu.style.display = 'block';
       selectedMenuIndex = -1;
       updateMenuSelection();
@@ -2347,18 +2670,13 @@
 
     btnExtraBack.addEventListener('click', () => { playSelectSfx(); closeExtraView(); });
 
-    /* =========================================================================
-       СИСТЕМА ABOUT (CREDITS)
-       ========================================================================= */
+    /* 4. Окно ABOUT (CREDITS) */
     const btnAboutNavBack = document.getElementById('aboutNavBack');
 
     function openAboutView() {
-      viewMainMenu.style.display = 'none';
-      viewOptions.style.display = 'none';
-      viewExtra.style.display = 'none';
-      viewAbout.style.display = 'block';
+      hideAllViews();
+      viewAbout.style.setProperty('display', 'block', 'important');
 
-      // Перезапуск анимации прокрутки титров
       const content = document.querySelector('.about-credits-content');
       if (content) {
         content.style.animation = 'none';
@@ -2368,7 +2686,7 @@
     }
 
     function closeAboutView() {
-      viewAbout.style.display = 'none';
+      hideAllViews();
       viewMainMenu.style.display = 'block';
       selectedMenuIndex = -1;
       updateMenuSelection();
@@ -2456,8 +2774,16 @@
         return;
       }
 
-      // Выход из About по Escape
-      if (viewAbout.style.display !== 'none') {
+      // Выход из экранов по Escape
+      if (viewJoinGame.style.display !== 'none') {
+        if (e.key === 'Escape') {
+          playSelectSfx();
+          closeJoinGameView();
+        }
+        return;
+      }
+
+      if (viewAbout.style.display === 'block') {
         if (e.key === 'Escape') {
           playSelectSfx();
           closeAboutView();
@@ -2465,7 +2791,6 @@
         return;
       }
 
-      // Выход из Extra по Escape
       if (viewExtra.style.display !== 'none') {
         if (e.key === 'Escape') {
           playSelectSfx();
@@ -2474,7 +2799,6 @@
         return;
       }
 
-      // Навигация в Options
       if (viewOptions.style.display !== 'none') {
         if (e.key === 'Escape') {
           playSelectSfx();
@@ -2526,6 +2850,7 @@
           playHoverSfx();
         } else if (e.key === 'Enter') {
           if (selectedMenuIndex >= 0 && selectedMenuIndex < menuItems.length) {
+            playSelectSfx();
             handleMenuAction(menuItems[selectedMenuIndex].dataset.action);
           }
         }
@@ -2539,4 +2864,4 @@
     });
   </script>
 </body>
-</html>
+  </html>
