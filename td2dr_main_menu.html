@@ -1,0 +1,2542 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Sonic.exe: The Disaster 2D Remake</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    html, body {
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      background-color: #000000;
+      font-family: 'Press Start 2P', monospace;
+      color: #ffffff;
+    }
+
+    #viewport {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      background: #050005;
+    }
+
+    #bgCanvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+      display: block;
+    }
+
+    .fullscreen-tv-wave {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 28;
+      background: linear-gradient(
+        to bottom,
+        rgba(255, 255, 255, 0) 0%,
+        rgba(255, 255, 255, 0.05) 15%,
+        rgba(0, 0, 0, 0.35) 22%,
+        rgba(255, 255, 255, 0) 35%
+      );
+      background-size: 100% 300%;
+      animation: fullTvRoll 9.5s linear infinite;
+      mix-blend-mode: overlay;
+      opacity: 0.85;
+    }
+
+    @keyframes fullTvRoll {
+      0% { background-position: 0 -200%; }
+      100% { background-position: 0 200%; }
+    }
+
+    /* HUD Оверлеи FPS и Ping */
+    .hud-stats-overlay {
+      position: absolute;
+      top: 80px;
+      left: 24px;
+      z-index: 40;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      font-size: 10px;
+      letter-spacing: 1px;
+      pointer-events: none;
+    }
+
+    .hud-stat-item {
+      display: none;
+      background: rgba(0, 0, 0, 0.75);
+      border: 1px solid #330000;
+      padding: 4px 8px;
+    }
+
+    #fpsDisplay { color: #39ff14; }
+    #pingDisplay { color: #ffea00; }
+
+    /* =========================================================================
+       1. VIEW: MAIN MENU
+       ========================================================================= */
+    #viewMainMenu {
+      position: absolute;
+      inset: 0;
+      z-index: 10;
+      display: block;
+    }
+
+    .top-bar {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 70px;
+      padding: 12px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      z-index: 30;
+      text-shadow: none;
+    }
+
+    .build-info {
+      font-size: 12px;
+      line-height: 1.6;
+      letter-spacing: 1px;
+      text-shadow: none;
+    }
+
+    .build-row { display: flex; gap: 8px; }
+    .build-label { color: #9955bb; text-shadow: none; }
+    .build-val { color: #bb77dd; text-shadow: none; }
+
+    .top-center {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      background: rgba(0, 0, 0, 0.8);
+      border: 1px solid #1a1a1a;
+      padding: 6px 16px;
+      border-radius: 4px;
+    }
+
+    .clock-row {
+      font-size: 11px;
+      color: #cccccc;
+      letter-spacing: 1px;
+      text-shadow: none;
+    }
+
+    .welcome-row {
+      font-size: 11px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      cursor: default;
+      text-shadow: none;
+    }
+
+    .welcome-label { color: #ffffff; text-shadow: none; }
+
+    #playerNick {
+      display: inline-flex;
+      font-weight: bold;
+      text-shadow: none;
+    }
+
+    .top-right-box {
+      border: 2px solid #880000;
+      background: rgba(10, 0, 0, 0.85);
+      padding: 8px 14px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      text-shadow: none;
+    }
+
+    .credits-text {
+      font-size: 10px;
+      line-height: 1.5;
+      text-align: right;
+      text-shadow: none;
+    }
+
+    .credits-orig { color: #ffffff; text-shadow: none; }
+    .credits-author { color: #ff3333; text-shadow: none; }
+    .credits-made { color: #888888; font-size: 9px; text-shadow: none; }
+    .credits-team { color: #cc2222; font-size: 9px; text-shadow: none; }
+
+    .top-icons { display: flex; gap: 8px; }
+
+    .icon-btn {
+      width: 26px;
+      height: 26px;
+      background: #440000;
+      border: 1px solid #aa0000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: #fff;
+      font-size: 11px;
+      border-radius: 2px;
+      transition: background 0.15s;
+    }
+
+    .icon-btn:hover { background: #770000; }
+
+    .title-group {
+      position: absolute;
+      top: 10%;
+      left: 3%;
+      z-index: 20;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .main-logo {
+      display: flex;
+      align-items: baseline;
+      font-size: 44px;
+      font-weight: 900;
+      letter-spacing: 2px;
+    }
+
+    .logo-sonic { color: #2a2a30; text-shadow: none; }
+    .logo-dot { color: #cc0000; margin: 0 4px; text-shadow: none; }
+    .logo-exe {
+      color: #110000;
+      -webkit-text-stroke: 2px #ff1a1a;
+      letter-spacing: 4px;
+      text-shadow: none;
+    }
+
+    .logo-sub {
+      font-size: 17px;
+      color: #cc2222;
+      letter-spacing: 4px;
+      text-shadow: none;
+    }
+
+    .menu-triangle-block {
+      position: absolute;
+      inset: 0;
+      z-index: 10;
+      pointer-events: none;
+      clip-path: polygon(0% 61%, 55% 100%, 0% 100%);
+      background-color: #000000;
+    }
+
+    .menu-stripe-svg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 11;
+      pointer-events: none;
+    }
+
+    .menu-options {
+      position: absolute;
+      inset: 0;
+      z-index: 15;
+      pointer-events: none;
+    }
+
+    .menu-item {
+      position: absolute;
+      font-size: 17px;
+      color: #ffffff;
+      cursor: pointer;
+      white-space: nowrap;
+      letter-spacing: 2px;
+      pointer-events: auto;
+      display: flex;
+      align-items: center;
+      text-shadow: none;
+      transition: none;
+    }
+
+    .item-join    { left: 1.5vw;  top: 76vh; }
+    .item-options { left: 14vw;   top: 84vh; }
+    .item-exit    { left: 4vw;    top: 92.5vh; }
+    .item-extra   { left: 26vw;   top: 90vh; }
+    .item-about   { left: 36vw;   top: 95vh; }
+
+    .menu-item.active,
+    .menu-item:hover {
+      color: #ff2222 !important;
+      text-shadow: none !important;
+    }
+
+    .menu-item .pointer-arrow {
+      display: none;
+      margin-right: 6px;
+      color: #ff2222;
+    }
+
+    .menu-item.active .pointer-arrow,
+    .menu-item:hover .pointer-arrow {
+      display: inline-block;
+    }
+
+    .character-stage {
+      position: absolute;
+      right: 0;
+      bottom: 0;
+      width: 50vw;
+      height: 72vh;
+      z-index: 5;
+      display: flex;
+      justify-content: flex-end;
+      align-items: flex-end;
+      pointer-events: none;
+    }
+
+    .char-sprite-box {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: flex-end;
+      justify-content: flex-end;
+      transition: filter 0.25s ease-in-out;
+      filter: brightness(0.6);
+    }
+
+    .char-sprite-box.blackout { filter: brightness(0) !important; }
+
+    .char-sprite-img {
+      max-width: 100%;
+      height: 100%;
+      object-fit: contain;
+      object-position: right bottom;
+      image-rendering: pixelated;
+      image-rendering: crisp-edges;
+      display: none;
+      position: relative;
+      z-index: 6;
+    }
+
+    /* =========================================================================
+       2. VIEW: OPTIONS
+       ========================================================================= */
+    #viewOptions {
+      position: absolute;
+      inset: 0;
+      z-index: 20;
+      display: none;
+    }
+
+    .options-title {
+      position: absolute;
+      top: 3.5vh;
+      left: 2.5vw;
+      font-size: 38px;
+      font-weight: bold;
+      color: #ffffff;
+      letter-spacing: 2px;
+      text-shadow: none;
+      z-index: 25;
+    }
+
+    .options-top-stripe {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 22;
+    }
+
+    .options-nav-block {
+      position: absolute;
+      inset: 0;
+      z-index: 22;
+      pointer-events: none;
+      clip-path: polygon(52% 100%, 100% 68%, 100% 100%);
+      background-color: #000000;
+    }
+
+    .options-nav-stripe {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 23;
+      pointer-events: none;
+    }
+
+    .options-nav-links {
+      position: absolute;
+      inset: 0;
+      z-index: 26;
+      pointer-events: none;
+    }
+
+    .opt-nav-btn {
+      position: absolute;
+      font-size: 18px;
+      letter-spacing: 2px;
+      cursor: pointer;
+      pointer-events: auto;
+      text-shadow: none;
+      transition: none;
+    }
+
+    .opt-nav-controls { right: 3vw; top: 83vh; color: #ffffff; }
+    .opt-nav-general { right: 18vw; top: 93vh; color: #ffffff; }
+    .opt-nav-back { right: 2vw; top: 93vh; color: #ffffff; }
+
+    .opt-nav-btn.selected,
+    .opt-nav-btn:hover { color: #cc2222 !important; }
+    .opt-nav-btn.active-tab { color: #cc2222 !important; }
+
+    .options-content-area {
+      position: absolute;
+      inset: 0;
+      z-index: 24;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      pointer-events: auto;
+    }
+
+    #tabGeneral {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 24px;
+      margin-top: 1vh;
+    }
+
+    .general-label {
+      font-size: 18px;
+      letter-spacing: 2px;
+      color: #ffffff;
+      text-shadow: none;
+    }
+
+    .nick-input-box {
+      background: #2b1212;
+      border: 2px solid #5a1e1e;
+      padding: 6px 14px;
+      min-width: 340px;
+      text-align: center;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      text-shadow: none;
+      transition: border-color 0.1s, outline 0.1s;
+    }
+
+    .nick-input-box.selected,
+    .nick-input-box:focus-within {
+      border-color: #aa0000;
+      outline: 2px solid #ff2222;
+    }
+
+    #inlineNickInput {
+      width: 100%;
+      background: transparent;
+      border: none;
+      outline: none;
+      font-family: 'Press Start 2P', monospace;
+      font-size: 15px;
+      text-align: center;
+      color: #ffffff;
+      letter-spacing: 1px;
+      user-select: text;
+      -webkit-user-select: text;
+    }
+
+    .general-toggle-btn {
+      font-size: 18px;
+      letter-spacing: 2px;
+      color: #ffffff;
+      cursor: pointer;
+      padding: 4px 10px;
+      text-shadow: none;
+    }
+
+    .general-toggle-btn.selected,
+    .general-toggle-btn:hover { color: #cc2222; }
+
+    #tabControls {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+      margin-top: 2vh;
+      width: 780px;
+      max-width: 90vw;
+    }
+
+    .controls-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      column-gap: 50px;
+      row-gap: 12px;
+      width: 100%;
+    }
+
+    .ctrl-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .ctrl-label {
+      font-size: 15px;
+      letter-spacing: 2px;
+      color: #ffffff;
+      text-shadow: none;
+    }
+
+    .ctrl-key-btn {
+      width: 140px;
+      height: 34px;
+      background: #8b8b8b;
+      border: 2px solid #a3a3a3;
+      color: #000000;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: bold;
+      letter-spacing: 1px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      text-shadow: none;
+    }
+
+    .ctrl-key-btn.selected,
+    .ctrl-key-btn:hover {
+      background: #b5b5b5;
+      border-color: #ffffff;
+      outline: 2px solid #ff2222;
+    }
+
+    .ctrl-key-btn.rebinding {
+      background: #cc2222;
+      color: #ffffff;
+      border-color: #ff6666;
+    }
+
+    .ctrl-center-row {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 20px;
+      width: 100%;
+      margin-top: 4px;
+    }
+
+    .ctrl-center-row .ctrl-key-btn { width: 160px; }
+
+    .reset-ctrls-btn {
+      margin-top: 10px;
+      font-size: 16px;
+      letter-spacing: 2px;
+      color: #ffffff;
+      cursor: pointer;
+      text-shadow: none;
+    }
+
+    .reset-ctrls-btn.selected,
+    .reset-ctrls-btn:hover { color: #cc2222; }
+
+    /* =========================================================================
+       3. VIEW: EXTRA
+       ========================================================================= */
+    #viewExtra {
+      position: absolute;
+      inset: 0;
+      z-index: 20;
+      display: none;
+    }
+
+    .extra-title {
+      position: absolute;
+      top: 3.5vh;
+      left: 2.5vw;
+      font-size: 38px;
+      font-weight: bold;
+      color: #ffffff;
+      letter-spacing: 2px;
+      text-shadow: none;
+      z-index: 25;
+    }
+
+    .coin-balance-box {
+      position: absolute;
+      top: 0;
+      right: 0;
+      border: 2px solid #880000;
+      background: #000000;
+      padding: 10px 20px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      z-index: 30;
+    }
+
+    .coin-icon-img {
+      width: 34px;
+      height: 34px;
+      object-fit: contain;
+      image-rendering: pixelated;
+      image-rendering: crisp-edges;
+    }
+
+    .coin-count-text {
+      font-size: 18px;
+      color: #ffffff;
+      letter-spacing: 1px;
+    }
+
+    .extra-achieve-tab-block {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      border: 2px solid #880000;
+      background: #000000;
+      padding: 10px 20px;
+      z-index: 26;
+      cursor: pointer;
+    }
+
+    .extra-achieve-tab-block.active-tab {
+      background: #2b0000;
+    }
+
+    .achieve-tab-text {
+      font-size: 16px;
+      color: #cc2222;
+      letter-spacing: 2px;
+    }
+
+    .extra-achieve-tab-block:not(.active-tab) .achieve-tab-text {
+      color: #ffffff;
+    }
+
+    .extra-nav-block {
+      position: absolute;
+      inset: 0;
+      z-index: 22;
+      pointer-events: none;
+      clip-path: polygon(52% 100%, 100% 68%, 100% 100%);
+      background-color: #000000;
+    }
+
+    .extra-nav-links {
+      position: absolute;
+      inset: 0;
+      z-index: 26;
+      pointer-events: none;
+    }
+
+    .extra-nav-btn {
+      position: absolute;
+      font-size: 18px;
+      letter-spacing: 2px;
+      cursor: pointer;
+      pointer-events: auto;
+      text-shadow: none;
+      color: #ffffff;
+    }
+
+    .extra-nav-taunts { right: 3vw; top: 76vh; }
+    .extra-nav-pets   { right: 12vw; top: 82vh; }
+    .extra-nav-icons  { right: 20vw; top: 88vh; }
+    .extra-nav-skins  { right: 29vw; top: 94vh; }
+    .extra-nav-back   { right: 2vw; top: 93vh; }
+
+    .extra-nav-btn.active-tab,
+    .extra-nav-btn.selected,
+    .extra-nav-btn:hover {
+      color: #cc2222 !important;
+    }
+
+    .extra-content-area {
+      position: absolute;
+      inset: 0;
+      z-index: 24;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      pointer-events: auto;
+    }
+
+    #tabAchievements {
+      display: flex;
+      flex-direction: column;
+      width: 78vw;
+      max-width: 960px;
+      gap: 16px;
+      position: relative;
+    }
+
+    .achieve-scroll-arrows {
+      position: absolute;
+      left: -40px;
+      top: 50%;
+      transform: translateY(-50%);
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      font-size: 20px;
+      color: #cccccc;
+      cursor: pointer;
+    }
+
+    .achieve-row {
+      display: flex;
+      border: 3px solid #777777;
+      background: #000000;
+      height: 72px;
+    }
+
+    .achieve-desc {
+      flex: 1;
+      padding: 0 24px;
+      display: flex;
+      align-items: center;
+      font-size: 14px;
+      letter-spacing: 2px;
+      border-right: 3px solid #777777;
+    }
+
+    .achieve-reward {
+      width: 220px;
+      padding: 0 16px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .reward-label {
+      font-size: 11px;
+      letter-spacing: 2px;
+      color: #cccccc;
+    }
+
+    .reward-amount {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+    }
+
+    .reward-coin-img {
+      width: 24px;
+      height: 24px;
+      object-fit: contain;
+      image-rendering: pixelated;
+      image-rendering: crisp-edges;
+    }
+
+    #tabIcons {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      width: 86vw;
+      max-width: 1040px;
+      margin-top: -3vh;
+    }
+
+    .icons-pagination-header {
+      display: flex;
+      gap: 40px;
+      margin-bottom: 24px;
+    }
+
+    .page-tab-btn {
+      font-size: 18px;
+      letter-spacing: 2px;
+      color: #ffffff;
+      cursor: pointer;
+    }
+
+    .page-tab-btn.active {
+      color: #cc2222;
+    }
+
+    .icons-grid-container {
+      display: grid;
+      grid-template-columns: repeat(5, 140px);
+      gap: 26px;
+      justify-content: center;
+    }
+
+    .icon-card {
+      width: 140px;
+      height: 165px;
+      border: 3px solid #888888;
+      background: #000000;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 8px;
+      cursor: pointer;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+
+    .icon-card.gold-border { border-color: #ffd700; }
+
+    .icon-card.equipped {
+      border-color: #ff1a1a !important;
+      box-shadow: 0 0 12px rgba(255, 26, 26, 0.75);
+    }
+
+    .icon-symbol-box {
+      width: 80px;
+      height: 80px;
+      border: 2px solid #555555;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+      background: #080808;
+    }
+
+    .icon-card.gold-border .icon-symbol-box { border-color: #cca01d; }
+
+    .icon-custom-img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      image-rendering: pixelated;
+    }
+
+    .icon-action-text {
+      font-size: 12px;
+      letter-spacing: 1px;
+      color: #888888;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    /* Иконка монеты внутри карточки иконки */
+    .action-coin-img {
+      width: 14px;
+      height: 14px;
+      object-fit: contain;
+      image-rendering: pixelated;
+      image-rendering: crisp-edges;
+    }
+
+    .icon-card.equipped .icon-action-text {
+      color: #ff1a1a !important;
+      font-weight: bold;
+    }
+
+    .icon-card:hover .icon-action-text { color: #ffffff; }
+
+    #tabPets {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      width: 86vw;
+      max-width: 1040px;
+      margin-top: -3vh;
+    }
+
+    .pets-grid-container {
+      display: flex;
+      gap: 28px;
+      justify-content: flex-start;
+      width: 100%;
+    }
+
+    .pet-card {
+      width: 165px;
+      height: 195px;
+      border: 3px solid #888888;
+      background: #000000;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 10px;
+    }
+
+    .pet-card.active-pet { border-color: #880000; }
+
+    .pet-card.equipped-red {
+      border-color: #ff1a1a !important;
+      box-shadow: 0 0 12px rgba(255, 26, 26, 0.75);
+    }
+
+    .pet-title {
+      font-size: 14px;
+      letter-spacing: 1px;
+      color: #ffffff;
+    }
+
+    .pet-preview-box {
+      width: 92px;
+      height: 92px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 44px;
+      color: #cc2222;
+    }
+
+    .pet-custom-img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+      image-rendering: pixelated;
+      image-rendering: crisp-edges;
+    }
+
+    .pet-status-text {
+      font-size: 13px;
+      letter-spacing: 1px;
+      color: #ff1a1a;
+      font-weight: bold;
+    }
+
+    #tabGenericExtraPlaceholder {
+      display: none;
+      font-size: 16px;
+      letter-spacing: 2px;
+      color: #888888;
+    }
+
+    /* =========================================================================
+       4. VIEW: ABOUT (CREDITS)
+       ========================================================================= */
+    #viewAbout {
+      position: absolute;
+      inset: 0;
+      z-index: 20;
+      display: none;
+      background: transparent;
+    }
+
+    .about-header-title {
+      position: absolute;
+      top: 3.5vh;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 38px;
+      font-weight: bold;
+      color: #ffffff;
+      letter-spacing: 4px;
+      text-shadow: none;
+      z-index: 25;
+    }
+
+    /* Две красные горизонтальные полосы-разделители */
+    .about-horizontal-line-top {
+      position: absolute;
+      top: 13vh;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background-color: #aa0000;
+      z-index: 22;
+    }
+
+    .about-horizontal-line-bottom {
+      position: absolute;
+      bottom: 12vh;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background-color: #aa0000;
+      z-index: 22;
+    }
+
+    /* Контейнер бегущих титров */
+    .about-credits-scroll-window {
+      position: absolute;
+      top: 14vh;
+      bottom: 13vh;
+      left: 10vw;
+      right: 10vw;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      z-index: 21;
+    }
+
+    .about-credits-content {
+      position: absolute;
+      top: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 32px;
+      width: 100%;
+      animation: creditsRoll 28s linear infinite;
+    }
+
+    @keyframes creditsRoll {
+      0% {
+        transform: translateY(0);
+      }
+      100% {
+        transform: translateY(-130%);
+      }
+    }
+
+    .credits-group {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      text-align: center;
+    }
+
+    .credits-category-title {
+      font-size: 16px;
+      color: #9955bb;
+      letter-spacing: 2px;
+    }
+
+    .credits-person-name {
+      font-size: 14px;
+      letter-spacing: 2px;
+      display: flex;
+      gap: 2px;
+    }
+
+    .credits-name-mega {
+      color: #39ff14;
+    }
+
+    .credits-name-gandon {
+      color: #ff2222;
+    }
+
+    /* Нижняя панель навигации в CREDITS */
+    .about-bottom-nav {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 12vh;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 4vw;
+      background: #000000;
+      z-index: 25;
+    }
+
+    .about-nav-item {
+      font-size: 18px;
+      letter-spacing: 2px;
+      color: #ffffff;
+      cursor: pointer;
+    }
+
+    .about-nav-item.active {
+      color: #cc2222 !important;
+    }
+
+    .about-nav-item:hover {
+      color: #ff3333;
+    }
+
+    /* =========================================================================
+       5. ИНТРО ЗАСТАВКА И БЕЛАЯ ВСПЫШКА
+       ========================================================================= */
+    #introScreen {
+      position: absolute;
+      inset: 0;
+      background: #000000;
+      z-index: 100;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+      cursor: pointer;
+      gap: 38px;
+    }
+
+    .intro-top {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      opacity: 0;
+      transform: translateY(-30px);
+      transition: opacity 1.2s cubic-bezier(0.25, 1, 0.5, 1), transform 1.2s cubic-bezier(0.25, 1, 0.5, 1);
+    }
+
+    .intro-top.show { opacity: 1; transform: translateY(0); }
+
+    .badge-exe-empire {
+      border: 3px solid #ff1a1a;
+      background: #000000;
+      padding: 8px 18px;
+      color: #ff3333;
+      font-size: 16px;
+      letter-spacing: 2px;
+      box-shadow: 0 0 15px rgba(255, 0, 0, 0.6);
+      text-shadow: none;
+    }
+
+    .badge-presents {
+      font-size: 12px;
+      color: #ffffff;
+      letter-spacing: 6px;
+      text-shadow: none;
+    }
+
+    .intro-center {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      opacity: 0;
+      transform: scale(0.92);
+      transition: opacity 1.4s cubic-bezier(0.25, 1, 0.5, 1), transform 1.4s cubic-bezier(0.25, 1, 0.5, 1);
+    }
+
+    .intro-center.show { opacity: 1; transform: scale(1); }
+
+    .html5-diamond {
+      width: 40px;
+      height: 40px;
+      background: #47e27e;
+      transform: rotate(45deg);
+      box-shadow: 0 0 18px rgba(71, 226, 126, 0.6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .diamond-inner {
+      width: 18px;
+      height: 18px;
+      background: #000;
+    }
+
+    .intro-title {
+      font-size: 24px;
+      color: #ffffff;
+      letter-spacing: 2px;
+      text-shadow: none;
+    }
+
+    .intro-title span { color: #47e27e; }
+
+    .intro-bottom {
+      font-size: 13px;
+      letter-spacing: 2px;
+      color: #ffffff;
+      opacity: 0;
+      transform: translateY(30px);
+      transition: opacity 1.2s cubic-bezier(0.25, 1, 0.5, 1), transform 1.2s cubic-bezier(0.25, 1, 0.5, 1);
+      text-shadow: none;
+    }
+
+    .intro-bottom.show { opacity: 1; transform: translateY(0); }
+    .intro-bottom span { color: #ff5555; }
+
+    .intro-skip-hint {
+      position: absolute;
+      bottom: 24px;
+      font-size: 11px;
+      color: #777777;
+      letter-spacing: 2px;
+      text-shadow: none;
+      animation: pulseHint 1.8s infinite alternate ease-in-out;
+    }
+
+    @keyframes pulseHint {
+      0% { opacity: 0.3; }
+      100% { opacity: 1; color: #ffffff; }
+    }
+
+    .intro-white-flash {
+      position: absolute;
+      inset: 0;
+      background: #ffffff;
+      z-index: 150;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.12s ease-out;
+    }
+
+    .intro-white-flash.flash-active { opacity: 1; }
+    .intro-white-flash.flash-fadeout {
+      opacity: 0;
+      transition: opacity 0.8s ease-out;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="viewport">
+    <canvas id="bgCanvas"></canvas>
+
+    <audio id="menuBgm" loop preload="auto">
+      <source src="./assets/music/menu.mp3" type="audio/mpeg">
+      <source src="./assets/music/menu.ogg" type="audio/ogg">
+      <source src="./assets/music/menu.wav" type="audio/wav">
+    </audio>
+
+    <div class="hud-stats-overlay">
+      <div class="hud-stat-item" id="fpsDisplay">FPS: 60</div>
+      <div class="hud-stat-item" id="pingDisplay">PING: 32ms</div>
+    </div>
+
+    <!-- =====================================================================
+         1. ЭКРАН ГЛАВНОГО МЕНЮ
+         ===================================================================== -->
+    <div id="viewMainMenu">
+      <div class="fullscreen-tv-wave"></div>
+
+      <header class="top-bar">
+        <div class="build-info">
+          <div class="build-row">
+            <span class="build-label">GAME BUILD:</span>
+            <span class="build-val">v2.6</span>
+          </div>
+        </div>
+
+        <div class="top-center">
+          <div class="clock-row" id="realTimeClock">--:--:-- - --.--.----</div>
+          <div class="welcome-row" id="nickRow">
+            <span class="welcome-label">WELCOME:</span>
+            <span id="playerNick">TESTGANDON</span>
+          </div>
+        </div>
+
+        <div class="top-right-box">
+          <div class="credits-text">
+            <div class="credits-orig">ORIGINAL GAME</div>
+            <div class="credits-author">BY OUTLAIK</div>
+            <div class="credits-made">MADE BY</div>
+            <div class="credits-team">EXE EMPIRE</div>
+          </div>
+          <div class="top-icons">
+            <button class="icon-btn" id="fsBtn" title="На весь экран">⛶</button>
+          </div>
+        </div>
+      </header>
+
+      <div class="title-group">
+        <div class="main-logo">
+          <span class="logo-sonic">SONIC</span>
+          <span class="logo-dot">.</span>
+          <span class="logo-exe">EXE</span>
+        </div>
+        <div class="logo-sub">THE DISASTER</div>
+        <div class="logo-sub">2D REMAKE</div>
+      </div>
+
+      <div class="menu-triangle-block"></div>
+
+      <svg class="menu-stripe-svg" xmlns="http://www.w3.org/2000/svg">
+        <line x1="0%" y1="61%" x2="55%" y2="100%" stroke="#aa0000" stroke-width="2.5" />
+      </svg>
+
+      <nav class="menu-options" id="menuNav">
+        <div class="menu-item item-join" data-action="join">
+          <span class="pointer-arrow">▶</span>JOIN GAME
+        </div>
+        <div class="menu-item item-options" data-action="options">
+          <span class="pointer-arrow">▶</span>OPTIONS
+        </div>
+        <div class="menu-item item-exit" data-action="exit">
+          <span class="pointer-arrow">▶</span>EXIT
+        </div>
+        <div class="menu-item item-extra" data-action="extra">
+          <span class="pointer-arrow">▶</span>EXTRA
+        </div>
+        <div class="menu-item item-about" data-action="about">
+          <span class="pointer-arrow">▶</span>ABOUT
+        </div>
+      </nav>
+
+      <div class="character-stage" id="characterStage">
+        <div class="char-sprite-box" id="charBox">
+          <img id="charImg" class="char-sprite-img" alt="TD2DR Character" />
+        </div>
+      </div>
+    </div>
+
+    <!-- =====================================================================
+         2. ЭКРАН НАСТРОЕК (OPTIONS)
+         ===================================================================== -->
+    <div id="viewOptions">
+      <div class="options-title">OPTIONS</div>
+
+      <svg class="options-top-stripe" xmlns="http://www.w3.org/2000/svg">
+        <line x1="0%" y1="24%" x2="28%" y2="0%" stroke="#aa0000" stroke-width="2.5" />
+      </svg>
+
+      <div class="options-nav-block"></div>
+
+      <svg class="options-nav-stripe" xmlns="http://www.w3.org/2000/svg">
+        <line x1="52%" y1="100%" x2="100%" y2="68%" stroke="#aa0000" stroke-width="2.5" />
+      </svg>
+
+      <div class="options-nav-links">
+        <div class="opt-nav-btn opt-nav-controls" id="btnTabControls">CONTROLS</div>
+        <div class="opt-nav-btn opt-nav-general active-tab" id="btnTabGeneral">GENERAL</div>
+        <div class="opt-nav-btn opt-nav-back" id="btnOptionsBack">BACK</div>
+      </div>
+
+      <div class="options-content-area">
+        <div id="tabGeneral">
+          <div class="general-label">NICKNAME</div>
+          <div class="nick-input-box" id="generalNickBox">
+            <input type="text" id="inlineNickInput" maxlength="24" autocomplete="off" spellcheck="false" placeholder="ВВЕДИТЕ НИК..." />
+          </div>
+
+          <div class="general-toggle-btn" id="btnToggleScreenSize">◀SCREEN SIZE▶</div>
+          <div class="general-toggle-btn" id="btnTogglePing">SHOW PING</div>
+          <div class="general-toggle-btn" id="btnToggleFps">SHOW FPS</div>
+        </div>
+
+        <div id="tabControls">
+          <div class="controls-grid">
+            <div class="ctrl-row">
+              <span class="ctrl-label">UP</span>
+              <button class="ctrl-key-btn" data-action="UP">UP</button>
+            </div>
+            <div class="ctrl-row">
+              <span class="ctrl-label">JUMP</span>
+              <button class="ctrl-key-btn" data-action="JUMP">Z</button>
+            </div>
+
+            <div class="ctrl-row">
+              <span class="ctrl-label">DOWN</span>
+              <button class="ctrl-key-btn" data-action="DOWN">DOWN</button>
+            </div>
+            <div class="ctrl-row">
+              <span class="ctrl-label">SPECIAL 1</span>
+              <button class="ctrl-key-btn" data-action="SPECIAL_1">X</button>
+            </div>
+
+            <div class="ctrl-row">
+              <span class="ctrl-label">LEFT</span>
+              <button class="ctrl-key-btn" data-action="LEFT">LEFT</button>
+            </div>
+            <div class="ctrl-row">
+              <span class="ctrl-label">SPECIAL 2</span>
+              <button class="ctrl-key-btn" data-action="SPECIAL_2">C</button>
+            </div>
+
+            <div class="ctrl-row">
+              <span class="ctrl-label">RIGHT</span>
+              <button class="ctrl-key-btn" data-action="RIGHT">RIGHT</button>
+            </div>
+            <div class="ctrl-row">
+              <span class="ctrl-label">HIDE GUI</span>
+              <button class="ctrl-key-btn" data-action="HIDE_GUI">LCTRL</button>
+            </div>
+          </div>
+
+          <div class="ctrl-center-row">
+            <span class="ctrl-label">PLAYER LIST</span>
+            <button class="ctrl-key-btn" data-action="PLAYER_LIST">TAB</button>
+          </div>
+
+          <div class="reset-ctrls-btn" id="btnResetControls">RESET CONTROLS</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- =====================================================================
+         3. ЭКРАН EXTRA (ACHIEVEMENTS, ICONS, PETS, SKINS, TAUNTS)
+         ===================================================================== -->
+    <div id="viewExtra">
+      <div class="extra-title">EXTRA</div>
+
+      <svg class="options-top-stripe" xmlns="http://www.w3.org/2000/svg">
+        <line x1="0%" y1="24%" x2="28%" y2="0%" stroke="#aa0000" stroke-width="2.5" />
+      </svg>
+
+      <div class="coin-balance-box">
+        <img src="./assets/sprites/money.png" class="coin-icon-img" id="coinIconImg" alt="coin" />
+        <span class="coin-count-text" id="coinCountDisplay">× 32</span>
+      </div>
+
+      <div class="extra-achieve-tab-block active-tab" id="btnTabAchievements">
+        <span class="achieve-tab-text">ACHIEVEMENTS</span>
+      </div>
+
+      <div class="extra-nav-block"></div>
+
+      <svg class="options-nav-stripe" xmlns="http://www.w3.org/2000/svg">
+        <line x1="52%" y1="100%" x2="100%" y2="68%" stroke="#aa0000" stroke-width="2.5" />
+      </svg>
+
+      <div class="extra-nav-links">
+        <div class="extra-nav-btn extra-nav-taunts" id="btnTabTaunts">TAUNTS</div>
+        <div class="extra-nav-btn extra-nav-pets" id="btnTabPets">PETS</div>
+        <div class="extra-nav-btn extra-nav-icons" id="btnTabIcons">ICONS</div>
+        <div class="extra-nav-btn extra-nav-skins" id="btnTabSkins">SKINS</div>
+        <div class="extra-nav-btn extra-nav-back" id="btnExtraBack">BACK</div>
+      </div>
+
+      <div class="extra-content-area">
+        <!-- 3.1. ACHIEVEMENTS -->
+        <div id="tabAchievements">
+          <div class="achieve-scroll-arrows">
+            <div>▲</div>
+            <div>▼</div>
+          </div>
+
+          <div class="achieve-row">
+            <div class="achieve-desc">WIN 10 ROUNDS</div>
+            <div class="achieve-reward">
+              <span class="reward-label">REWARD</span>
+              <div class="reward-amount">
+                <img src="./assets/sprites/money.png" class="reward-coin-img" alt="coin" />
+                <span>× 50</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="achieve-row">
+            <div class="achieve-desc">WIN 50 ROUNDS</div>
+            <div class="achieve-reward">
+              <span class="reward-label">REWARD</span>
+              <div class="reward-amount">
+                <img src="./assets/sprites/money.png" class="reward-coin-img" alt="coin" />
+                <span>× 250</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="achieve-row">
+            <div class="achieve-desc">WIN 100 ROUNDS</div>
+            <div class="achieve-reward">
+              <span class="reward-label">REWARD</span>
+              <div class="reward-amount">
+                <img src="./assets/sprites/money.png" class="reward-coin-img" alt="coin" />
+                <span>× 500</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3.2. ICONS (С правильной картинкой coin вместо знака вопроса) -->
+        <div id="tabIcons">
+          <div class="icons-pagination-header">
+            <span class="page-tab-btn active" data-page="1" id="iconPage1Btn">PAGE 1</span>
+            <span class="page-tab-btn" data-page="2" id="iconPage2Btn">PAGE 2</span>
+            <span class="page-tab-btn" data-page="3" id="iconPage3Btn">PAGE 3</span>
+          </div>
+
+          <div class="icons-grid-container" id="iconsGrid"></div>
+        </div>
+
+        <!-- 3.3. PETS -->
+        <div id="tabPets">
+          <div class="pets-grid-container">
+            <div class="pet-card active-pet equipped-red">
+              <span class="pet-title">NONE</span>
+              <div class="pet-preview-box">
+                <img src="./assets/sprites/none.png" class="pet-custom-img" id="nonePetImg" alt="None" onerror="this.style.display='none'; document.getElementById('nonePetFallback').style.display='block';" />
+                <span id="nonePetFallback" style="display: none;">🚫</span>
+              </div>
+              <span class="pet-status-text">EQUIPPED</span>
+            </div>
+          </div>
+        </div>
+
+        <div id="tabGenericExtraPlaceholder">
+          (РАЗДЕЛ В РАЗРАБОТКЕ)
+        </div>
+      </div>
+    </div>
+
+    <!-- =====================================================================
+         4. VIEW: ABOUT (CREDITS)
+         ===================================================================== -->
+    <div id="viewAbout">
+      <div class="about-header-title">CREDITS</div>
+
+      <div class="about-horizontal-line-top"></div>
+      <div class="about-horizontal-line-bottom"></div>
+
+      <div class="about-credits-scroll-window">
+        <div class="about-credits-content">
+          <!-- ORIGINAL GAME -->
+          <div class="credits-group">
+            <span class="credits-category-title">ORIGINAL GAME:</span>
+            <div class="credits-person-name">
+              <span class="credits-name-mega">Mega</span><span class="credits-name-gandon">Gandon</span>
+            </div>
+          </div>
+
+          <!-- CODING -->
+          <div class="credits-group">
+            <span class="credits-category-title">CODING:</span>
+            <div class="credits-person-name">
+              <span class="credits-name-mega">Mega</span><span class="credits-name-gandon">Gandon</span>
+            </div>
+          </div>
+
+          <!-- DIRECTING AND GAME DESIGN -->
+          <div class="credits-group">
+            <span class="credits-category-title">DIRECTING AND GAME DESIGN:</span>
+            <div class="credits-person-name">
+              <span class="credits-name-mega">Mega</span><span class="credits-name-gandon">Gandon</span>
+            </div>
+          </div>
+
+          <!-- LEVEL DESIGN -->
+          <div class="credits-group">
+            <span class="credits-category-title">LEVEL DESIGN:</span>
+            <div class="credits-person-name">
+              <span class="credits-name-mega">Mega</span><span class="credits-name-gandon">Gandon</span>
+            </div>
+          </div>
+
+          <!-- SPRITES -->
+          <div class="credits-group">
+            <span class="credits-category-title">SPRITES:</span>
+            <div class="credits-person-name">
+              <span class="credits-name-mega">Mega</span><span class="credits-name-gandon">Gandon</span>
+            </div>
+          </div>
+
+          <!-- ARTISTS -->
+          <div class="credits-group">
+            <span class="credits-category-title">ARTISTS:</span>
+            <div class="credits-person-name">
+              <span class="credits-name-mega">Mega</span><span class="credits-name-gandon">Gandon</span>
+            </div>
+          </div>
+
+          <!-- MUSIC BY -->
+          <div class="credits-group">
+            <span class="credits-category-title">MUSIC BY:</span>
+            <div class="credits-person-name">
+              <span class="credits-name-mega">Mega</span><span class="credits-name-gandon">Gandon</span>
+            </div>
+          </div>
+
+          <!-- VOICE ACTING BY -->
+          <div class="credits-group">
+            <span class="credits-category-title">VOICE ACTING BY:</span>
+            <div class="credits-person-name">
+              <span class="credits-name-mega">Mega</span><span class="credits-name-gandon">Gandon</span>
+            </div>
+          </div>
+
+          <!-- TESTERS -->
+          <div class="credits-group">
+            <span class="credits-category-title">TESTERS:</span>
+            <div class="credits-person-name">
+              <span class="credits-name-mega">Mega</span><span class="credits-name-gandon">Gandon</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Нижняя навигационная панель -->
+      <div class="about-bottom-nav">
+        <span class="about-nav-item" id="aboutNavMechanics">GAME MECHANICS</span>
+        <span class="about-nav-item" id="aboutNavCharInfo">CHARACTER INFO</span>
+        <span class="about-nav-item active" id="aboutNavCredits">CREDITS</span>
+        <span class="about-nav-item" id="aboutNavBack">BACK</span>
+      </div>
+    </div>
+
+    <!-- Интро заставка -->
+    <div id="introScreen">
+      <div class="intro-top" id="introTop">
+        <div class="badge-exe-empire">EXE EMPIRE</div>
+        <div class="badge-presents">PRESENTS</div>
+      </div>
+
+      <div class="intro-center" id="introCenter">
+        <div class="html5-diamond">
+          <div class="diamond-inner"></div>
+        </div>
+        <div class="intro-title">POWERED BY <span>HTML5</span></div>
+      </div>
+
+      <div class="intro-bottom" id="introBottom">
+        ORIGINAL GAME MODE BY <span>OUTLAIK</span>
+      </div>
+
+      <div class="intro-skip-hint">[ НАЖМИТЕ ЛЮБУЮ КНОПКУ ДЛЯ СТАРТА ]</div>
+    </div>
+
+    <!-- Белая вспышка -->
+    <div class="intro-white-flash" id="whiteFlashOverlay"></div>
+  </div>
+
+  <script>
+    const CONFIG = {
+      build: "v2.6",
+      charSwitchInterval: 2000,
+      chars: [
+        { id: "knuckles", path: "./assets/sprites/knuckles.png" },
+        { id: "eggman",   path: "./assets/sprites/eggman.png" },
+        { id: "sonic",    path: "./assets/sprites/sonic.png" },
+        { id: "sally",    path: "./assets/sprites/sally.png" },
+        { id: "cream",    path: "./assets/sprites/cream.png" },
+        { id: "amy",      path: "./assets/sprites/amy.png" },
+        { id: "tails",    path: "./assets/sprites/tails.png" }
+      ]
+    };
+
+    let currentCharIdx = 0;
+
+    /* Аудио-движок */
+    const menuBgm = document.getElementById('menuBgm');
+    let bgmStarted = false;
+
+    function startMenuMusic() {
+      if (bgmStarted) return;
+      menuBgm.volume = 0.6;
+      menuBgm.play().then(() => {
+        bgmStarted = true;
+      }).catch(() => {});
+    }
+
+    function createSoundEffect(wavPath, mp3Path, volume = 0.5) {
+      const audio = new Audio();
+      audio.volume = volume;
+
+      const sourceWav = document.createElement('source');
+      sourceWav.src = wavPath;
+      sourceWav.type = 'audio/wav';
+
+      const sourceMp3 = document.createElement('source');
+      sourceMp3.src = mp3Path;
+      sourceMp3.type = 'audio/mpeg';
+
+      audio.appendChild(sourceWav);
+      audio.appendChild(sourceMp3);
+
+      return function play() {
+        try {
+          audio.currentTime = 0;
+          audio.play().catch(() => {});
+        } catch (e) {}
+      };
+    }
+
+    const playHoverSfx = createSoundEffect('./assets/sounds/hover.wav', './assets/sounds/hover.mp3', 0.4);
+    const playSelectSfx = createSoundEffect('./assets/sounds/select.wav', './assets/sounds/select.mp3', 0.6);
+
+    const COLOR_MAP = {
+      '`': '#ffea00',
+      '@': '#39ff14',
+      '&': '#b84dff',
+      '№': '#ff8800',
+      '/': '#2b75ff',
+      '\\': '#ff2222',
+      '|': '#888888'
+    };
+
+    function parseColoredNickname(rawText) {
+      const container = document.createDocumentFragment();
+      let currentColor = '#ffffff';
+      let currentBuffer = '';
+
+      function flush() {
+        if (!currentBuffer) return;
+        const span = document.createElement('span');
+        span.style.color = currentColor;
+        span.textContent = currentBuffer;
+        container.appendChild(span);
+        currentBuffer = '';
+      }
+
+      for (let i = 0; i < rawText.length; i++) {
+        const char = rawText[i];
+        if (COLOR_MAP[char]) {
+          flush();
+          currentColor = COLOR_MAP[char];
+        } else {
+          currentBuffer += char;
+        }
+      }
+      flush();
+      return container;
+    }
+
+    function renderNickname(raw) {
+      const elTop = document.getElementById('playerNick');
+      if (elTop) {
+        elTop.innerHTML = '';
+        elTop.appendChild(parseColoredNickname(raw));
+      }
+    }
+
+    let savedNick = localStorage.getItem('td2dr_nick') || '@TEST\\GANDON';
+    renderNickname(savedNick);
+
+    const inlineNickInput = document.getElementById('inlineNickInput');
+    inlineNickInput.value = savedNick;
+
+    inlineNickInput.addEventListener('input', () => {
+      savedNick = inlineNickInput.value;
+      localStorage.setItem('td2dr_nick', savedNick);
+      renderNickname(savedNick);
+    });
+
+    inlineNickInput.addEventListener('keydown', (e) => {
+      e.stopPropagation();
+      if (e.key === 'Enter' || e.key === 'Escape') {
+        inlineNickInput.blur();
+      }
+    });
+
+    function updateClock() {
+      const now = new Date();
+      const pad = n => String(n).padStart(2, '0');
+      const timeStr = `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+      const dateStr = `${pad(now.getDate())}.${pad(now.getMonth() + 1)}.${now.getFullYear()}`;
+      const clockEl = document.getElementById('realTimeClock');
+      if (clockEl) clockEl.textContent = `${timeStr} - ${dateStr}`;
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    let showFps = localStorage.getItem('td2dr_show_fps') === 'true';
+    let showPing = localStorage.getItem('td2dr_show_ping') === 'true';
+
+    const fpsEl = document.getElementById('fpsDisplay');
+    const pingEl = document.getElementById('pingDisplay');
+
+    function syncHudDisplay() {
+      fpsEl.style.display = showFps ? 'block' : 'none';
+      pingEl.style.display = showPing ? 'block' : 'none';
+    }
+    syncHudDisplay();
+
+    let lastFrameTime = performance.now();
+    let frameCount = 0;
+    let fpsVal = 60;
+
+    function calcFps(now) {
+      frameCount++;
+      if (now - lastFrameTime >= 1000) {
+        fpsVal = frameCount;
+        frameCount = 0;
+        lastFrameTime = now;
+        if (showFps) {
+          fpsEl.textContent = `FPS: ${fpsVal}`;
+        }
+      }
+    }
+
+    setInterval(() => {
+      if (showPing) {
+        const jitter = Math.floor(Math.random() * 8) - 4;
+        const currentPing = Math.max(16, 32 + jitter);
+        pingEl.textContent = `PING: ${currentPing}ms`;
+      }
+    }, 1500);
+
+    const canvas = document.getElementById('bgCanvas');
+    const ctx = canvas.getContext('2d');
+
+    let width = 0;
+    let height = 0;
+    let particles = [];
+    const PARTICLE_COUNT = 45;
+
+    function resizeCanvas() {
+      width = canvas.width = window.innerWidth;
+      height = canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    for (let i = 0; i < PARTICLE_COUNT; i++) {
+      particles.push({
+        x: Math.random() * width,
+        y: Math.random() * height,
+        speedX: -(Math.random() * 0.85 + 0.35),
+        speedY: (Math.random() - 0.5) * 0.2,
+        size: Math.random() * 2.2 + 1.2,
+        alpha: Math.random() * 0.35 + 0.65,
+        hue: Math.random() > 0.3 ? 0 : 280
+      });
+    }
+
+    let globalTimer = 0;
+
+    function renderBackground(time) {
+      calcFps(time);
+      globalTimer += 0.015;
+
+      const colorFactor = (Math.sin(globalTimer * 0.7) + 1) / 2;
+      const r = Math.round(18 * (1 - colorFactor) + 12 * colorFactor);
+      const g = 0;
+      const b = Math.round(4 * (1 - colorFactor) + 24 * colorFactor);
+
+      ctx.fillStyle = `rgb(${r}, ${g}, ${b})`;
+      ctx.fillRect(0, 0, width, height);
+
+      const tileSize = 28;
+      const rows = Math.ceil(height / tileSize);
+      const cols = Math.ceil(width / tileSize);
+
+      for (let y = 0; y < rows; y++) {
+        const waveShift = Math.sin(y * 0.18 + globalTimer * 1.2) * 2;
+        for (let x = 0; x < cols; x++) {
+          if ((x + y) % 2 === 0) {
+            const shadeAlpha = 0.35 + 0.12 * Math.sin(x * 0.15 + globalTimer);
+            ctx.fillStyle = `rgba(0, 0, 0, ${shadeAlpha})`;
+            ctx.fillRect(x * tileSize + waveShift, y * tileSize, tileSize, tileSize);
+          }
+        }
+      }
+
+      for (let i = 0; i < particles.length; i++) {
+        const p = particles[i];
+        p.x += p.speedX;
+        p.y += p.speedY;
+
+        if (p.x < -10) {
+          p.x = width + Math.random() * 20;
+          p.y = Math.random() * height;
+        }
+        if (p.y < 0) p.y = height;
+        if (p.y > height) p.y = 0;
+
+        ctx.fillStyle = p.hue === 0 
+          ? `rgba(255, 55, 55, ${p.alpha})` 
+          : `rgba(215, 90, 255, ${p.alpha})`;
+
+        ctx.fillRect(Math.floor(p.x), Math.floor(p.y), p.size, p.size);
+      }
+
+      requestAnimationFrame(renderBackground);
+    }
+    requestAnimationFrame(renderBackground);
+
+    const charImg = document.getElementById('charImg');
+    const charBox = document.getElementById('charBox');
+
+    function renderCharacterFile(index) {
+      const char = CONFIG.chars[index];
+      const img = new Image();
+
+      img.onload = function() {
+        charImg.src = char.path;
+        charImg.style.display = 'block';
+      };
+
+      img.onerror = function() {
+        charImg.style.display = 'none';
+      };
+
+      img.src = char.path;
+    }
+
+    function cycleCharacterWithBlackout() {
+      if (viewMainMenu.style.display === 'none') return;
+
+      charBox.classList.add('blackout');
+
+      setTimeout(() => {
+        currentCharIdx = (currentCharIdx + 1) % CONFIG.chars.length;
+        renderCharacterFile(currentCharIdx);
+
+        setTimeout(() => {
+          charBox.classList.remove('blackout');
+        }, 70);
+      }, 250);
+    }
+
+    renderCharacterFile(0);
+    setInterval(cycleCharacterWithBlackout, CONFIG.charSwitchInterval);
+
+    /* Меню и навигация */
+    const viewMainMenu = document.getElementById('viewMainMenu');
+    const viewOptions = document.getElementById('viewOptions');
+    const viewExtra = document.getElementById('viewExtra');
+    const viewAbout = document.getElementById('viewAbout');
+
+    const menuItems = Array.from(document.querySelectorAll('.menu-item'));
+    let selectedMenuIndex = -1;
+
+    function updateMenuSelection() {
+      menuItems.forEach((item, idx) => {
+        if (idx === selectedMenuIndex) {
+          item.classList.add('active');
+        } else {
+          item.classList.remove('active');
+        }
+      });
+    }
+
+    menuItems.forEach((item, idx) => {
+      item.addEventListener('mouseenter', () => {
+        selectedMenuIndex = idx;
+        updateMenuSelection();
+        playHoverSfx();
+      });
+
+      item.addEventListener('mouseleave', () => {
+        selectedMenuIndex = -1;
+        updateMenuSelection();
+      });
+
+      item.addEventListener('click', () => {
+        playSelectSfx();
+        handleMenuAction(item.dataset.action);
+      });
+    });
+
+    function handleMenuAction(action) {
+      switch (action) {
+        case 'join':
+          alert('ПОДКЛЮЧЕНИЕ К ЛОББИ TD2DR...');
+          break;
+        case 'options':
+          openOptionsView();
+          break;
+        case 'extra':
+          openExtraView();
+          break;
+        case 'about':
+          openAboutView();
+          break;
+        case 'exit':
+          if (confirm('Выйти из игры?')) window.close();
+          break;
+      }
+    }
+
+    /* Настройки */
+    const btnTabGeneral = document.getElementById('btnTabGeneral');
+    const btnTabControls = document.getElementById('btnTabControls');
+    const btnOptionsBack = document.getElementById('btnOptionsBack');
+    const tabGeneral = document.getElementById('tabGeneral');
+    const tabControls = document.getElementById('tabControls');
+
+    let currentOptionsTab = 'general';
+
+    const generalNavElements = [
+      document.getElementById('generalNickBox'),
+      document.getElementById('btnToggleScreenSize'),
+      document.getElementById('btnTogglePing'),
+      document.getElementById('btnToggleFps'),
+      btnTabControls,
+      btnTabGeneral,
+      btnOptionsBack
+    ];
+    let generalNavIndex = 0;
+
+    function updateGeneralNavFocus() {
+      generalNavElements.forEach((el, idx) => {
+        if (idx === generalNavIndex) {
+          el.classList.add('selected');
+        } else {
+          el.classList.remove('selected');
+        }
+      });
+    }
+
+    function openOptionsView() {
+      viewMainMenu.style.display = 'none';
+      viewExtra.style.display = 'none';
+      viewAbout.style.display = 'none';
+      viewOptions.style.display = 'block';
+      inlineNickInput.value = savedNick;
+      switchOptionsTab('general');
+      generalNavIndex = 0;
+      updateGeneralNavFocus();
+    }
+
+    function closeOptionsView() {
+      inlineNickInput.blur();
+      viewOptions.style.display = 'none';
+      viewMainMenu.style.display = 'block';
+      selectedMenuIndex = -1;
+      updateMenuSelection();
+    }
+
+    function switchOptionsTab(tab) {
+      currentOptionsTab = tab;
+      if (tab === 'general') {
+        tabGeneral.style.display = 'flex';
+        tabControls.style.display = 'none';
+        btnTabGeneral.classList.add('active-tab');
+        btnTabControls.classList.remove('active-tab');
+        generalNavIndex = 0;
+        updateGeneralNavFocus();
+      } else {
+        tabGeneral.style.display = 'none';
+        tabControls.style.display = 'flex';
+        btnTabControls.classList.add('active-tab');
+        btnTabGeneral.classList.remove('active-tab');
+        controlsNavIndex = 0;
+        updateControlsNavFocus();
+      }
+    }
+
+    [btnTabGeneral, btnTabControls, btnOptionsBack].forEach(btn => {
+      btn.addEventListener('mouseenter', playHoverSfx);
+    });
+
+    btnTabGeneral.addEventListener('click', () => { playSelectSfx(); switchOptionsTab('general'); });
+    btnTabControls.addEventListener('click', () => { playSelectSfx(); switchOptionsTab('controls'); });
+    btnOptionsBack.addEventListener('click', () => { playSelectSfx(); closeOptionsView(); });
+
+    function triggerScreenSize() {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(() => {});
+      } else {
+        document.exitFullscreen().catch(() => {});
+      }
+    }
+
+    function triggerTogglePing() {
+      showPing = !showPing;
+      localStorage.setItem('td2dr_show_ping', showPing);
+      syncHudDisplay();
+    }
+
+    function triggerToggleFps() {
+      showFps = !showFps;
+      localStorage.setItem('td2dr_show_fps', showFps);
+      syncHudDisplay();
+    }
+
+    const optButtons = [
+      document.getElementById('btnToggleScreenSize'),
+      document.getElementById('btnTogglePing'),
+      document.getElementById('btnToggleFps')
+    ];
+    optButtons.forEach(b => b.addEventListener('mouseenter', playHoverSfx));
+
+    optButtons[0].addEventListener('click', () => { playSelectSfx(); triggerScreenSize(); });
+    optButtons[1].addEventListener('click', () => { playSelectSfx(); triggerTogglePing(); });
+    optButtons[2].addEventListener('click', () => { playSelectSfx(); triggerToggleFps(); });
+
+    const DEFAULT_KEYBINDS = {
+      UP: 'UP', DOWN: 'DOWN', LEFT: 'LEFT', RIGHT: 'RIGHT',
+      JUMP: 'Z', SPECIAL_1: 'X', SPECIAL_2: 'C', HIDE_GUI: 'LCTRL', PLAYER_LIST: 'TAB'
+    };
+
+    let userKeybinds = Object.assign({}, DEFAULT_KEYBINDS);
+    const savedKeybinds = localStorage.getItem('td2dr_controls');
+    if (savedKeybinds) {
+      try { userKeybinds = Object.assign({}, DEFAULT_KEYBINDS, JSON.parse(savedKeybinds)); } catch (e) {}
+    }
+
+    const ctrlButtons = Array.from(document.querySelectorAll('.ctrl-key-btn'));
+    const btnResetControls = document.getElementById('btnResetControls');
+
+    const controlsNavElements = [
+      ...ctrlButtons,
+      btnResetControls,
+      btnTabGeneral,
+      btnTabControls,
+      btnOptionsBack
+    ];
+    let controlsNavIndex = 0;
+
+    function updateControlsNavFocus() {
+      controlsNavElements.forEach((el, idx) => {
+        if (idx === controlsNavIndex) {
+          el.classList.add('selected');
+        } else {
+          el.classList.remove('selected');
+        }
+      });
+    }
+
+    let activeRebindBtn = null;
+
+    function renderControlsUI() {
+      ctrlButtons.forEach(btn => {
+        const action = btn.dataset.action;
+        if (userKeybinds[action]) {
+          btn.textContent = userKeybinds[action];
+        }
+      });
+    }
+    renderControlsUI();
+
+    function formatKeyName(e) {
+      const code = e.code;
+      if (code.startsWith('Key')) return code.slice(3).toUpperCase();
+      if (code.startsWith('Digit')) return code.slice(5);
+      if (code === 'ArrowUp') return 'UP';
+      if (code === 'ArrowDown') return 'DOWN';
+      if (code === 'ArrowLeft') return 'LEFT';
+      if (code === 'ArrowRight') return 'RIGHT';
+      if (code === 'ControlLeft') return 'LCTRL';
+      if (code === 'ControlRight') return 'RCTRL';
+      if (code === 'ShiftLeft') return 'LSHIFT';
+      if (code === 'ShiftRight') return 'RSHIFT';
+      if (code === 'Space') return 'SPACE';
+      if (code === 'Tab') return 'TAB';
+      if (code === 'Enter') return 'ENTER';
+      if (code === 'Escape') return 'ESC';
+      return e.key.toUpperCase();
+    }
+
+    ctrlButtons.forEach(btn => {
+      btn.addEventListener('mouseenter', playHoverSfx);
+      btn.addEventListener('click', () => {
+        playSelectSfx();
+        startRebind(btn);
+      });
+    });
+
+    function startRebind(btn) {
+      if (activeRebindBtn) {
+        activeRebindBtn.classList.remove('rebinding');
+        renderControlsUI();
+      }
+      activeRebindBtn = btn;
+      btn.classList.add('rebinding');
+      btn.textContent = '...';
+    }
+
+    btnResetControls.addEventListener('mouseenter', playHoverSfx);
+    btnResetControls.addEventListener('click', () => {
+      playSelectSfx();
+      userKeybinds = Object.assign({}, DEFAULT_KEYBINDS);
+      localStorage.setItem('td2dr_controls', JSON.stringify(userKeybinds));
+      if (activeRebindBtn) {
+        activeRebindBtn.classList.remove('rebinding');
+        activeRebindBtn = null;
+      }
+      renderControlsUI();
+    });
+
+    /* Extra */
+    let userCoins = parseInt(localStorage.getItem('td2dr_coins') || '32');
+    function updateCoinDisplay() {
+      document.getElementById('coinCountDisplay').textContent = `× ${userCoins}`;
+      localStorage.setItem('td2dr_coins', userCoins);
+    }
+    updateCoinDisplay();
+
+    const btnTabAchievements = document.getElementById('btnTabAchievements');
+    const btnTabTaunts = document.getElementById('btnTabTaunts');
+    const btnTabPets = document.getElementById('btnTabPets');
+    const btnTabIcons = document.getElementById('btnTabIcons');
+    const btnTabSkins = document.getElementById('btnTabSkins');
+    const btnExtraBack = document.getElementById('btnExtraBack');
+
+    const tabAchievements = document.getElementById('tabAchievements');
+    const tabIcons = document.getElementById('tabIcons');
+    const tabPets = document.getElementById('tabPets');
+    const tabGenericExtraPlaceholder = document.getElementById('tabGenericExtraPlaceholder');
+
+    let currentExtraSection = 'achievements';
+    let currentIconPage = 1;
+
+    const ICONS_DATABASE = [
+      { id: 'unknown', page: 1, name: '?', price: 10, img: 'icon_unknown.png', isGold: false },
+      { id: 'like', page: 1, name: '👍', price: 10, img: 'icon_like.png', isGold: false },
+      { id: 'dislike', page: 1, name: '👎', price: 10, img: 'icon_dislike.png', isGold: false },
+      { id: 'star', page: 1, name: '⭐', price: 10, img: 'icon_star.png', isGold: false },
+      { id: 'heart', page: 1, name: '❤', price: 10, img: 'icon_heart.png', isGold: false },
+      { id: 'diamond', page: 1, name: '♦', price: 10, img: 'icon_diamond.png', isGold: false },
+      { id: 'spade', page: 1, name: '♠', price: 10, img: 'icon_spade.png', isGold: false },
+      { id: 'club', page: 1, name: '♣', price: 10, img: 'icon_club.png', isGold: false },
+      { id: 'wifi', page: 1, name: '📶', price: 10, img: 'icon_wifi.png', isGold: false },
+      { id: 'crown', page: 1, name: '👑', price: 10, img: 'icon_crown.png', isGold: false },
+
+      { id: 'skull', page: 2, name: '💀', price: 30, img: 'icon_skull.png', isGold: false },
+      { id: 'ring', page: 2, name: '⭕', price: 30, img: 'icon_ring.png', isGold: false },
+      { id: 'rings_sonic', page: 2, name: '🎯', price: 30, img: 'icon_sonic_ring.png', isGold: false },
+      { id: 'sparkles', page: 2, name: '✨', price: 30, img: 'icon_sparkles.png', isGold: false },
+      { id: 'fire', page: 2, name: '🔥', price: 30, img: 'icon_fire.png', isGold: false },
+      { id: 'cross', page: 2, name: '❌', price: 30, img: 'icon_cross.png', isGold: false },
+      { id: 'eye', page: 2, name: '👁', price: 30, img: 'icon_eye.png', isGold: false },
+      { id: 'moon', page: 2, name: '🌙', price: 30, img: 'icon_moon.png', isGold: false },
+      { id: 'eggman_gold', page: 2, name: '🥚', price: 50, img: 'icon_eggman_gold.png', isGold: true },
+      { id: 'tails_gold', page: 2, name: '🦊', price: 50, img: 'icon_tails_gold.png', isGold: true },
+
+      { id: 'lightning', page: 3, name: '⚡', price: 50, img: 'icon_lightning.png', isGold: true },
+      { id: 'hammer', page: 3, name: '🔨', price: 50, img: 'icon_hammer.png', isGold: true },
+      { id: 'fist', page: 3, name: '👊', price: 50, img: 'icon_knux_fist.png', isGold: true },
+      { id: 'shield', page: 3, name: '🛡', price: 50, img: 'icon_shield.png', isGold: true },
+      { id: 'exetior', page: 3, name: '😈', price: 50, img: 'icon_exetior.png', isGold: true }
+    ];
+
+    let equippedIconId = localStorage.getItem('td2dr_equipped_icon') || 'unknown';
+    let purchasedIcons = JSON.parse(localStorage.getItem('td2dr_purchased_icons') || '["unknown"]');
+
+    function renderIconsGrid(page) {
+      const grid = document.getElementById('iconsGrid');
+      grid.innerHTML = '';
+
+      const pageIcons = ICONS_DATABASE.filter(item => item.page === page);
+
+      pageIcons.forEach(item => {
+        const isPurchased = purchasedIcons.includes(item.id);
+        const isEquipped = (equippedIconId === item.id);
+
+        const card = document.createElement('div');
+        card.className = `icon-card ${item.isGold ? 'gold-border' : ''} ${isEquipped ? 'equipped' : ''}`;
+
+        const symbolBox = document.createElement('div');
+        symbolBox.className = 'icon-symbol-box';
+
+        const img = document.createElement('img');
+        img.className = 'icon-custom-img';
+        img.src = `./assets/sprites/icons/${item.img}`;
+        img.alt = item.name;
+
+        img.onerror = () => {
+          img.style.display = 'none';
+          symbolBox.textContent = item.name;
+        };
+
+        symbolBox.appendChild(img);
+        card.appendChild(symbolBox);
+
+        const actionText = document.createElement('span');
+        actionText.className = 'icon-action-text';
+
+        // ПОЧИНЕНО: Картинка коина вместо нечитаемого эмодзи/знака вопроса
+        if (isEquipped) {
+          actionText.textContent = 'EQUIPPED';
+        } else if (isPurchased) {
+          actionText.textContent = 'EQUIP';
+        } else {
+          actionText.innerHTML = `<img src="./assets/sprites/money.png" class="action-coin-img" alt="coin"> <span>${item.price}</span>`;
+        }
+
+        card.appendChild(actionText);
+        card.addEventListener('mouseenter', playHoverSfx);
+
+        card.addEventListener('click', () => {
+          if (isEquipped) return;
+
+          if (isPurchased) {
+            playSelectSfx();
+            equippedIconId = item.id;
+            localStorage.setItem('td2dr_equipped_icon', equippedIconId);
+            renderIconsGrid(currentIconPage);
+          } else {
+            if (userCoins >= item.price) {
+              playSelectSfx();
+              userCoins -= item.price;
+              purchasedIcons.push(item.id);
+              localStorage.setItem('td2dr_purchased_icons', JSON.stringify(purchasedIcons));
+              updateCoinDisplay();
+              equippedIconId = item.id;
+              localStorage.setItem('td2dr_equipped_icon', equippedIconId);
+              renderIconsGrid(currentIconPage);
+            } else {
+              alert('НЕДОСТАТОЧНО МОНЕТ!');
+            }
+          }
+        });
+
+        grid.appendChild(card);
+      });
+    }
+
+    function switchIconPage(page) {
+      currentIconPage = page;
+      document.querySelectorAll('.page-tab-btn').forEach(btn => {
+        if (parseInt(btn.dataset.page) === page) {
+          btn.classList.add('active');
+        } else {
+          btn.classList.remove('active');
+        }
+      });
+      renderIconsGrid(page);
+    }
+
+    document.querySelectorAll('.page-tab-btn').forEach(btn => {
+      btn.addEventListener('mouseenter', playHoverSfx);
+      btn.addEventListener('click', () => {
+        playSelectSfx();
+        switchIconPage(parseInt(btn.dataset.page));
+      });
+    });
+
+    function switchExtraTab(tab) {
+      currentExtraSection = tab;
+
+      tabAchievements.style.display = 'none';
+      tabIcons.style.display = 'none';
+      tabPets.style.display = 'none';
+      tabGenericExtraPlaceholder.style.display = 'none';
+
+      btnTabAchievements.classList.remove('active-tab');
+      btnTabTaunts.classList.remove('active-tab');
+      btnTabPets.classList.remove('active-tab');
+      btnTabIcons.classList.remove('active-tab');
+      btnTabSkins.classList.remove('active-tab');
+
+      if (tab === 'achievements') {
+        tabAchievements.style.display = 'flex';
+        btnTabAchievements.classList.add('active-tab');
+      } else if (tab === 'icons') {
+        tabIcons.style.display = 'flex';
+        btnTabIcons.classList.add('active-tab');
+        switchIconPage(currentIconPage);
+      } else if (tab === 'pets') {
+        tabPets.style.display = 'flex';
+        btnTabPets.classList.add('active-tab');
+      } else if (tab === 'skins') {
+        tabGenericExtraPlaceholder.style.display = 'block';
+        tabGenericExtraPlaceholder.textContent = 'SKINS (В РАЗРАБОТКЕ)';
+        btnTabSkins.classList.add('active-tab');
+      } else if (tab === 'taunts') {
+        tabGenericExtraPlaceholder.style.display = 'block';
+        tabGenericExtraPlaceholder.textContent = 'TAUNTS (В РАЗРАБОТКЕ)';
+        btnTabTaunts.classList.add('active-tab');
+      }
+    }
+
+    const extraNavButtons = [btnTabAchievements, btnTabIcons, btnTabPets, btnTabSkins, btnTabTaunts, btnExtraBack];
+    extraNavButtons.forEach(b => b.addEventListener('mouseenter', playHoverSfx));
+
+    btnTabAchievements.addEventListener('click', () => { playSelectSfx(); switchExtraTab('achievements'); });
+    btnTabIcons.addEventListener('click', () => { playSelectSfx(); switchExtraTab('icons'); });
+    btnTabPets.addEventListener('click', () => { playSelectSfx(); switchExtraTab('pets'); });
+    btnTabSkins.addEventListener('click', () => { playSelectSfx(); switchExtraTab('skins'); });
+    btnTabTaunts.addEventListener('click', () => { playSelectSfx(); switchExtraTab('taunts'); });
+
+    function openExtraView() {
+      viewMainMenu.style.display = 'none';
+      viewOptions.style.display = 'none';
+      viewAbout.style.display = 'none';
+      viewExtra.style.display = 'block';
+      updateCoinDisplay();
+      switchExtraTab('achievements');
+    }
+
+    function closeExtraView() {
+      viewExtra.style.display = 'none';
+      viewMainMenu.style.display = 'block';
+      selectedMenuIndex = -1;
+      updateMenuSelection();
+    }
+
+    btnExtraBack.addEventListener('click', () => { playSelectSfx(); closeExtraView(); });
+
+    /* =========================================================================
+       СИСТЕМА ABOUT (CREDITS)
+       ========================================================================= */
+    const btnAboutNavBack = document.getElementById('aboutNavBack');
+
+    function openAboutView() {
+      viewMainMenu.style.display = 'none';
+      viewOptions.style.display = 'none';
+      viewExtra.style.display = 'none';
+      viewAbout.style.display = 'block';
+
+      // Перезапуск анимации прокрутки титров
+      const content = document.querySelector('.about-credits-content');
+      if (content) {
+        content.style.animation = 'none';
+        void content.offsetWidth;
+        content.style.animation = 'creditsRoll 28s linear infinite';
+      }
+    }
+
+    function closeAboutView() {
+      viewAbout.style.display = 'none';
+      viewMainMenu.style.display = 'block';
+      selectedMenuIndex = -1;
+      updateMenuSelection();
+    }
+
+    btnAboutNavBack.addEventListener('mouseenter', playHoverSfx);
+    btnAboutNavBack.addEventListener('click', () => {
+      playSelectSfx();
+      closeAboutView();
+    });
+
+    ['aboutNavMechanics', 'aboutNavCharInfo', 'aboutNavCredits'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) {
+        el.addEventListener('mouseenter', playHoverSfx);
+        el.addEventListener('click', () => {
+          playSelectSfx();
+          if (id !== 'aboutNavCredits') {
+            alert('РАЗДЕЛ В РАЗРАБОТКЕ');
+          }
+        });
+      }
+    });
+
+    /* Интро */
+    const introScreen = document.getElementById('introScreen');
+    const introTop = document.getElementById('introTop');
+    const introCenter = document.getElementById('introCenter');
+    const introBottom = document.getElementById('introBottom');
+    const whiteFlash = document.getElementById('whiteFlashOverlay');
+
+    let introFinished = false;
+
+    setTimeout(() => { introCenter.classList.add('show'); }, 600);
+    setTimeout(() => { introBottom.classList.add('show'); }, 1800);
+    setTimeout(() => { introTop.classList.add('show'); }, 2900);
+
+    function exitIntroWithFlash() {
+      if (introFinished) return;
+      introFinished = true;
+
+      startMenuMusic();
+
+      whiteFlash.classList.add('flash-active');
+
+      setTimeout(() => {
+        introScreen.style.display = 'none';
+        whiteFlash.classList.remove('flash-active');
+        whiteFlash.classList.add('flash-fadeout');
+
+        setTimeout(() => {
+          whiteFlash.style.display = 'none';
+        }, 850);
+      }, 120);
+    }
+
+    introScreen.addEventListener('click', exitIntroWithFlash);
+
+    window.addEventListener('keydown', (e) => {
+      if (!introFinished) {
+        exitIntroWithFlash();
+        return;
+      }
+
+      if (activeRebindBtn) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        if (e.key === 'Escape') {
+          activeRebindBtn.classList.remove('rebinding');
+          renderControlsUI();
+          activeRebindBtn = null;
+          return;
+        }
+
+        const action = activeRebindBtn.dataset.action;
+        const keyName = formatKeyName(e);
+        userKeybinds[action] = keyName;
+        localStorage.setItem('td2dr_controls', JSON.stringify(userKeybinds));
+
+        playSelectSfx();
+        activeRebindBtn.classList.remove('rebinding');
+        activeRebindBtn = null;
+        renderControlsUI();
+        return;
+      }
+
+      // Выход из About по Escape
+      if (viewAbout.style.display !== 'none') {
+        if (e.key === 'Escape') {
+          playSelectSfx();
+          closeAboutView();
+        }
+        return;
+      }
+
+      // Выход из Extra по Escape
+      if (viewExtra.style.display !== 'none') {
+        if (e.key === 'Escape') {
+          playSelectSfx();
+          closeExtraView();
+        }
+        return;
+      }
+
+      // Навигация в Options
+      if (viewOptions.style.display !== 'none') {
+        if (e.key === 'Escape') {
+          playSelectSfx();
+          closeOptionsView();
+          return;
+        }
+
+        if (currentOptionsTab === 'general') {
+          if (e.key === 'ArrowDown' || e.key === 's' || e.key === 'S') {
+            generalNavIndex = (generalNavIndex + 1) % generalNavElements.length;
+            updateGeneralNavFocus();
+            playHoverSfx();
+          } else if (e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W') {
+            generalNavIndex = (generalNavIndex - 1 + generalNavElements.length) % generalNavElements.length;
+            updateGeneralNavFocus();
+            playHoverSfx();
+          } else if (e.key === 'Enter') {
+            playSelectSfx();
+            const currentEl = generalNavElements[generalNavIndex];
+            if (currentEl === document.getElementById('generalNickBox')) {
+              inlineNickInput.focus();
+            } else if (currentEl === document.getElementById('btnToggleScreenSize')) {
+              triggerScreenSize();
+            } else if (currentEl === document.getElementById('btnTogglePing')) {
+              triggerTogglePing();
+            } else if (currentEl === document.getElementById('btnToggleFps')) {
+              triggerToggleFps();
+            } else if (currentEl === btnTabControls) {
+              switchOptionsTab('controls');
+            } else if (currentEl === btnTabGeneral) {
+              switchOptionsTab('general');
+            } else if (currentEl === btnOptionsBack) {
+              closeOptionsView();
+            }
+          }
+        }
+        return;
+      }
+
+      // Главное меню
+      if (viewMainMenu.style.display !== 'none') {
+        if (e.key === 'ArrowDown' || e.key === 's' || e.key === 'S') {
+          selectedMenuIndex = (selectedMenuIndex + 1) % menuItems.length;
+          updateMenuSelection();
+          playHoverSfx();
+        } else if (e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W') {
+          selectedMenuIndex = (selectedMenuIndex - 1 + menuItems.length) % menuItems.length;
+          updateMenuSelection();
+          playHoverSfx();
+        } else if (e.key === 'Enter') {
+          if (selectedMenuIndex >= 0 && selectedMenuIndex < menuItems.length) {
+            handleMenuAction(menuItems[selectedMenuIndex].dataset.action);
+          }
+        }
+      }
+    });
+
+    const fsBtn = document.getElementById('fsBtn');
+    fsBtn.addEventListener('click', () => {
+      playSelectSfx();
+      triggerScreenSize();
+    });
+  </script>
+</body>
+</html>
