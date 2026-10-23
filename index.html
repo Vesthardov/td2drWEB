@@ -6,7 +6,8 @@
   <title>Sonic.exe: The Disaster 2D Remake</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+  <noscript><link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet"></noscript>
   <style>
     * {
       box-sizing: border-box;
@@ -105,7 +106,7 @@
       top: 0;
       left: 0;
       right: 0;
-      height: 80px;
+      height: 90px;
       padding: 12px 24px;
       display: flex;
       justify-content: space-between;
@@ -160,15 +161,20 @@
       text-shadow: none;
     }
 
+    .top-right-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+    }
+
     .top-right-box {
       border-top: 3px solid #cc0000;
       border-bottom: 3px solid #cc0000;
-      border-left: 3px solid #cc0000;
       background: rgba(10, 0, 0, 0.92);
-      padding: 8px 16px;
+      padding: 8px 14px;
       display: flex;
       align-items: center;
-      gap: 16px;
+      gap: 14px;
       text-shadow: none;
     }
 
@@ -183,28 +189,41 @@
     .credits-made { color: #888888; font-size: 9px; }
     .credits-team { color: #cc2222; font-size: 9px; }
 
-    .top-icons {
-      display: flex;
-      align-items: center;
-    }
+    .top-icons { display: flex; gap: 8px; }
 
-    .f11-btn {
-      height: 30px;
-      padding: 0 10px;
+    .icon-btn {
+      width: 28px;
+      height: 28px;
       background: #770000;
       border: 2px solid #ff2222;
       display: flex;
       align-items: center;
       justify-content: center;
       cursor: pointer;
-      color: #ffffff;
-      font-family: 'Press Start 2P', monospace;
-      font-size: 11px;
+      color: #fff;
+      font-size: 13px;
       border-radius: 2px;
       transition: background 0.15s;
     }
 
-    .f11-btn:hover { background: #aa0000; }
+    .icon-btn:hover { background: #aa0000; }
+
+    .f11-btn {
+      width: auto;
+      min-width: 48px;
+      padding: 0 8px;
+      font-family: 'Press Start 2P', monospace;
+      font-size: 10px;
+      letter-spacing: 1px;
+    }
+
+    .challenge-tag {
+      margin-top: 6px;
+      font-size: 10px;
+      color: #39ff14;
+      letter-spacing: 1px;
+      text-shadow: none;
+    }
 
     .title-group {
       position: absolute;
@@ -261,7 +280,7 @@
     .menu-options {
       position: absolute;
       inset: 0;
-      z-index: 15;
+      z-index: 32;
       pointer-events: none;
     }
 
@@ -341,170 +360,13 @@
     }
 
     /* =========================================================================
-       2. VIEW: JOIN GAME (КАРТА С ОДНОЙ СТРЕЛОЧКОЙ НА РОССИЮ)
-       ========================================================================= */
-    #viewJoinGame {
-      position: absolute;
-      inset: 0;
-      z-index: 40;
-      display: none;
-      background: transparent;
-    }
-
-    .join-title {
-      position: absolute;
-      top: 3.5vh;
-      left: 2.5vw;
-      font-size: 38px;
-      font-weight: bold;
-      color: #ffffff;
-      letter-spacing: 2px;
-      text-shadow: none;
-      z-index: 25;
-    }
-
-    .join-top-note {
-      position: absolute;
-      top: 3.5vh;
-      right: 3vw;
-      font-size: 11px;
-      line-height: 1.6;
-      color: #888888;
-      max-width: 560px;
-      text-align: right;
-      letter-spacing: 1px;
-      z-index: 25;
-    }
-
-    .join-ip-container {
-      position: absolute;
-      top: 15vh;
-      left: 50%;
-      transform: translateX(-50%);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 12px;
-      z-index: 30;
-    }
-
-    .join-ip-label {
-      font-size: 18px;
-      color: #cc2222;
-      letter-spacing: 2px;
-    }
-
-    .join-ip-box {
-      background: #2b1212;
-      border: 3px solid #5a1e1e;
-      padding: 10px 18px;
-      min-width: 380px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
-
-    .join-ip-box:focus-within {
-      border-color: #aa0000;
-      outline: 2px solid #ff2222;
-    }
-
-    #joinIpInput {
-      width: 100%;
-      background: transparent;
-      border: none;
-      outline: none;
-      font-family: 'Press Start 2P', monospace;
-      font-size: 16px;
-      text-align: center;
-      color: #ffffff;
-      letter-spacing: 2px;
-      user-select: text;
-      -webkit-user-select: text;
-    }
-
-    /* Интерактивная карта мира */
-    .world-map-wrapper {
-      position: absolute;
-      top: 25vh;
-      left: 3vw;
-      right: 3vw;
-      bottom: 12vh;
-      z-index: 20;
-    }
-
-    .world-map-svg {
-      width: 100%;
-      height: 100%;
-      display: block;
-    }
-
-    /* Маркер региона Россия */
-    .map-pin {
-      cursor: pointer;
-      transition: transform 0.15s ease-out;
-      filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.8));
-    }
-
-    .map-pin:hover {
-      transform: scale(1.25);
-    }
-
-    /* Нижняя левая кнопка BACK в JOIN GAME */
-    .join-back-box {
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      border-top: 3px solid #880000;
-      border-right: 3px solid #880000;
-      background: #000000;
-      padding: 14px 28px;
-      z-index: 30;
-      cursor: pointer;
-    }
-
-    .join-back-text {
-      font-size: 18px;
-      letter-spacing: 2px;
-      color: #ffffff;
-    }
-
-    .join-back-box:hover .join-back-text {
-      color: #ff2222;
-    }
-
-    /* Правая нижняя кнопка [ ! ] */
-    .join-info-box {
-      position: absolute;
-      bottom: 2.5vh;
-      right: 2.5vw;
-      width: 38px;
-      height: 38px;
-      border: 3px solid #880000;
-      background: rgba(10, 0, 0, 0.85);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 18px;
-      color: #cc2222;
-      cursor: pointer;
-      z-index: 30;
-    }
-
-    .join-info-box:hover {
-      border-color: #ff2222;
-      color: #ffffff;
-    }
-
-    /* =========================================================================
-       3. VIEW: OPTIONS
+       2. VIEW: OPTIONS
        ========================================================================= */
     #viewOptions {
       position: absolute;
       inset: 0;
-      z-index: 40;
+      z-index: 20;
       display: none;
-      background: transparent;
     }
 
     .options-title {
@@ -728,14 +590,13 @@
     .reset-ctrls-btn:hover { color: #cc2222; }
 
     /* =========================================================================
-       4. VIEW: EXTRA
+       3. VIEW: EXTRA
        ========================================================================= */
     #viewExtra {
       position: absolute;
       inset: 0;
-      z-index: 40;
+      z-index: 20;
       display: none;
-      background: transparent;
     }
 
     .extra-title {
@@ -943,7 +804,9 @@
       cursor: pointer;
     }
 
-    .page-tab-btn.active { color: #cc2222; }
+    .page-tab-btn.active {
+      color: #cc2222;
+    }
 
     .icons-grid-container {
       display: grid;
@@ -1092,14 +955,24 @@
     }
 
     /* =========================================================================
-       5. VIEW: ABOUT (CREDITS)
+       4. VIEW: ABOUT (CREDITS)
        ========================================================================= */
     #viewAbout {
       position: absolute;
       inset: 0;
-      z-index: 50;
-      display: none !important;
-      background: #050005;
+      z-index: 20;
+      display: none;
+      background: transparent;
+    }
+
+    .about-top-band {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 13vh;
+      background: #000000;
+      z-index: 21;
     }
 
     .about-header-title {
@@ -1115,47 +988,42 @@
       z-index: 25;
     }
 
-    .about-horizontal-line-top {
-      position: absolute;
-      top: 13vh;
-      left: 0;
-      right: 0;
-      height: 3px;
-      background-color: #aa0000;
-      z-index: 22;
-    }
-
+    .about-horizontal-line-top,
     .about-horizontal-line-bottom {
       position: absolute;
-      bottom: 12vh;
       left: 0;
       right: 0;
-      height: 3px;
-      background-color: #aa0000;
+      height: 8px;
+      background: linear-gradient(to bottom,
+        #aa0000 0, #aa0000 3px,
+        #2a0000 3px, #2a0000 5px,
+        #aa0000 5px, #aa0000 8px);
       z-index: 22;
     }
+    .about-horizontal-line-top { top: 13vh; }
+    .about-horizontal-line-bottom { bottom: 12vh; }
 
     .about-credits-scroll-window {
       position: absolute;
-      top: 14vh;
-      bottom: 13vh;
-      left: 10vw;
-      right: 10vw;
+      top: calc(13vh + 8px);
+      bottom: calc(12vh + 8px);
+      left: 0;
+      right: 0;
       overflow: hidden;
-      display: flex;
-      justify-content: center;
       z-index: 21;
     }
 
     .about-credits-content {
       position: absolute;
-      top: 100%;
+      top: 0;
+      left: 0;
+      right: 0;
       display: flex;
       flex-direction: column;
       align-items: center;
       gap: 32px;
-      width: 100%;
-      animation: creditsRoll 28s linear infinite;
+      will-change: transform;
+      transform: translateY(100vh);
     }
 
     @keyframes creditsRoll {
@@ -1173,7 +1041,7 @@
 
     .credits-category-title {
       font-size: 16px;
-      color: #9955bb;
+      color: #b266ff;
       letter-spacing: 2px;
     }
 
@@ -1201,10 +1069,18 @@
       height: 12vh;
       display: flex;
       align-items: center;
-      justify-content: space-between;
+      justify-content: center;
       padding: 0 4vw;
       background: #000000;
       z-index: 25;
+      pointer-events: auto;
+    }
+
+    .about-bottom-nav #aboutNavBack {
+      position: absolute;
+      right: 4vw;
+      top: 50%;
+      transform: translateY(-50%);
     }
 
     .about-nav-item {
@@ -1217,8 +1093,235 @@
     .about-nav-item.active { color: #cc2222 !important; }
     .about-nav-item:hover { color: #ff3333; }
 
+
     /* =========================================================================
-       6. ИНТРО ЗАСТАВКА И БЕЛАЯ ВСПЫШКА
+       6. VIEW: JOIN GAME  (карта мира + экран подключения)
+       ========================================================================= */
+    #viewJoin {
+      position: absolute;
+      inset: 0;
+      z-index: 20;
+      display: none;
+      background: transparent;
+    }
+
+    .join-map {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 21;
+      pointer-events: none;
+      image-rendering: pixelated;
+      image-rendering: crisp-edges;
+    }
+
+    .join-corner-tl {
+      position: absolute;
+      inset: 0;
+      z-index: 22;
+      pointer-events: none;
+      background: #000000;
+      clip-path: polygon(0% 0%, 44.8% 0%, 0% 30.1%);
+    }
+
+    .join-corner-br {
+      position: absolute;
+      inset: 0;
+      z-index: 22;
+      pointer-events: none;
+      background: #000000;
+      clip-path: polygon(90.1% 100%, 100% 88%, 100% 100%);
+    }
+
+    .join-stripe-svg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 23;
+      pointer-events: none;
+    }
+
+    .join-title {
+      position: absolute;
+      top: 2.6vh;
+      left: 0.5vw;
+      z-index: 25;
+      font-size: 2.8vw;
+      font-weight: bold;
+      color: #ffffff;
+      letter-spacing: 0.2vw;
+      white-space: nowrap;
+      text-shadow: none;
+    }
+
+    .join-note {
+      position: absolute;
+      top: 2.2vh;
+      right: 0.8vw;
+      z-index: 25;
+      font-size: 1.04vw;
+      line-height: 2.96vh;
+      letter-spacing: 0.2vw;
+      text-align: right;
+      color: #6f6f6f;
+      text-shadow: none;
+      pointer-events: none;
+    }
+
+    .join-pin {
+      position: absolute;
+      left: 58.4375%;
+      top: 39.63%;
+      transform: translate(-50%, calc(-100% + 0.9vw));
+      z-index: 26;
+      padding: 0.9vw;
+      background: transparent;
+      border: none;
+      outline: none;
+      cursor: pointer;
+      line-height: 0;
+    }
+
+    .join-pin svg {
+      display: block;
+      width: 1.0417vw;
+      height: 1.25vw;
+      transform-origin: 50% 100%;
+      transition: transform 0.08s steps(2);
+    }
+
+    .join-pin .pin-body { fill: #ffffff; }
+    .join-pin .pin-eye { fill: #2a0000; }
+
+    .join-pin:hover svg,
+    .join-pin:focus-visible svg { transform: scale(1.35); }
+
+    .join-pin:hover .pin-body,
+    .join-pin:focus-visible .pin-body { fill: #ff2222; }
+
+    .join-pin:hover .pin-eye,
+    .join-pin:focus-visible .pin-eye { fill: #ffffff; }
+
+    .join-back {
+      position: absolute;
+      left: 0;
+      bottom: 0;
+      width: 22vw;
+      height: 7.7vh;
+      z-index: 26;
+      display: flex;
+      align-items: center;
+      padding-left: 0.8vw;
+      background: #000000;
+      border-top: 3px solid #aa0000;
+      border-right: 3px solid #aa0000;
+      font-size: 1.5vw;
+      font-weight: bold;
+      letter-spacing: 0.12vw;
+      color: #ffffff;
+      cursor: pointer;
+      text-shadow: none;
+    }
+
+    .join-back::before {
+      content: '';
+      position: absolute;
+      top: 5px;
+      right: 5px;
+      left: 0;
+      bottom: 0;
+      border-top: 3px solid #550000;
+      border-right: 3px solid #550000;
+      pointer-events: none;
+    }
+
+    .join-back:hover { color: #cc2222; }
+
+    .join-warn {
+      position: absolute;
+      right: 0.8vw;
+      bottom: 0.9vh;
+      width: 2.6vw;
+      height: 4.2vh;
+      z-index: 26;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #000000;
+      border: 3px solid #aa0000;
+      color: #cc0000;
+      font-size: 1.4vw;
+      font-weight: bold;
+      pointer-events: none;
+      text-shadow: none;
+    }
+
+    #viewConnect {
+      position: absolute;
+      inset: 0;
+      z-index: 20;
+      display: none;
+      background: rgba(0, 0, 0, 0.62);
+    }
+
+    .zigzag {
+      position: absolute;
+      left: 0;
+      right: 0;
+      height: 3.9vh;
+      z-index: 21;
+      pointer-events: none;
+      background-repeat: repeat-x;
+      background-size: 4.6875vw 100%;
+    }
+
+    .zigzag-top { top: 0; background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='90' height='42' viewBox='0 0 90 42' preserveAspectRatio='none' shape-rendering='crispEdges'><polyline points='-1,7 45,35 91,7' fill='none' stroke='%23d00000' stroke-width='13'/><polyline points='-1,7 45,35 91,7' fill='none' stroke='%23500000' stroke-width='5'/></svg>"); }
+    .zigzag-bottom { bottom: 0; background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='90' height='42' viewBox='0 0 90 42' preserveAspectRatio='none' shape-rendering='crispEdges'><polyline points='-1,35 45,7 91,35' fill='none' stroke='%23d00000' stroke-width='13'/><polyline points='-1,35 45,7 91,35' fill='none' stroke='%23500000' stroke-width='5'/></svg>"); }
+
+    .connect-box {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 50.5%;
+      transform: translateY(-50%);
+      z-index: 22;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 5.4vh;
+    }
+
+    .connect-status {
+      font-size: 1.55vw;
+      letter-spacing: 0.1vw;
+      color: #ffffff;
+      white-space: nowrap;
+      text-shadow: none;
+    }
+
+    .connect-status.failed { color: #ff0000; }
+
+    .connect-dots {
+      display: inline-block;
+      width: 3ch;
+      text-align: left;
+    }
+
+    .connect-back {
+      font-size: 1.6vw;
+      font-weight: bold;
+      letter-spacing: 0.1vw;
+      color: #8b0000;
+      cursor: pointer;
+      text-shadow: none;
+    }
+
+    .connect-back:hover { color: #ff2222; }
+
+    /* =========================================================================
+       5. ИНТРО ЗАСТАВКА И БЕЛАЯ ВСПЫШКА
        ========================================================================= */
     #introScreen {
       position: absolute;
@@ -1372,7 +1475,7 @@
         <div class="build-info">
           <div class="build-row">
             <span class="build-label">GAME BUILD:</span>
-            <span class="build-val">v2.8</span>
+            <span class="build-val">v2.9</span>
           </div>
         </div>
 
@@ -1384,16 +1487,17 @@
           </div>
         </div>
 
-        <!-- Плашка с двумя красными линиями и кнопкой F11 -->
-        <div class="top-right-box">
-          <div class="credits-text">
-            <div class="credits-orig">ORIGINAL GAME</div>
-            <div class="credits-author">BY OUTLAIK</div>
-            <div class="credits-made">MADE BY</div>
-            <div class="credits-team">EXE EMPIRE</div>
-          </div>
-          <div class="top-icons">
-            <button class="f11-btn" id="fsBtn" title="На весь экран (F11)">F11</button>
+        <div class="top-right-wrapper">
+          <div class="top-right-box">
+            <div class="credits-text">
+              <div class="credits-orig">ORIGINAL GAME</div>
+              <div class="credits-author">BY OUTLAIK</div>
+              <div class="credits-made">MADE BY</div>
+              <div class="credits-team">EXE EMPIRE</div>
+            </div>
+            <div class="top-icons">
+              <button class="icon-btn f11-btn" id="fsBtn" type="button" title="Полный экран (F11)">F11</button>
+            </div>
           </div>
         </div>
       </header>
@@ -1405,7 +1509,7 @@
           <span class="logo-exe">EXE</span>
         </div>
         <div class="logo-sub">THE DISASTER</div>
-        <div class="logo-sub">2D REMAKE</div>
+        <div class="logo-sub">2D REMAKE WEB</div>
       </div>
 
       <div class="menu-triangle-block"></div>
@@ -1440,61 +1544,7 @@
     </div>
 
     <!-- =====================================================================
-         2. ЭКРАН JOIN GAME (КАРТА С ОДНОЙ СТРЕЛОЧКОЙ НА РОССИЮ)
-         ===================================================================== -->
-    <div id="viewJoinGame">
-      <div class="join-title">JOIN GAME</div>
-
-      <svg class="options-top-stripe" xmlns="http://www.w3.org/2000/svg">
-        <line x1="0%" y1="24%" x2="28%" y2="0%" stroke="#aa0000" stroke-width="2.5" />
-      </svg>
-
-      <div class="join-top-note">
-        NOTE: CHOOSE THE CLOSEST REGION TO<br>YOUR LOCATION FOR BETTER EXPERIENCE
-      </div>
-
-      <div class="join-ip-container">
-        <div class="join-ip-label">ENTER IP ADDRESS</div>
-        <div class="join-ip-box">
-          <input type="text" id="joinIpInput" maxlength="32" placeholder="ENTER IP..." autocomplete="off" spellcheck="false" />
-        </div>
-      </div>
-
-      <!-- Контурная карта мира с единственным белым маркером на Россию -->
-      <div class="world-map-wrapper">
-        <svg class="world-map-svg" viewBox="0 0 1000 500" preserveAspectRatio="xMidYMid meet">
-          <!-- Контуры континентов -->
-          <!-- Северная Америка -->
-          <path d="M 50 140 Q 90 90 180 80 Q 230 100 240 130 Q 220 180 180 190 Q 150 210 160 250 Q 120 230 100 180 Z" fill="none" stroke="#aa0000" stroke-width="2" />
-          <path d="M 160 250 Q 190 280 200 320 Q 180 320 170 280 Z" fill="none" stroke="#aa0000" stroke-width="2" />
-          <!-- Южная Америка -->
-          <path d="M 210 320 Q 260 330 290 370 Q 270 440 230 480 Q 200 440 200 380 Z" fill="none" stroke="#aa0000" stroke-width="2" />
-          <!-- Евразия -->
-          <path d="M 440 120 Q 520 80 680 80 Q 820 90 920 160 Q 860 210 780 220 Q 720 240 680 190 Q 600 190 560 170 Q 480 180 440 140 Z" fill="none" stroke="#aa0000" stroke-width="2" />
-          <!-- Африка -->
-          <path d="M 450 210 Q 540 200 580 270 Q 550 380 490 420 Q 440 340 430 260 Z" fill="none" stroke="#aa0000" stroke-width="2" />
-          <!-- Австралия -->
-          <path d="M 800 370 Q 870 360 890 410 Q 860 450 810 440 Q 780 410 800 370 Z" fill="none" stroke="#aa0000" stroke-width="2" />
-
-          <!-- СТРОГО ОДИН МАРКЕР НА ТЕРРИТОРИИ РОССИИ -->
-          <g class="map-pin" id="russiaPin" transform="translate(620, 110)">
-            <path d="M 0 0 L 16 0 L 16 12 L 8 22 L 0 12 Z" fill="#ffffff" stroke="#000000" stroke-width="1.5" />
-            <circle cx="8" cy="8" r="3.5" fill="#000000" />
-          </g>
-        </svg>
-      </div>
-
-      <!-- Нижняя левая кнопка BACK -->
-      <div class="join-back-box" id="btnJoinBack">
-        <span class="join-back-text">BACK</span>
-      </div>
-
-      <!-- Правая нижняя кнопка [ ! ] -->
-      <div class="join-info-box" id="btnJoinInfo">!</div>
-    </div>
-
-    <!-- =====================================================================
-         3. ЭКРАН НАСТРОЕК (OPTIONS)
+         2. ЭКРАН НАСТРОЕК (OPTIONS)
          ===================================================================== -->
     <div id="viewOptions">
       <div class="options-title">OPTIONS</div>
@@ -1577,7 +1627,7 @@
     </div>
 
     <!-- =====================================================================
-         4. ЭКРАН EXTRA
+         3. ЭКРАН EXTRA
          ===================================================================== -->
     <div id="viewExtra">
       <div class="extra-title">EXTRA</div>
@@ -1587,7 +1637,7 @@
       </svg>
 
       <div class="coin-balance-box">
-        <img class="coin-icon-img" id="coinIconImg" alt="coin" />
+        <img class="coin-icon-img" id="coinIconImg" src="./assets/sprites/icons/Money.png" onerror="this.onerror=null;this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMiIgaGVpZ2h0PSIzMiIgdmlld0JveD0iMCAwIDE2IDE2IiBzaGFwZS1yZW5kZXJpbmc9ImNyaXNwRWRnZXMiPjxyZWN0IHg9IjMiIHk9IjEiIHdpZHRoPSIxMCIgaGVpZ2h0PSIxNCIgZmlsbD0iIzlhNzAwMCIvPjxyZWN0IHg9IjQiIHk9IjIiIHdpZHRoPSI4IiBoZWlnaHQ9IjEyIiBmaWxsPSIjZmZkNzAwIi8+PHJlY3QgeD0iNSIgeT0iMyIgd2lkdGg9IjYiIGhlaWdodD0iMTAiIGZpbGw9IiNmZmVlNTUiLz48cmVjdCB4PSI2IiB5PSI1IiB3aWR0aD0iNCIgaGVpZ2h0PSI2IiBmaWxsPSIjY2M5OTAwIi8+PC9zdmc+'" alt="coin" />
         <span class="coin-count-text" id="coinCountDisplay">× 32</span>
       </div>
 
@@ -1610,7 +1660,7 @@
       </div>
 
       <div class="extra-content-area">
-        <!-- 4.1. ACHIEVEMENTS -->
+        <!-- 3.1. ACHIEVEMENTS -->
         <div id="tabAchievements">
           <div class="achieve-scroll-arrows">
             <div>▲</div>
@@ -1622,7 +1672,7 @@
             <div class="achieve-reward">
               <span class="reward-label">REWARD</span>
               <div class="reward-amount">
-                <img class="reward-coin-img coin-dyn-img" alt="coin" />
+                <img class="reward-coin-img coin-dyn-img" src="./assets/sprites/icons/Money.png" onerror="this.onerror=null;this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMiIgaGVpZ2h0PSIzMiIgdmlld0JveD0iMCAwIDE2IDE2IiBzaGFwZS1yZW5kZXJpbmc9ImNyaXNwRWRnZXMiPjxyZWN0IHg9IjMiIHk9IjEiIHdpZHRoPSIxMCIgaGVpZ2h0PSIxNCIgZmlsbD0iIzlhNzAwMCIvPjxyZWN0IHg9IjQiIHk9IjIiIHdpZHRoPSI4IiBoZWlnaHQ9IjEyIiBmaWxsPSIjZmZkNzAwIi8+PHJlY3QgeD0iNSIgeT0iMyIgd2lkdGg9IjYiIGhlaWdodD0iMTAiIGZpbGw9IiNmZmVlNTUiLz48cmVjdCB4PSI2IiB5PSI1IiB3aWR0aD0iNCIgaGVpZ2h0PSI2IiBmaWxsPSIjY2M5OTAwIi8+PC9zdmc+'" alt="coin" />
                 <span>× 50</span>
               </div>
             </div>
@@ -1633,7 +1683,7 @@
             <div class="achieve-reward">
               <span class="reward-label">REWARD</span>
               <div class="reward-amount">
-                <img class="reward-coin-img coin-dyn-img" alt="coin" />
+                <img class="reward-coin-img coin-dyn-img" src="./assets/sprites/icons/Money.png" onerror="this.onerror=null;this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMiIgaGVpZ2h0PSIzMiIgdmlld0JveD0iMCAwIDE2IDE2IiBzaGFwZS1yZW5kZXJpbmc9ImNyaXNwRWRnZXMiPjxyZWN0IHg9IjMiIHk9IjEiIHdpZHRoPSIxMCIgaGVpZ2h0PSIxNCIgZmlsbD0iIzlhNzAwMCIvPjxyZWN0IHg9IjQiIHk9IjIiIHdpZHRoPSI4IiBoZWlnaHQ9IjEyIiBmaWxsPSIjZmZkNzAwIi8+PHJlY3QgeD0iNSIgeT0iMyIgd2lkdGg9IjYiIGhlaWdodD0iMTAiIGZpbGw9IiNmZmVlNTUiLz48cmVjdCB4PSI2IiB5PSI1IiB3aWR0aD0iNCIgaGVpZ2h0PSI2IiBmaWxsPSIjY2M5OTAwIi8+PC9zdmc+'" alt="coin" />
                 <span>× 250</span>
               </div>
             </div>
@@ -1644,14 +1694,14 @@
             <div class="achieve-reward">
               <span class="reward-label">REWARD</span>
               <div class="reward-amount">
-                <img class="reward-coin-img coin-dyn-img" alt="coin" />
+                <img class="reward-coin-img coin-dyn-img" src="./assets/sprites/icons/Money.png" onerror="this.onerror=null;this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMiIgaGVpZ2h0PSIzMiIgdmlld0JveD0iMCAwIDE2IDE2IiBzaGFwZS1yZW5kZXJpbmc9ImNyaXNwRWRnZXMiPjxyZWN0IHg9IjMiIHk9IjEiIHdpZHRoPSIxMCIgaGVpZ2h0PSIxNCIgZmlsbD0iIzlhNzAwMCIvPjxyZWN0IHg9IjQiIHk9IjIiIHdpZHRoPSI4IiBoZWlnaHQ9IjEyIiBmaWxsPSIjZmZkNzAwIi8+PHJlY3QgeD0iNSIgeT0iMyIgd2lkdGg9IjYiIGhlaWdodD0iMTAiIGZpbGw9IiNmZmVlNTUiLz48cmVjdCB4PSI2IiB5PSI1IiB3aWR0aD0iNCIgaGVpZ2h0PSI2IiBmaWxsPSIjY2M5OTAwIi8+PC9zdmc+'" alt="coin" />
                 <span>× 500</span>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- 4.2. ICONS -->
+        <!-- 3.2. ICONS -->
         <div id="tabIcons">
           <div class="icons-pagination-header">
             <span class="page-tab-btn active" data-page="1" id="iconPage1Btn">PAGE 1</span>
@@ -1662,13 +1712,13 @@
           <div class="icons-grid-container" id="iconsGrid"></div>
         </div>
 
-        <!-- 4.3. PETS -->
+        <!-- 3.3. PETS -->
         <div id="tabPets">
           <div class="pets-grid-container">
             <div class="pet-card active-pet equipped-red">
               <span class="pet-title">NONE</span>
               <div class="pet-preview-box">
-                <img class="pet-custom-img" id="nonePetImg" alt="None" />
+                <img class="pet-custom-img" id="nonePetImg" src="./assets/sprites/icons/None.png" onerror="this.onerror=null;this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2NCIgaGVpZ2h0PSI2NCIgdmlld0JveD0iMCAwIDE2IDE2IiBzaGFwZS1yZW5kZXJpbmc9ImNyaXNwRWRnZXMiPjxjaXJjbGUgY3g9IjgiIGN5PSI4IiByPSI2LjUiIHN0cm9rZT0iI2ZmMWExYSIgc3Ryb2tlLXdpZHRoPSIyIiBmaWxsPSJub25lIi8+PGxpbmUgeDE9IjMuNSIgeTE9IjEyLjUiIHgyPSIxMi41IiB5Mj0iMy41IiBzdHJva2U9IiNmZjFhMWEiIHN0cm9rZS13aWR0aD0iMiIvPjwvc3ZnPg=='" alt="None" />
               </div>
               <span class="pet-status-text">EQUIPPED</span>
             </div>
@@ -1681,10 +1731,11 @@
       </div>
     </div>
 
-    <!-- =====================================================================
-         5. VIEW: ABOUT (CREDITS)
-         ========================================================================= -->
+    <!-- =========================================================================
+       4. VIEW: ABOUT (CREDITS)
+       ========================================================================= -->
     <div id="viewAbout">
+      <div class="about-top-band"></div>
       <div class="about-header-title">CREDITS</div>
 
       <div class="about-horizontal-line-top"></div>
@@ -1692,13 +1743,11 @@
 
       <div class="about-credits-scroll-window">
         <div class="about-credits-content">
-          <!-- ORIGINAL GAME (OUTLAIK БЕЛЫМ ЦВЕТОМ) -->
           <div class="credits-group">
             <span class="credits-category-title">ORIGINAL GAME:</span>
             <div class="credits-orig-outlaik">OUTLAIK</div>
           </div>
 
-          <!-- CODING -->
           <div class="credits-group">
             <span class="credits-category-title">CODING:</span>
             <div class="credits-person-name">
@@ -1706,7 +1755,6 @@
             </div>
           </div>
 
-          <!-- DIRECTING AND GAME DESIGN -->
           <div class="credits-group">
             <span class="credits-category-title">DIRECTING AND GAME DESIGN:</span>
             <div class="credits-person-name">
@@ -1714,7 +1762,6 @@
             </div>
           </div>
 
-          <!-- LEVEL DESIGN -->
           <div class="credits-group">
             <span class="credits-category-title">LEVEL DESIGN:</span>
             <div class="credits-person-name">
@@ -1722,7 +1769,6 @@
             </div>
           </div>
 
-          <!-- SPRITES -->
           <div class="credits-group">
             <span class="credits-category-title">SPRITES:</span>
             <div class="credits-person-name">
@@ -1730,7 +1776,6 @@
             </div>
           </div>
 
-          <!-- ARTISTS -->
           <div class="credits-group">
             <span class="credits-category-title">ARTISTS:</span>
             <div class="credits-person-name">
@@ -1738,7 +1783,6 @@
             </div>
           </div>
 
-          <!-- MUSIC BY -->
           <div class="credits-group">
             <span class="credits-category-title">MUSIC BY:</span>
             <div class="credits-person-name">
@@ -1746,7 +1790,6 @@
             </div>
           </div>
 
-          <!-- VOICE ACTING BY -->
           <div class="credits-group">
             <span class="credits-category-title">VOICE ACTING BY:</span>
             <div class="credits-person-name">
@@ -1754,7 +1797,6 @@
             </div>
           </div>
 
-          <!-- TESTERS -->
           <div class="credits-group">
             <span class="credits-category-title">TESTERS:</span>
             <div class="credits-person-name">
@@ -1765,10 +1807,54 @@
       </div>
 
       <div class="about-bottom-nav">
-        <span class="about-nav-item" id="aboutNavMechanics">GAME MECHANICS</span>
-        <span class="about-nav-item" id="aboutNavCharInfo">CHARACTER INFO</span>
         <span class="about-nav-item active" id="aboutNavCredits">CREDITS</span>
         <span class="about-nav-item" id="aboutNavBack">BACK</span>
+      </div>
+    </div>
+
+    <!-- =========================================================================
+       5. VIEW: JOIN GAME (карта мира)
+       ========================================================================= -->
+    <div id="viewJoin">
+      <img class="join-map" id="joinMap" alt="" draggable="false" src="data:image/png;base64,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" />
+
+      <div class="join-corner-tl"></div>
+      <div class="join-corner-br"></div>
+      <svg class="join-stripe-svg" xmlns="http://www.w3.org/2000/svg">
+        <line x1="0%" y1="30.1%" x2="44.8%" y2="0%" stroke="#aa0000" stroke-width="4" />
+        <line x1="90.1%" y1="100%" x2="100%" y2="88%" stroke="#aa0000" stroke-width="4" />
+      </svg>
+
+      <div class="join-title">JOIN GAME</div>
+      <div class="join-note">NOTE: CHOOSE THE CLOSEST REGION TO<br>YOUR LOCATION FOR BETTER EXPERIENCE</div>
+
+      <button class="join-pin" id="joinPinRu" type="button" title="RUSSIA" aria-label="Russia server">
+        <svg viewBox="0 0 5 6" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges">
+          <g class="pin-body">
+            <rect x="1" y="0" width="3" height="1" />
+            <rect x="0" y="1" width="5" height="1" />
+            <rect x="0" y="2" width="5" height="1" />
+            <rect x="0" y="3" width="5" height="1" />
+            <rect x="1" y="4" width="3" height="1" />
+            <rect x="2" y="5" width="1" height="1" />
+          </g>
+          <rect class="pin-eye" x="2" y="2" width="1" height="1" />
+        </svg>
+      </button>
+
+      <div class="join-back" id="btnJoinBack">BACK</div>
+      <div class="join-warn">!</div>
+    </div>
+
+    <!-- =========================================================================
+       6. VIEW: CONNECTING
+       ========================================================================= -->
+    <div id="viewConnect">
+      <div class="zigzag zigzag-top"></div>
+      <div class="zigzag zigzag-bottom"></div>
+      <div class="connect-box">
+        <div class="connect-status" id="connectStatus">CONNECTING TO THE SERVER<span class="connect-dots">.</span></div>
+        <div class="connect-back" id="btnConnectBack">BACK</div>
       </div>
     </div>
 
@@ -1793,265 +1879,337 @@
       <div class="intro-skip-hint">[ НАЖМИТЕ ЛЮБУЮ КНОПКУ ДЛЯ СТАРТА ]</div>
     </div>
 
-    <!-- Белая вспышка -->
     <div class="intro-white-flash" id="whiteFlashOverlay"></div>
   </div>
 
   <script>
-    const CONFIG = {
-      build: "v2.9",
-      charSwitchInterval: 2000,
-      chars: [
-        { id: "knuckles", path: "./assets/sprites/knuckles.png" },
-        { id: "eggman",   path: "./assets/sprites/eggman.png" },
-        { id: "sonic",    path: "./assets/sprites/sonic.png" },
-        { id: "sally",    path: "./assets/sprites/sally.png" },
-        { id: "cream",    path: "./assets/sprites/cream.png" },
-        { id: "amy",      path: "./assets/sprites/amy.png" },
-        { id: "tails",    path: "./assets/sprites/tails.png" }
-      ]
-    };
+(function () {
+  'use strict';
 
-    let currentCharIdx = 0;
+  /* =========================================================================
+     УТИЛИТЫ (безопасные обёртки — ни одна из них не бросает исключение наружу)
+     ========================================================================= */
+  var FALLBACK_COIN_DATA = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMiIgaGVpZ2h0PSIzMiIgdmlld0JveD0iMCAwIDE2IDE2IiBzaGFwZS1yZW5kZXJpbmc9ImNyaXNwRWRnZXMiPjxyZWN0IHg9IjMiIHk9IjEiIHdpZHRoPSIxMCIgaGVpZ2h0PSIxNCIgZmlsbD0iIzlhNzAwMCIvPjxyZWN0IHg9IjQiIHk9IjIiIHdpZHRoPSI4IiBoZWlnaHQ9IjEyIiBmaWxsPSIjZmZkNzAwIi8+PHJlY3QgeD0iNSIgeT0iMyIgd2lkdGg9IjYiIGhlaWdodD0iMTAiIGZpbGw9IiNmZmVlNTUiLz48cmVjdCB4PSI2IiB5PSI1IiB3aWR0aD0iNCIgaGVpZ2h0PSI2IiBmaWxsPSIjY2M5OTAwIi8+PC9zdmc+';
+  var FALLBACK_NONE_DATA = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2NCIgaGVpZ2h0PSI2NCIgdmlld0JveD0iMCAwIDE2IDE2IiBzaGFwZS1yZW5kZXJpbmc9ImNyaXNwRWRnZXMiPjxjaXJjbGUgY3g9IjgiIGN5PSI4IiByPSI2LjUiIHN0cm9rZT0iI2ZmMWExYSIgc3Ryb2tlLXdpZHRoPSIyIiBmaWxsPSJub25lIi8+PGxpbmUgeDE9IjMuNSIgeTE9IjEyLjUiIHgyPSIxMi41IiB5Mj0iMy41IiBzdHJva2U9IiNmZjFhMWEiIHN0cm9rZS13aWR0aD0iMiIvPjwvc3ZnPg==';
 
-    /* Смарт-загрузка картинок с пиксельным fallback */
-    const FALLBACK_COIN_DATA = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 16 16" shape-rendering="crispEdges"><rect x="3" y="1" width="10" height="14" fill="%239a7000"/><rect x="4" y="2" width="8" height="12" fill="%23ffd700"/><rect x="5" y="3" width="6" height="10" fill="%23ffee55"/><rect x="6" y="5" width="4" height="6" fill="%23cc9900"/></svg>';
-    const FALLBACK_NONE_DATA = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 16 16" shape-rendering="crispEdges"><circle cx="8" cy="8" r="6.5" stroke="%23ff1a1a" stroke-width="2" fill="none"/><line x1="3.5" y1="12.5" x2="12.5" y2="3.5" stroke="%23ff1a1a" stroke-width="2"/></svg>';
+  function $(id) { return document.getElementById(id); }
 
-    let verifiedMoneyUrl = null;
-    let verifiedNoneUrl = null;
+  function safe(name, fn) {
+    try { return fn(); }
+    catch (err) { console.error('[TD2DR] модуль "' + name + '" упал:', err); }
+    return undefined;
+  }
 
-    function applySmartImage(imgEl, candidatePaths, fallbackData, onResolved) {
-      let idx = 0;
-      function tryNext() {
-        if (idx < candidatePaths.length) {
-          imgEl.src = candidatePaths[idx++];
-        } else {
-          imgEl.src = fallbackData;
-          if (onResolved) onResolved(fallbackData);
-        }
-      }
-      imgEl.onload = function() {
-        if (onResolved && !imgEl.src.startsWith('data:')) {
-          onResolved(imgEl.src);
-        }
-      };
-      imgEl.onerror = tryNext;
-      tryNext();
+  function on(el, ev, fn, opts) {
+    if (el && el.addEventListener) el.addEventListener(ev, fn, opts);
+  }
+
+  var store = {
+    get: function (key, def) {
+      try {
+        var v = window.localStorage.getItem(key);
+        return v === null ? def : v;
+      } catch (e) { return def; }
+    },
+    set: function (key, val) {
+      try { window.localStorage.setItem(key, String(val)); } catch (e) { /* file:// / приватный режим */ }
     }
+  };
 
-    function initMoneyImage(imgEl) {
-      if (verifiedMoneyUrl) {
-        imgEl.src = verifiedMoneyUrl;
-        return;
-      }
-      const paths = [
-        './assets/sprites/money.png',
-        './assets/sprites/Money.png',
-        'assets/sprites/money.png',
-        'assets/sprites/Money.png',
-        './assets/money.png',
-        './assets/Money.png',
-        'money.png',
-        'Money.png'
-      ];
-      applySmartImage(imgEl, paths, FALLBACK_COIN_DATA, (url) => {
-        verifiedMoneyUrl = url;
-        document.querySelectorAll('.coin-dyn-img, #coinIconImg').forEach(el => el.src = url);
-      });
-    }
+  function parseJsonSafe(str, fallback) {
+    try {
+      var v = JSON.parse(str);
+      return v === null || v === undefined ? fallback : v;
+    } catch (e) { return fallback; }
+  }
 
-    function initNoneImage(imgEl) {
-      if (verifiedNoneUrl) {
-        imgEl.src = verifiedNoneUrl;
-        return;
-      }
-      const paths = [
-        './assets/sprites/None.png',
-        './assets/sprites/none.png',
-        'assets/sprites/None.png',
-        'assets/sprites/none.png',
-        './assets/sprites/icons/None.png',
-        './assets/sprites/icons/none.png',
-        './assets/None.png',
-        './assets/none.png',
-        'None.png',
-        'none.png'
-      ];
-      applySmartImage(imgEl, paths, FALLBACK_NONE_DATA, (url) => {
-        verifiedNoneUrl = url;
-      });
-    }
+  /* Общее состояние */
+  var state = {
+    introDone: false,
+    screen: 'main',          // main | options | extra | about
+    selectedMenuIndex: -1,
+    activeRebindBtn: null,
+    showFps: false,
+    showPing: false
+  };
 
-    initMoneyImage(document.getElementById('coinIconImg'));
-    initNoneImage(document.getElementById('nonePetImg'));
-    document.querySelectorAll('.coin-dyn-img').forEach(el => initMoneyImage(el));
+  /* =========================================================================
+     ЗВУК
+     ========================================================================= */
+  var menuBgm = null;
+  var bgmStarted = false;
 
-    /* Аудио-движок */
-    const menuBgm = document.getElementById('menuBgm');
-    let bgmStarted = false;
-
-    function startMenuMusic() {
-      if (bgmStarted) return;
+  function startMenuMusic() {
+    if (bgmStarted || !menuBgm) return;
+    try {
       menuBgm.volume = 0.6;
-      menuBgm.play().then(() => {
+      var p = menuBgm.play();
+      if (p && typeof p.then === 'function') {
+        p.then(function () { bgmStarted = true; }).catch(function () { bgmStarted = false; });
+      } else {
         bgmStarted = true;
-      }).catch(() => {});
-    }
+      }
+    } catch (e) { /* автоплей заблокирован — повторим при следующем жесте */ }
+  }
 
-    function createSoundEffect(wavPath, mp3Path, volume = 0.5) {
-      const audio = new Audio();
+  function createSfx(src, volume) {
+    var audio = null;
+    try {
+      audio = new Audio(src);
+      audio.preload = 'auto';
       audio.volume = volume;
-
-      const sourceWav = document.createElement('source');
-      sourceWav.src = wavPath;
-      sourceWav.type = 'audio/wav';
-
-      const sourceMp3 = document.createElement('source');
-      sourceMp3.src = mp3Path;
-      sourceMp3.type = 'audio/mpeg';
-
-      audio.appendChild(sourceWav);
-      audio.appendChild(sourceMp3);
-
-      return function play() {
-        try {
-          audio.currentTime = 0;
-          audio.play().catch(() => {});
-        } catch (e) {}
-      };
-    }
-
-    const playHoverSfx = createSoundEffect('./assets/sounds/hover.wav', './assets/sounds/hover.mp3', 0.4);
-    const playSelectSfx = createSoundEffect('./assets/sounds/select.wav', './assets/sounds/select.mp3', 0.6);
-
-    const COLOR_MAP = {
-      '`': '#ffea00',
-      '@': '#39ff14',
-      '&': '#b84dff',
-      '№': '#ff8800',
-      '/': '#2b75ff',
-      '\\': '#ff2222',
-      '|': '#888888'
+    } catch (e) { audio = null; }
+    return function play() {
+      if (!audio) return;
+      try {
+        audio.currentTime = 0;
+        var p = audio.play();
+        if (p && p.catch) p.catch(function () {});
+      } catch (e) { /* ignore */ }
     };
+  }
 
-    function parseColoredNickname(rawText) {
-      const container = document.createDocumentFragment();
-      let currentColor = '#ffffff';
-      let currentBuffer = '';
+  var playHoverSfx = function () {};
+  var playSelectSfx = function () {};
 
-      function flush() {
-        if (!currentBuffer) return;
-        const span = document.createElement('span');
-        span.style.color = currentColor;
-        span.textContent = currentBuffer;
-        container.appendChild(span);
-        currentBuffer = '';
+  /* =========================================================================
+     ПОЛНЫЙ ЭКРАН (F11)
+     ========================================================================= */
+  function toggleFullscreen() {
+    try {
+      var d = document;
+      var el = d.documentElement;
+      var isFs = d.fullscreenElement || d.webkitFullscreenElement;
+      var p;
+      if (!isFs) {
+        if (el.requestFullscreen) p = el.requestFullscreen();
+        else if (el.webkitRequestFullscreen) p = el.webkitRequestFullscreen();
+      } else {
+        if (d.exitFullscreen) p = d.exitFullscreen();
+        else if (d.webkitExitFullscreen) p = d.webkitExitFullscreen();
       }
+      if (p && p.catch) p.catch(function () {});
+    } catch (e) { /* ignore */ }
+  }
 
-      for (let i = 0; i < rawText.length; i++) {
-        const char = rawText[i];
-        if (COLOR_MAP[char]) {
-          flush();
-          currentColor = COLOR_MAP[char];
-        } else {
-          currentBuffer += char;
+  /* =========================================================================
+     ЭКРАНЫ
+     ========================================================================= */
+  var views = {};
+
+  function showScreen(name) {
+    state.screen = name;
+    Object.keys(views).forEach(function (key) {
+      if (views[key]) views[key].style.display = (key === name) ? 'block' : 'none';
+    });
+    if (name === 'main') {
+      state.selectedMenuIndex = -1;
+      updateMenuSelection();
+    }
+  }
+
+  /* =========================================================================
+     ИНТРО  (ИНИЦИАЛИЗИРУЕТСЯ ПЕРВЫМ И НЕ ЗАВИСИТ ОТ ОСТАЛЬНЫХ МОДУЛЕЙ)
+     ========================================================================= */
+  function initIntro() {
+    var introScreen = $('introScreen');
+    var introTop = $('introTop');
+    var introCenter = $('introCenter');
+    var introBottom = $('introBottom');
+    var whiteFlash = $('whiteFlashOverlay');
+
+    var timers = [];
+    timers.push(setTimeout(function () { if (introCenter) introCenter.classList.add('show'); }, 600));
+    timers.push(setTimeout(function () { if (introBottom) introBottom.classList.add('show'); }, 1800));
+    timers.push(setTimeout(function () { if (introTop) introTop.classList.add('show'); }, 2900));
+
+    function hideIntroNode() {
+      if (introScreen) {
+        introScreen.style.display = 'none';
+        if (introScreen.parentNode) introScreen.parentNode.removeChild(introScreen);
+      }
+    }
+
+    function exitIntroWithFlash() {
+      if (state.introDone) return;
+      state.introDone = true;
+      timers.forEach(function (t) { clearTimeout(t); });
+
+      safe('startMenuMusic', startMenuMusic);
+
+      if (whiteFlash) whiteFlash.classList.add('flash-active');
+
+      setTimeout(function () {
+        hideIntroNode();
+        if (whiteFlash) {
+          whiteFlash.classList.remove('flash-active');
+          whiteFlash.classList.add('flash-fadeout');
+          setTimeout(function () { whiteFlash.style.display = 'none'; }, 850);
         }
+      }, 120);
+    }
+    window.finishIntro = exitIntroWithFlash;
+
+    /* Любой клик / тап / клавиша (кроме F11) пропускает интро */
+    on(introScreen, 'click', exitIntroWithFlash);
+    on(document, 'pointerdown', function () { if (!state.introDone) exitIntroWithFlash(); }, true);
+    on(document, 'touchstart', function () { if (!state.introDone) exitIntroWithFlash(); }, { capture: true, passive: true });
+
+    /* Capture-фаза на window: срабатывает раньше всех остальных обработчиков */
+    window.addEventListener('keydown', function (e) {
+      if (e.key === 'F11') {
+        e.preventDefault();
+        toggleFullscreen();
+        e.stopImmediatePropagation();
+        return;
       }
-      flush();
-      return container;
+      if (!state.introDone) {
+        e.preventDefault();
+        exitIntroWithFlash();
+        e.stopImmediatePropagation();
+      }
+    }, true);
+
+    /* Если автоплей заблокирован — повторяем при первом жесте после интро */
+    function retryMusic() { if (state.introDone && !bgmStarted) startMenuMusic(); }
+    on(document, 'pointerdown', retryMusic, true);
+    on(window, 'keydown', retryMusic, true);
+  }
+
+  /* =========================================================================
+     ЧАСЫ
+     ========================================================================= */
+  function initClock() {
+    function pad(n) { return String(n).padStart(2, '0'); }
+    function update() {
+      var now = new Date();
+      var el = $('realTimeClock');
+      if (el) {
+        el.textContent = pad(now.getHours()) + ':' + pad(now.getMinutes()) + ':' + pad(now.getSeconds()) +
+          ' - ' + pad(now.getDate()) + '.' + pad(now.getMonth() + 1) + '.' + now.getFullYear();
+      }
+    }
+    setInterval(update, 1000);
+    update();
+  }
+
+  /* =========================================================================
+     НИКНЕЙМ (цветовые коды: ` @ & № / \ | )
+     ========================================================================= */
+  var COLOR_MAP = {
+    '`': '#ffea00',
+    '@': '#39ff14',
+    '&': '#b84dff',
+    '\u2116': '#ff8800',
+    '/': '#2b75ff',
+    '\\': '#ff2222',
+    '|': '#888888'
+  };
+
+  function parseColoredNickname(rawText) {
+    var container = document.createDocumentFragment();
+    var currentColor = '#ffffff';
+    var buffer = '';
+
+    function flush() {
+      if (!buffer) return;
+      var span = document.createElement('span');
+      span.style.color = currentColor;
+      span.textContent = buffer;
+      container.appendChild(span);
+      buffer = '';
     }
 
-    function renderNickname(raw) {
-      const elTop = document.getElementById('playerNick');
-      if (elTop) {
-        elTop.innerHTML = '';
-        elTop.appendChild(parseColoredNickname(raw));
+    for (var i = 0; i < rawText.length; i++) {
+      var ch = rawText.charAt(i);
+      if (Object.prototype.hasOwnProperty.call(COLOR_MAP, ch)) {
+        flush();
+        currentColor = COLOR_MAP[ch];
+      } else {
+        buffer += ch;
       }
     }
+    flush();
+    return container;
+  }
 
-    let savedNick = localStorage.getItem('td2dr_nick') || '@TEST\\GANDON';
+  var savedNick = '@TEST\\GANDON';
+
+  function renderNickname(raw) {
+    var el = $('playerNick');
+    if (!el) return;
+    el.innerHTML = '';
+    el.appendChild(parseColoredNickname(raw));
+  }
+
+  function initNickname() {
+    savedNick = store.get('td2dr_nick', '@TEST\\GANDON');
     renderNickname(savedNick);
 
-    const inlineNickInput = document.getElementById('inlineNickInput');
-    inlineNickInput.value = savedNick;
+    var input = $('inlineNickInput');
+    if (!input) return;
+    input.value = savedNick;
 
-    inlineNickInput.addEventListener('input', () => {
-      savedNick = inlineNickInput.value;
-      localStorage.setItem('td2dr_nick', savedNick);
+    on(input, 'input', function () {
+      savedNick = input.value;
+      store.set('td2dr_nick', savedNick);
       renderNickname(savedNick);
     });
 
-    inlineNickInput.addEventListener('keydown', (e) => {
+    on(input, 'keydown', function (e) {
       e.stopPropagation();
-      if (e.key === 'Enter' || e.key === 'Escape') {
-        inlineNickInput.blur();
-      }
+      if (e.key === 'Enter' || e.key === 'Escape') input.blur();
     });
+  }
 
-    function updateClock() {
-      const now = new Date();
-      const pad = n => String(n).padStart(2, '0');
-      const timeStr = `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
-      const dateStr = `${pad(now.getDate())}.${pad(now.getMonth() + 1)}.${now.getFullYear()}`;
-      const clockEl = document.getElementById('realTimeClock');
-      if (clockEl) clockEl.textContent = `${timeStr} - ${dateStr}`;
-    }
-    setInterval(updateClock, 1000);
-    updateClock();
+  /* =========================================================================
+     HUD: FPS / PING
+     ========================================================================= */
+  function syncHudDisplay() {
+    var fpsEl = $('fpsDisplay');
+    var pingEl = $('pingDisplay');
+    if (fpsEl) fpsEl.style.display = state.showFps ? 'block' : 'none';
+    if (pingEl) pingEl.style.display = state.showPing ? 'block' : 'none';
+  }
 
-    let showFps = localStorage.getItem('td2dr_show_fps') === 'true';
-    let showPing = localStorage.getItem('td2dr_show_ping') === 'true';
-
-    const fpsEl = document.getElementById('fpsDisplay');
-    const pingEl = document.getElementById('pingDisplay');
-
-    function syncHudDisplay() {
-      fpsEl.style.display = showFps ? 'block' : 'none';
-      pingEl.style.display = showPing ? 'block' : 'none';
-    }
+  function initHud() {
+    state.showFps = store.get('td2dr_show_fps', 'false') === 'true';
+    state.showPing = store.get('td2dr_show_ping', 'false') === 'true';
     syncHudDisplay();
 
-    let lastFrameTime = performance.now();
-    let frameCount = 0;
-    let fpsVal = 60;
-
-    function calcFps(now) {
-      frameCount++;
-      if (now - lastFrameTime >= 1000) {
-        fpsVal = frameCount;
-        frameCount = 0;
-        lastFrameTime = now;
-        if (showFps) {
-          fpsEl.textContent = `FPS: ${fpsVal}`;
-        }
-      }
-    }
-
-    setInterval(() => {
-      if (showPing) {
-        const jitter = Math.floor(Math.random() * 8) - 4;
-        const currentPing = Math.max(16, 32 + jitter);
-        pingEl.textContent = `PING: ${currentPing}ms`;
+    setInterval(function () {
+      var pingEl = $('pingDisplay');
+      if (state.showPing && pingEl) {
+        var jitter = Math.floor(Math.random() * 8) - 4;
+        pingEl.textContent = 'PING: ' + Math.max(16, 32 + jitter) + 'ms';
       }
     }, 1500);
+  }
 
-    const canvas = document.getElementById('bgCanvas');
-    const ctx = canvas.getContext('2d');
+  /* =========================================================================
+     ФОН (canvas) — цикл не прерывается даже при ошибке в кадре
+     ========================================================================= */
+  function initBackground() {
+    var canvas = $('bgCanvas');
+    if (!canvas || !canvas.getContext) return;
+    var ctx = canvas.getContext('2d');
+    if (!ctx) return;
 
-    let width = 0;
-    let height = 0;
-    let particles = [];
-    const PARTICLE_COUNT = 45;
+    var width = 0, height = 0;
+    var particles = [];
+    var PARTICLE_COUNT = 45;
+    var globalTimer = 0;
+    var lastFrameTime = performance.now();
+    var frameCount = 0;
 
-    function resizeCanvas() {
+    function resize() {
       width = canvas.width = window.innerWidth;
       height = canvas.height = window.innerHeight;
     }
-    window.addEventListener('resize', resizeCanvas);
-    resizeCanvas();
+    on(window, 'resize', resize);
+    resize();
 
-    for (let i = 0; i < PARTICLE_COUNT; i++) {
+    for (var i = 0; i < PARTICLE_COUNT; i++) {
       particles.push({
         x: Math.random() * width,
         y: Math.random() * height,
@@ -2063,805 +2221,735 @@
       });
     }
 
-    let globalTimer = 0;
+    function calcFps(now) {
+      frameCount++;
+      if (now - lastFrameTime >= 1000) {
+        var fpsEl = $('fpsDisplay');
+        if (state.showFps && fpsEl) fpsEl.textContent = 'FPS: ' + frameCount;
+        frameCount = 0;
+        lastFrameTime = now;
+      }
+    }
 
-    function renderBackground(time) {
-      calcFps(time);
+    function draw() {
       globalTimer += 0.015;
 
-      const colorFactor = (Math.sin(globalTimer * 0.7) + 1) / 2;
-      const r = Math.round(18 * (1 - colorFactor) + 12 * colorFactor);
-      const g = 0;
-      const b = Math.round(4 * (1 - colorFactor) + 24 * colorFactor);
-
-      ctx.fillStyle = `rgb(${r}, ${g}, ${b})`;
+      var colorFactor = (Math.sin(globalTimer * 0.7) + 1) / 2;
+      var r = Math.round(18 * (1 - colorFactor) + 12 * colorFactor);
+      var b = Math.round(4 * (1 - colorFactor) + 24 * colorFactor);
+      ctx.fillStyle = 'rgb(' + r + ', 0, ' + b + ')';
       ctx.fillRect(0, 0, width, height);
 
-      const tileSize = 28;
-      const rows = Math.ceil(height / tileSize);
-      const cols = Math.ceil(width / tileSize);
+      var tileSize = 28;
+      var rows = Math.ceil(height / tileSize);
+      var cols = Math.ceil(width / tileSize);
 
-      for (let y = 0; y < rows; y++) {
-        const waveShift = Math.sin(y * 0.18 + globalTimer * 1.2) * 2;
-        for (let x = 0; x < cols; x++) {
+      for (var y = 0; y < rows; y++) {
+        var waveShift = Math.sin(y * 0.18 + globalTimer * 1.2) * 2;
+        for (var x = 0; x < cols; x++) {
           if ((x + y) % 2 === 0) {
-            const shadeAlpha = 0.35 + 0.12 * Math.sin(x * 0.15 + globalTimer);
-            ctx.fillStyle = `rgba(0, 0, 0, ${shadeAlpha})`;
+            var shade = 0.35 + 0.12 * Math.sin(x * 0.15 + globalTimer);
+            ctx.fillStyle = 'rgba(0, 0, 0, ' + shade + ')';
             ctx.fillRect(x * tileSize + waveShift, y * tileSize, tileSize, tileSize);
           }
         }
       }
 
-      for (let i = 0; i < particles.length; i++) {
-        const p = particles[i];
+      for (var k = 0; k < particles.length; k++) {
+        var p = particles[k];
         p.x += p.speedX;
         p.y += p.speedY;
-
-        if (p.x < -10) {
-          p.x = width + Math.random() * 20;
-          p.y = Math.random() * height;
-        }
+        if (p.x < -10) { p.x = width + Math.random() * 20; p.y = Math.random() * height; }
         if (p.y < 0) p.y = height;
         if (p.y > height) p.y = 0;
-
-        ctx.fillStyle = p.hue === 0 
-          ? `rgba(255, 55, 55, ${p.alpha})` 
-          : `rgba(215, 90, 255, ${p.alpha})`;
-
+        ctx.fillStyle = p.hue === 0
+          ? 'rgba(255, 55, 55, ' + p.alpha + ')'
+          : 'rgba(215, 90, 255, ' + p.alpha + ')';
         ctx.fillRect(Math.floor(p.x), Math.floor(p.y), p.size, p.size);
       }
-
-      requestAnimationFrame(renderBackground);
-    }
-    requestAnimationFrame(renderBackground);
-
-    const charImg = document.getElementById('charImg');
-    const charBox = document.getElementById('charBox');
-
-    function renderCharacterFile(index) {
-      const char = CONFIG.chars[index];
-      const img = new Image();
-
-      img.onload = function() {
-        charImg.src = char.path;
-        charImg.style.display = 'block';
-      };
-
-      img.onerror = function() {
-        charImg.style.display = 'none';
-      };
-
-      img.src = char.path;
     }
 
-    function cycleCharacterWithBlackout() {
-      if (viewMainMenu.style.display === 'none') return;
+    function frame(time) {
+      try { calcFps(time || performance.now()); draw(); }
+      catch (e) { console.error('[TD2DR] ошибка кадра фона:', e); }
+      requestAnimationFrame(frame);
+    }
+    requestAnimationFrame(frame);
+  }
 
+  /* =========================================================================
+     ПЕРСОНАЖИ
+     ========================================================================= */
+  var CHARS = [
+    './assets/sprites/knuckles.png',
+    './assets/sprites/eggman.png',
+    './assets/sprites/sonic.png',
+    './assets/sprites/sally.png',
+    './assets/sprites/cream.png',
+    './assets/sprites/amy.png',
+    './assets/sprites/tails.png'
+  ];
+
+  function initCharacters() {
+    var charImg = $('charImg');
+    var charBox = $('charBox');
+    if (!charImg || !charBox) return;
+    var idx = 0;
+
+    function render(i) {
+      var path = CHARS[i];
+      var probe = new Image();
+      probe.onload = function () { charImg.src = path; charImg.style.display = 'block'; };
+      probe.onerror = function () { charImg.style.display = 'none'; };
+      probe.src = path;
+    }
+
+    function cycle() {
+      if (state.screen !== 'main') return;
       charBox.classList.add('blackout');
-
-      setTimeout(() => {
-        currentCharIdx = (currentCharIdx + 1) % CONFIG.chars.length;
-        renderCharacterFile(currentCharIdx);
-
-        setTimeout(() => {
-          charBox.classList.remove('blackout');
-        }, 70);
+      setTimeout(function () {
+        idx = (idx + 1) % CHARS.length;
+        render(idx);
+        setTimeout(function () { charBox.classList.remove('blackout'); }, 70);
       }, 250);
     }
 
-    renderCharacterFile(0);
-    setInterval(cycleCharacterWithBlackout, CONFIG.charSwitchInterval);
+    render(0);
+    setInterval(cycle, 2000);
+  }
 
-    /* =========================================================================
-       МЕНЮ И НАВИГАЦИЯ МЕЖДУ ЭКРАНАМИ
-       ========================================================================= */
-    const viewMainMenu = document.getElementById('viewMainMenu');
-    const viewJoinGame = document.getElementById('viewJoinGame');
-    const viewOptions = document.getElementById('viewOptions');
-    const viewExtra = document.getElementById('viewExtra');
-    const viewAbout = document.getElementById('viewAbout');
+  /* =========================================================================
+     ГЛАВНОЕ МЕНЮ
+     ========================================================================= */
+  var menuItems = [];
 
-    function hideAllViews() {
-      viewMainMenu.style.display = 'none';
-      viewJoinGame.style.display = 'none';
-      viewOptions.style.display = 'none';
-      viewExtra.style.display = 'none';
-      viewAbout.style.setProperty('display', 'none', 'important');
-    }
+  function updateMenuSelection() {
+    menuItems.forEach(function (item, i) {
+      if (i === state.selectedMenuIndex) item.classList.add('active');
+      else item.classList.remove('active');
+    });
+  }
 
-    const menuItems = Array.from(document.querySelectorAll('.menu-item'));
-    let selectedMenuIndex = -1;
-
-    function updateMenuSelection() {
-      menuItems.forEach((item, idx) => {
-        if (idx === selectedMenuIndex) {
-          item.classList.add('active');
-        } else {
-          item.classList.remove('active');
+  function handleMenuAction(action) {
+    switch (action) {
+      case 'join':    openJoinView(); break;
+      case 'options': openOptionsView(); break;
+      case 'extra':   openExtraView(); break;
+      case 'about':   openAboutView(); break;
+      case 'exit':
+        if (confirm('Выйти из игры?')) {
+          window.close();
         }
-      });
+        break;
     }
+  }
 
-    menuItems.forEach((item, idx) => {
-      item.addEventListener('mouseenter', () => {
-        selectedMenuIndex = idx;
+  function initMainMenu() {
+    menuItems = Array.prototype.slice.call(document.querySelectorAll('.menu-item'));
+
+    menuItems.forEach(function (item, i) {
+      on(item, 'mouseenter', function () {
+        state.selectedMenuIndex = i;
         updateMenuSelection();
         playHoverSfx();
       });
-
-      item.addEventListener('mouseleave', () => {
-        selectedMenuIndex = -1;
+      on(item, 'mouseleave', function () {
+        state.selectedMenuIndex = -1;
         updateMenuSelection();
       });
-
-      item.addEventListener('click', () => {
+      on(item, 'click', function (e) {
+        e.stopPropagation();
         playSelectSfx();
         handleMenuAction(item.dataset.action);
       });
     });
+  }
 
-    function handleMenuAction(action) {
-      switch (action) {
-        case 'join':
-          openJoinGameView();
-          break;
-        case 'options':
-          openOptionsView();
-          break;
-        case 'extra':
-          openExtraView();
-          break;
-        case 'about':
-          openAboutView();
-          break;
-        case 'exit':
-          if (confirm('Выйти из игры?')) window.close();
-          break;
-      }
-    }
+  /* =========================================================================
+     OPTIONS
+     ========================================================================= */
+  var DEFAULT_KEYBINDS = {
+    UP: 'UP', DOWN: 'DOWN', LEFT: 'LEFT', RIGHT: 'RIGHT',
+    JUMP: 'Z', SPECIAL_1: 'X', SPECIAL_2: 'C', HIDE_GUI: 'LCTRL', PLAYER_LIST: 'TAB'
+  };
+  var userKeybinds = Object.assign({}, DEFAULT_KEYBINDS);
+  var ctrlButtons = [];
 
-    /* 1. Экран JOIN GAME */
-    function openJoinGameView() {
-      hideAllViews();
-      viewJoinGame.style.display = 'block';
-    }
-
-    function closeJoinGameView() {
-      hideAllViews();
-      viewMainMenu.style.display = 'block';
-      selectedMenuIndex = -1;
-      updateMenuSelection();
-    }
-
-    const btnJoinBack = document.getElementById('btnJoinBack');
-    const btnJoinInfo = document.getElementById('btnJoinInfo');
-    const russiaPin = document.getElementById('russiaPin');
-
-    btnJoinBack.addEventListener('mouseenter', playHoverSfx);
-    btnJoinBack.addEventListener('click', () => {
-      playSelectSfx();
-      closeJoinGameView();
+  function renderControlsUI() {
+    ctrlButtons.forEach(function (btn) {
+      var action = btn.dataset.action;
+      if (userKeybinds[action]) btn.textContent = userKeybinds[action];
     });
+  }
 
-    btnJoinInfo.addEventListener('mouseenter', playHoverSfx);
-    btnJoinInfo.addEventListener('click', () => {
-      playSelectSfx();
-      alert('ВЫБЕРИТЕ БЛИЖАЙШИЙ РЕГИОН ДЛЯ НАИМЕНЬШЕГО ПИНГА.');
-    });
-
-    russiaPin.addEventListener('mouseenter', playHoverSfx);
-    russiaPin.addEventListener('click', () => {
-      playSelectSfx();
-      alert('[В РАЗРАБОТКЕ]');
-    });
-
-    /* 2. Настройки (OPTIONS) */
-    const btnTabGeneral = document.getElementById('btnTabGeneral');
-    const btnTabControls = document.getElementById('btnTabControls');
-    const btnOptionsBack = document.getElementById('btnOptionsBack');
-    const tabGeneral = document.getElementById('tabGeneral');
-    const tabControls = document.getElementById('tabControls');
-
-    let currentOptionsTab = 'general';
-
-    const generalNavElements = [
-      document.getElementById('generalNickBox'),
-      document.getElementById('btnToggleScreenSize'),
-      document.getElementById('btnTogglePing'),
-      document.getElementById('btnToggleFps'),
-      btnTabControls,
-      btnTabGeneral,
-      btnOptionsBack
-    ];
-    let generalNavIndex = 0;
-
-    function updateGeneralNavFocus() {
-      generalNavElements.forEach((el, idx) => {
-        if (idx === generalNavIndex) {
-          el.classList.add('selected');
-        } else {
-          el.classList.remove('selected');
-        }
-      });
-    }
-
-    function openOptionsView() {
-      hideAllViews();
-      viewOptions.style.display = 'block';
-      inlineNickInput.value = savedNick;
-      switchOptionsTab('general');
-      generalNavIndex = 0;
-      updateGeneralNavFocus();
-    }
-
-    function closeOptionsView() {
-      inlineNickInput.blur();
-      hideAllViews();
-      viewMainMenu.style.display = 'block';
-      selectedMenuIndex = -1;
-      updateMenuSelection();
-    }
-
-    function switchOptionsTab(tab) {
-      currentOptionsTab = tab;
-      if (tab === 'general') {
-        tabGeneral.style.display = 'flex';
-        tabControls.style.display = 'none';
-        btnTabGeneral.classList.add('active-tab');
-        btnTabControls.classList.remove('active-tab');
-        generalNavIndex = 0;
-        updateGeneralNavFocus();
-      } else {
-        tabGeneral.style.display = 'none';
-        tabControls.style.display = 'flex';
-        btnTabControls.classList.add('active-tab');
-        btnTabGeneral.classList.remove('active-tab');
-        controlsNavIndex = 0;
-        updateControlsNavFocus();
-      }
-    }
-
-    [btnTabGeneral, btnTabControls, btnOptionsBack].forEach(btn => {
-      btn.addEventListener('mouseenter', playHoverSfx);
-    });
-
-    btnTabGeneral.addEventListener('click', () => { playSelectSfx(); switchOptionsTab('general'); });
-    btnTabControls.addEventListener('click', () => { playSelectSfx(); switchOptionsTab('controls'); });
-    btnOptionsBack.addEventListener('click', () => { playSelectSfx(); closeOptionsView(); });
-
-    function triggerScreenSize() {
-      if (!document.fullscreenElement) {
-        document.documentElement.requestFullscreen().catch(() => {});
-      } else {
-        document.exitFullscreen().catch(() => {});
-      }
-    }
-
-    function triggerTogglePing() {
-      showPing = !showPing;
-      localStorage.setItem('td2dr_show_ping', showPing);
-      syncHudDisplay();
-    }
-
-    function triggerToggleFps() {
-      showFps = !showFps;
-      localStorage.setItem('td2dr_show_fps', showFps);
-      syncHudDisplay();
-    }
-
-    const optButtons = [
-      document.getElementById('btnToggleScreenSize'),
-      document.getElementById('btnTogglePing'),
-      document.getElementById('btnToggleFps')
-    ];
-    optButtons.forEach(b => b.addEventListener('mouseenter', playHoverSfx));
-
-    optButtons[0].addEventListener('click', () => { playSelectSfx(); triggerScreenSize(); });
-    optButtons[1].addEventListener('click', () => { playSelectSfx(); triggerTogglePing(); });
-    optButtons[2].addEventListener('click', () => { playSelectSfx(); triggerToggleFps(); });
-
-    const DEFAULT_KEYBINDS = {
-      UP: 'UP', DOWN: 'DOWN', LEFT: 'LEFT', RIGHT: 'RIGHT',
-      JUMP: 'Z', SPECIAL_1: 'X', SPECIAL_2: 'C', HIDE_GUI: 'LCTRL', PLAYER_LIST: 'TAB'
+  function formatKeyName(e) {
+    var code = e.code || '';
+    if (code.indexOf('Key') === 0) return code.slice(3).toUpperCase();
+    if (code.indexOf('Digit') === 0) return code.slice(5);
+    var map = {
+      ArrowUp: 'UP', ArrowDown: 'DOWN', ArrowLeft: 'LEFT', ArrowRight: 'RIGHT',
+      ControlLeft: 'LCTRL', ControlRight: 'RCTRL', ShiftLeft: 'LSHIFT', ShiftRight: 'RSHIFT',
+      Space: 'SPACE', Tab: 'TAB', Enter: 'ENTER', Escape: 'ESC'
     };
+    if (map[code]) return map[code];
+    return String(e.key || code || '?').toUpperCase();
+  }
 
-    let userKeybinds = Object.assign({}, DEFAULT_KEYBINDS);
-    const savedKeybinds = localStorage.getItem('td2dr_controls');
-    if (savedKeybinds) {
-      try { userKeybinds = Object.assign({}, DEFAULT_KEYBINDS, JSON.parse(savedKeybinds)); } catch (e) {}
+  function openOptionsView() {
+    showScreen('options');
+    var input = $('inlineNickInput');
+    if (input) input.value = savedNick;
+    switchOptionsTab('general');
+  }
+
+  function closeOptionsView() {
+    var input = $('inlineNickInput');
+    if (input) input.blur();
+    showScreen('main');
+  }
+
+  function switchOptionsTab(tab) {
+    var tabGeneral = $('tabGeneral');
+    var tabControls = $('tabControls');
+    var btnG = $('btnTabGeneral');
+    var btnC = $('btnTabControls');
+    if (tab === 'general') {
+      if (tabGeneral) tabGeneral.style.display = 'flex';
+      if (tabControls) tabControls.style.display = 'none';
+      if (btnG) btnG.classList.add('active-tab');
+      if (btnC) btnC.classList.remove('active-tab');
+    } else {
+      if (tabGeneral) tabGeneral.style.display = 'none';
+      if (tabControls) tabControls.style.display = 'flex';
+      if (btnC) btnC.classList.add('active-tab');
+      if (btnG) btnG.classList.remove('active-tab');
     }
+  }
 
-    const ctrlButtons = Array.from(document.querySelectorAll('.ctrl-key-btn'));
-    const btnResetControls = document.getElementById('btnResetControls');
-
-    const controlsNavElements = [
-      ...ctrlButtons,
-      btnResetControls,
-      btnTabGeneral,
-      btnTabControls,
-      btnOptionsBack
-    ];
-    let controlsNavIndex = 0;
-
-    function updateControlsNavFocus() {
-      controlsNavElements.forEach((el, idx) => {
-        if (idx === controlsNavIndex) {
-          el.classList.add('selected');
-        } else {
-          el.classList.remove('selected');
-        }
-      });
-    }
-
-    let activeRebindBtn = null;
-
-    function renderControlsUI() {
-      ctrlButtons.forEach(btn => {
-        const action = btn.dataset.action;
-        if (userKeybinds[action]) {
-          btn.textContent = userKeybinds[action];
-        }
-      });
+  function cancelRebind() {
+    if (state.activeRebindBtn) {
+      state.activeRebindBtn.classList.remove('rebinding');
+      state.activeRebindBtn = null;
     }
     renderControlsUI();
+  }
 
-    function formatKeyName(e) {
-      const code = e.code;
-      if (code.startsWith('Key')) return code.slice(3).toUpperCase();
-      if (code.startsWith('Digit')) return code.slice(5);
-      if (code === 'ArrowUp') return 'UP';
-      if (code === 'ArrowDown') return 'DOWN';
-      if (code === 'ArrowLeft') return 'LEFT';
-      if (code === 'ArrowRight') return 'RIGHT';
-      if (code === 'ControlLeft') return 'LCTRL';
-      if (code === 'ControlRight') return 'RCTRL';
-      if (code === 'ShiftLeft') return 'LSHIFT';
-      if (code === 'ShiftRight') return 'RSHIFT';
-      if (code === 'Space') return 'SPACE';
-      if (code === 'Tab') return 'TAB';
-      if (code === 'Enter') return 'ENTER';
-      if (code === 'Escape') return 'ESC';
-      return e.key.toUpperCase();
-    }
+  function initOptions() {
+    var btnG = $('btnTabGeneral');
+    var btnC = $('btnTabControls');
+    var btnBack = $('btnOptionsBack');
 
-    ctrlButtons.forEach(btn => {
-      btn.addEventListener('mouseenter', playHoverSfx);
-      btn.addEventListener('click', () => {
+    [btnG, btnC, btnBack].forEach(function (b) { on(b, 'mouseenter', playHoverSfx); });
+    on(btnG, 'click', function () { playSelectSfx(); cancelRebind(); switchOptionsTab('general'); });
+    on(btnC, 'click', function () { playSelectSfx(); switchOptionsTab('controls'); });
+    on(btnBack, 'click', function () { playSelectSfx(); cancelRebind(); closeOptionsView(); });
+
+    var btnScreen = $('btnToggleScreenSize');
+    var btnPing = $('btnTogglePing');
+    var btnFps = $('btnToggleFps');
+    [btnScreen, btnPing, btnFps].forEach(function (b) { on(b, 'mouseenter', playHoverSfx); });
+
+    on(btnScreen, 'click', function () { playSelectSfx(); toggleFullscreen(); });
+    on(btnPing, 'click', function () {
+      playSelectSfx();
+      state.showPing = !state.showPing;
+      store.set('td2dr_show_ping', state.showPing);
+      syncHudDisplay();
+    });
+    on(btnFps, 'click', function () {
+      playSelectSfx();
+      state.showFps = !state.showFps;
+      store.set('td2dr_show_fps', state.showFps);
+      syncHudDisplay();
+    });
+
+    /* Управление */
+    var saved = store.get('td2dr_controls', null);
+    if (saved) userKeybinds = Object.assign({}, DEFAULT_KEYBINDS, parseJsonSafe(saved, {}));
+
+    ctrlButtons = Array.prototype.slice.call(document.querySelectorAll('.ctrl-key-btn'));
+    renderControlsUI();
+
+    ctrlButtons.forEach(function (btn) {
+      on(btn, 'mouseenter', playHoverSfx);
+      on(btn, 'click', function () {
         playSelectSfx();
-        startRebind(btn);
+        if (state.activeRebindBtn) {
+          state.activeRebindBtn.classList.remove('rebinding');
+          renderControlsUI();
+        }
+        state.activeRebindBtn = btn;
+        btn.classList.add('rebinding');
+        btn.textContent = '...';
       });
     });
 
-    function startRebind(btn) {
-      if (activeRebindBtn) {
-        activeRebindBtn.classList.remove('rebinding');
-        renderControlsUI();
-      }
-      activeRebindBtn = btn;
-      btn.classList.add('rebinding');
-      btn.textContent = '...';
-    }
-
-    btnResetControls.addEventListener('mouseenter', playHoverSfx);
-    btnResetControls.addEventListener('click', () => {
+    var btnReset = $('btnResetControls');
+    on(btnReset, 'mouseenter', playHoverSfx);
+    on(btnReset, 'click', function () {
       playSelectSfx();
       userKeybinds = Object.assign({}, DEFAULT_KEYBINDS);
-      localStorage.setItem('td2dr_controls', JSON.stringify(userKeybinds));
-      if (activeRebindBtn) {
-        activeRebindBtn.classList.remove('rebinding');
-        activeRebindBtn = null;
-      }
-      renderControlsUI();
+      store.set('td2dr_controls', JSON.stringify(userKeybinds));
+      cancelRebind();
     });
+  }
 
-    /* 3. Extra */
-    let userCoins = parseInt(localStorage.getItem('td2dr_coins') || '32');
-    function updateCoinDisplay() {
-      document.getElementById('coinCountDisplay').textContent = `× ${userCoins}`;
-      localStorage.setItem('td2dr_coins', userCoins);
+  /* =========================================================================
+     EXTRA
+     ========================================================================= */
+  var userCoins = 32;
+  var currentIconPage = 1;
+  var equippedIconId = 'unknown';
+  var purchasedIcons = ['unknown'];
+
+  var ICONS_DATABASE = [
+    { id: 'unknown', page: 1, name: '?', price: 10, img: 'icon_unknown.png', isGold: false },
+    { id: 'like', page: 1, name: '\uD83D\uDC4D', price: 10, img: 'icon_like.png', isGold: false },
+    { id: 'dislike', page: 1, name: '\uD83D\uDC4E', price: 10, img: 'icon_dislike.png', isGold: false },
+    { id: 'star', page: 1, name: '\u2B50', price: 10, img: 'icon_star.png', isGold: false },
+    { id: 'heart', page: 1, name: '\u2764', price: 10, img: 'icon_heart.png', isGold: false },
+    { id: 'diamond', page: 1, name: '\u2666', price: 10, img: 'icon_diamond.png', isGold: false },
+    { id: 'spade', page: 1, name: '\u2660', price: 10, img: 'icon_spade.png', isGold: false },
+    { id: 'club', page: 1, name: '\u2663', price: 10, img: 'icon_club.png', isGold: false },
+    { id: 'wifi', page: 1, name: '\uD83D\uDCF6', price: 10, img: 'icon_wifi.png', isGold: false },
+    { id: 'crown', page: 1, name: '\uD83D\uDC51', price: 10, img: 'icon_crown.png', isGold: false },
+
+    { id: 'skull', page: 2, name: '\uD83D\uDC80', price: 30, img: 'icon_skull.png', isGold: false },
+    { id: 'ring', page: 2, name: '\u2B55', price: 30, img: 'icon_ring.png', isGold: false },
+    { id: 'rings_sonic', page: 2, name: '\uD83C\uDFAF', price: 30, img: 'icon_sonic_ring.png', isGold: false },
+    { id: 'sparkles', page: 2, name: '\u2728', price: 30, img: 'icon_sparkles.png', isGold: false },
+    { id: 'fire', page: 2, name: '\uD83D\uDD25', price: 30, img: 'icon_fire.png', isGold: false },
+    { id: 'cross', page: 2, name: '\u274C', price: 30, img: 'icon_cross.png', isGold: false },
+    { id: 'eye', page: 2, name: '\uD83D\uDC41', price: 30, img: 'icon_eye.png', isGold: false },
+    { id: 'moon', page: 2, name: '\uD83C\uDF19', price: 30, img: 'icon_moon.png', isGold: false },
+    { id: 'eggman_gold', page: 2, name: '\uD83E\uDD5A', price: 50, img: 'icon_eggman_gold.png', isGold: true },
+    { id: 'tails_gold', page: 2, name: '\uD83E\uDD8A', price: 50, img: 'icon_tails_gold.png', isGold: true },
+
+    { id: 'lightning', page: 3, name: '\u26A1', price: 50, img: 'icon_lightning.png', isGold: true },
+    { id: 'hammer', page: 3, name: '\uD83D\uDD28', price: 50, img: 'icon_hammer.png', isGold: true },
+    { id: 'fist', page: 3, name: '\uD83D\uDC4A', price: 50, img: 'icon_knux_fist.png', isGold: true },
+    { id: 'shield', page: 3, name: '\uD83D\uDEE1', price: 50, img: 'icon_shield.png', isGold: true },
+    { id: 'exetior', page: 3, name: '\uD83D\uDE08', price: 50, img: 'icon_exetior.png', isGold: true }
+  ];
+
+  function updateCoinDisplay() {
+    var el = $('coinCountDisplay');
+    if (el) el.textContent = '\u00D7 ' + userCoins;
+    store.set('td2dr_coins', userCoins);
+  }
+
+  /* Монета с путём ./assets/sprites/icons/Money.png и inline Base64 SVG fallback */
+  function createCoinImg(className) {
+    var img = document.createElement('img');
+    img.className = className;
+    img.alt = 'coin';
+    img.onerror = function () { img.onerror = null; img.src = FALLBACK_COIN_DATA; };
+    img.src = './assets/sprites/icons/Money.png';
+    return img;
+  }
+
+  function renderIconsGrid(page) {
+    var grid = $('iconsGrid');
+    if (!grid) return;
+    grid.innerHTML = '';
+
+    ICONS_DATABASE.filter(function (it) { return it.page === page; }).forEach(function (item) {
+      var isPurchased = purchasedIcons.indexOf(item.id) !== -1;
+      var isEquipped = equippedIconId === item.id;
+
+      var card = document.createElement('div');
+      card.className = 'icon-card' + (item.isGold ? ' gold-border' : '') + (isEquipped ? ' equipped' : '');
+
+      var symbolBox = document.createElement('div');
+      symbolBox.className = 'icon-symbol-box';
+
+      var img = document.createElement('img');
+      img.className = 'icon-custom-img';
+      img.alt = item.name;
+      img.onerror = function () { img.onerror = null; img.style.display = 'none'; symbolBox.textContent = item.name; };
+      img.src = './assets/sprites/icons/' + item.img;
+      symbolBox.appendChild(img);
+      card.appendChild(symbolBox);
+
+      var actionText = document.createElement('span');
+      actionText.className = 'icon-action-text';
+
+      if (isEquipped) {
+        actionText.textContent = 'EQUIPPED';
+      } else if (isPurchased) {
+        actionText.textContent = 'EQUIP';
+      } else {
+        actionText.appendChild(createCoinImg('action-coin-img'));
+        var priceSpan = document.createElement('span');
+        priceSpan.textContent = item.price;
+        actionText.appendChild(priceSpan);
+      }
+      card.appendChild(actionText);
+
+      on(card, 'mouseenter', playHoverSfx);
+      on(card, 'click', function (e) {
+        e.stopPropagation();
+        if (isEquipped) return;
+
+        if (isPurchased) {
+          playSelectSfx();
+          equippedIconId = item.id;
+          store.set('td2dr_equipped_icon', equippedIconId);
+          renderIconsGrid(currentIconPage);
+        } else if (userCoins >= item.price) {
+          playSelectSfx();
+          userCoins -= item.price;
+          purchasedIcons.push(item.id);
+          store.set('td2dr_purchased_icons', JSON.stringify(purchasedIcons));
+          updateCoinDisplay();
+          equippedIconId = item.id;
+          store.set('td2dr_equipped_icon', equippedIconId);
+          renderIconsGrid(currentIconPage);
+        } else {
+          alert('НЕДОСТАТОЧНО МОНЕТ!');
+        }
+      });
+
+      grid.appendChild(card);
+    });
+  }
+
+  function switchIconPage(page) {
+    currentIconPage = page;
+    Array.prototype.forEach.call(document.querySelectorAll('.page-tab-btn'), function (btn) {
+      if (parseInt(btn.dataset.page, 10) === page) btn.classList.add('active');
+      else btn.classList.remove('active');
+    });
+    renderIconsGrid(page);
+  }
+
+  function switchExtraTab(tab) {
+    var panes = {
+      achievements: $('tabAchievements'),
+      icons: $('tabIcons'),
+      pets: $('tabPets'),
+      placeholder: $('tabGenericExtraPlaceholder')
+    };
+    var buttons = {
+      achievements: $('btnTabAchievements'),
+      taunts: $('btnTabTaunts'),
+      pets: $('btnTabPets'),
+      icons: $('btnTabIcons'),
+      skins: $('btnTabSkins')
+    };
+
+    Object.keys(panes).forEach(function (k) { if (panes[k]) panes[k].style.display = 'none'; });
+    Object.keys(buttons).forEach(function (k) { if (buttons[k]) buttons[k].classList.remove('active-tab'); });
+
+    var ph = panes.placeholder;
+    if (tab === 'achievements') {
+      if (panes.achievements) panes.achievements.style.display = 'flex';
+    } else if (tab === 'icons') {
+      if (panes.icons) panes.icons.style.display = 'flex';
+      switchIconPage(currentIconPage);
+    } else if (tab === 'pets') {
+      if (panes.pets) panes.pets.style.display = 'flex';
+    } else if (tab === 'skins' || tab === 'taunts') {
+      if (ph) {
+        ph.style.display = 'block';
+        ph.textContent = (tab === 'skins' ? 'SKINS' : 'TAUNTS') + ' (В РАЗРАБОТКЕ)';
+      }
     }
+    if (buttons[tab]) buttons[tab].classList.add('active-tab');
+  }
+
+  function openExtraView() {
+    showScreen('extra');
+    updateCoinDisplay();
+    switchExtraTab('achievements');
+  }
+
+  function closeExtraView() { showScreen('main'); }
+
+  function initExtra() {
+    userCoins = parseInt(store.get('td2dr_coins', '32'), 10);
+    if (!isFinite(userCoins)) userCoins = 32;
+    equippedIconId = store.get('td2dr_equipped_icon', 'unknown');
+    var p = parseJsonSafe(store.get('td2dr_purchased_icons', '["unknown"]'), ['unknown']);
+    purchasedIcons = Array.isArray(p) ? p : ['unknown'];
     updateCoinDisplay();
 
-    const btnTabAchievements = document.getElementById('btnTabAchievements');
-    const btnTabTaunts = document.getElementById('btnTabTaunts');
-    const btnTabPets = document.getElementById('btnTabPets');
-    const btnTabIcons = document.getElementById('btnTabIcons');
-    const btnTabSkins = document.getElementById('btnTabSkins');
-    const btnExtraBack = document.getElementById('btnExtraBack');
-
-    const tabAchievements = document.getElementById('tabAchievements');
-    const tabIcons = document.getElementById('tabIcons');
-    const tabPets = document.getElementById('tabPets');
-    const tabGenericExtraPlaceholder = document.getElementById('tabGenericExtraPlaceholder');
-
-    let currentExtraSection = 'achievements';
-    let currentIconPage = 1;
-
-    const ICONS_DATABASE = [
-      { id: 'unknown', page: 1, name: '?', price: 10, img: 'icon_unknown.png', isGold: false },
-      { id: 'like', page: 1, name: '👍', price: 10, img: 'icon_like.png', isGold: false },
-      { id: 'dislike', page: 1, name: '👎', price: 10, img: 'icon_dislike.png', isGold: false },
-      { id: 'star', page: 1, name: '⭐', price: 10, img: 'icon_star.png', isGold: false },
-      { id: 'heart', page: 1, name: '❤', price: 10, img: 'icon_heart.png', isGold: false },
-      { id: 'diamond', page: 1, name: '♦', price: 10, img: 'icon_diamond.png', isGold: false },
-      { id: 'spade', page: 1, name: '♠', price: 10, img: 'icon_spade.png', isGold: false },
-      { id: 'club', page: 1, name: '♣', price: 10, img: 'icon_club.png', isGold: false },
-      { id: 'wifi', page: 1, name: '📶', price: 10, img: 'icon_wifi.png', isGold: false },
-      { id: 'crown', page: 1, name: '👑', price: 10, img: 'icon_crown.png', isGold: false },
-
-      { id: 'skull', page: 2, name: '💀', price: 30, img: 'icon_skull.png', isGold: false },
-      { id: 'ring', page: 2, name: '⭕', price: 30, img: 'icon_ring.png', isGold: false },
-      { id: 'rings_sonic', page: 2, name: '🎯', price: 30, img: 'icon_sonic_ring.png', isGold: false },
-      { id: 'sparkles', page: 2, name: '✨', price: 30, img: 'icon_sparkles.png', isGold: false },
-      { id: 'fire', page: 2, name: '🔥', price: 30, img: 'icon_fire.png', isGold: false },
-      { id: 'cross', page: 2, name: '❌', price: 30, img: 'icon_cross.png', isGold: false },
-      { id: 'eye', page: 2, name: '👁', price: 30, img: 'icon_eye.png', isGold: false },
-      { id: 'moon', page: 2, name: '🌙', price: 30, img: 'icon_moon.png', isGold: false },
-      { id: 'eggman_gold', page: 2, name: '🥚', price: 50, img: 'icon_eggman_gold.png', isGold: true },
-      { id: 'tails_gold', page: 2, name: '🦊', price: 50, img: 'icon_tails_gold.png', isGold: true },
-
-      { id: 'lightning', page: 3, name: '⚡', price: 50, img: 'icon_lightning.png', isGold: true },
-      { id: 'hammer', page: 3, name: '🔨', price: 50, img: 'icon_hammer.png', isGold: true },
-      { id: 'fist', page: 3, name: '👊', price: 50, img: 'icon_knux_fist.png', isGold: true },
-      { id: 'shield', page: 3, name: '🛡', price: 50, img: 'icon_shield.png', isGold: true },
-      { id: 'exetior', page: 3, name: '😈', price: 50, img: 'icon_exetior.png', isGold: true }
+    var tabs = [
+      ['btnTabAchievements', 'achievements'],
+      ['btnTabIcons', 'icons'],
+      ['btnTabPets', 'pets'],
+      ['btnTabSkins', 'skins'],
+      ['btnTabTaunts', 'taunts']
     ];
+    tabs.forEach(function (pair) {
+      var el = $(pair[0]);
+      on(el, 'mouseenter', playHoverSfx);
+      on(el, 'click', function () { playSelectSfx(); switchExtraTab(pair[1]); });
+    });
 
-    let equippedIconId = localStorage.getItem('td2dr_equipped_icon') || 'unknown';
-    let purchasedIcons = JSON.parse(localStorage.getItem('td2dr_purchased_icons') || '["unknown"]');
+    var back = $('btnExtraBack');
+    on(back, 'mouseenter', playHoverSfx);
+    on(back, 'click', function () { playSelectSfx(); closeExtraView(); });
 
-    function renderIconsGrid(page) {
-      const grid = document.getElementById('iconsGrid');
-      grid.innerHTML = '';
-
-      const pageIcons = ICONS_DATABASE.filter(item => item.page === page);
-
-      pageIcons.forEach(item => {
-        const isPurchased = purchasedIcons.includes(item.id);
-        const isEquipped = (equippedIconId === item.id);
-
-        const card = document.createElement('div');
-        card.className = `icon-card ${item.isGold ? 'gold-border' : ''} ${isEquipped ? 'equipped' : ''}`;
-
-        const symbolBox = document.createElement('div');
-        symbolBox.className = 'icon-symbol-box';
-
-        const img = document.createElement('img');
-        img.className = 'icon-custom-img';
-        img.src = `./assets/sprites/icons/${item.img}`;
-        img.alt = item.name;
-
-        img.onerror = () => {
-          img.style.display = 'none';
-          symbolBox.textContent = item.name;
-        };
-
-        symbolBox.appendChild(img);
-        card.appendChild(symbolBox);
-
-        const actionText = document.createElement('span');
-        actionText.className = 'icon-action-text';
-
-        if (isEquipped) {
-          actionText.textContent = 'EQUIPPED';
-        } else if (isPurchased) {
-          actionText.textContent = 'EQUIP';
-        } else {
-          const coinImg = document.createElement('img');
-          coinImg.className = 'action-coin-img';
-          initMoneyImage(coinImg);
-          const priceSpan = document.createElement('span');
-          priceSpan.textContent = item.price;
-          actionText.appendChild(coinImg);
-          actionText.appendChild(priceSpan);
-        }
-
-        card.appendChild(actionText);
-        card.addEventListener('mouseenter', playHoverSfx);
-
-        card.addEventListener('click', () => {
-          if (isEquipped) return;
-
-          if (isPurchased) {
-            playSelectSfx();
-            equippedIconId = item.id;
-            localStorage.setItem('td2dr_equipped_icon', equippedIconId);
-            renderIconsGrid(currentIconPage);
-          } else {
-            if (userCoins >= item.price) {
-              playSelectSfx();
-              userCoins -= item.price;
-              purchasedIcons.push(item.id);
-              localStorage.setItem('td2dr_purchased_icons', JSON.stringify(purchasedIcons));
-              updateCoinDisplay();
-              equippedIconId = item.id;
-              localStorage.setItem('td2dr_equipped_icon', equippedIconId);
-              renderIconsGrid(currentIconPage);
-            } else {
-              alert('НЕДОСТАТОЧНО МОНЕТ!');
-            }
-          }
-        });
-
-        grid.appendChild(card);
-      });
-    }
-
-    function switchIconPage(page) {
-      currentIconPage = page;
-      document.querySelectorAll('.page-tab-btn').forEach(btn => {
-        if (parseInt(btn.dataset.page) === page) {
-          btn.classList.add('active');
-        } else {
-          btn.classList.remove('active');
-        }
-      });
-      renderIconsGrid(page);
-    }
-
-    document.querySelectorAll('.page-tab-btn').forEach(btn => {
-      btn.addEventListener('mouseenter', playHoverSfx);
-      btn.addEventListener('click', () => {
+    Array.prototype.forEach.call(document.querySelectorAll('.page-tab-btn'), function (btn) {
+      on(btn, 'mouseenter', playHoverSfx);
+      on(btn, 'click', function () {
         playSelectSfx();
-        switchIconPage(parseInt(btn.dataset.page));
+        switchIconPage(parseInt(btn.dataset.page, 10));
       });
     });
+  }
 
-    function switchExtraTab(tab) {
-      currentExtraSection = tab;
+  /* =========================================================================
+     ABOUT (CREDITS)
+     ========================================================================= */
+  var creditsAnim = { raf: 0, y: 0, last: 0 };
 
-      tabAchievements.style.display = 'none';
-      tabIcons.style.display = 'none';
-      tabPets.style.display = 'none';
-      tabGenericExtraPlaceholder.style.display = 'none';
+  function creditsStep(ts) {
+    if (state.screen !== 'about') { creditsAnim.raf = 0; return; }
+    var win = document.querySelector('.about-credits-scroll-window');
+    var content = document.querySelector('.about-credits-content');
+    if (win && content) {
+      var dt = creditsAnim.last ? Math.min(ts - creditsAnim.last, 50) : 16;
+      creditsAnim.last = ts;
+      creditsAnim.y -= 45 * dt / 1000;
+      if (creditsAnim.y < -content.offsetHeight) creditsAnim.y = win.clientHeight;
+      content.style.transform = 'translateY(' + creditsAnim.y + 'px)';
+    }
+    creditsAnim.raf = requestAnimationFrame(creditsStep);
+  }
 
-      btnTabAchievements.classList.remove('active-tab');
-      btnTabTaunts.classList.remove('active-tab');
-      btnTabPets.classList.remove('active-tab');
-      btnTabIcons.classList.remove('active-tab');
-      btnTabSkins.classList.remove('active-tab');
+  function openAboutView() {
+    showScreen('about');
+    safe('creditsScroll', function () {
+      var win = document.querySelector('.about-credits-scroll-window');
+      creditsAnim.y = win ? win.clientHeight : window.innerHeight;
+      creditsAnim.last = 0;
+      if (!creditsAnim.raf) creditsAnim.raf = requestAnimationFrame(creditsStep);
+    });
+  }
 
-      if (tab === 'achievements') {
-        tabAchievements.style.display = 'flex';
-        btnTabAchievements.classList.add('active-tab');
-        document.querySelectorAll('.coin-dyn-img').forEach(el => initMoneyImage(el));
-      } else if (tab === 'icons') {
-        tabIcons.style.display = 'flex';
-        btnTabIcons.classList.add('active-tab');
-        switchIconPage(currentIconPage);
-      } else if (tab === 'pets') {
-        tabPets.style.display = 'flex';
-        btnTabPets.classList.add('active-tab');
-        initNoneImage(document.getElementById('nonePetImg'));
-      } else if (tab === 'skins') {
-        tabGenericExtraPlaceholder.style.display = 'block';
-        tabGenericExtraPlaceholder.textContent = 'SKINS (В РАЗРАБОТКЕ)';
-        btnTabSkins.classList.add('active-tab');
-      } else if (tab === 'taunts') {
-        tabGenericExtraPlaceholder.style.display = 'block';
-        tabGenericExtraPlaceholder.textContent = 'TAUNTS (В РАЗРАБОТКЕ)';
-        btnTabTaunts.classList.add('active-tab');
+  function closeAboutView() { showScreen('main'); }
+
+  /* =========================================================================
+     JOIN GAME: карта -> подключение -> ошибка
+     ========================================================================= */
+  var SERVERS = { ru: { id: 'ru', name: 'RUSSIA' } };
+  var CONNECT_FAIL_DELAY_MS = 4000;
+  var connection = { token: 0, dotsTimer: 0, failTimer: 0 };
+
+  function cancelConnection() {
+    connection.token++;
+    clearInterval(connection.dotsTimer);
+    clearTimeout(connection.failTimer);
+    connection.dotsTimer = 0;
+    connection.failTimer = 0;
+  }
+
+  function openJoinView() {
+    cancelConnection();
+    showScreen('join');
+  }
+
+  function closeJoinView() {
+    cancelConnection();
+    showScreen('main');
+  }
+
+  function backFromConnect() {
+    cancelConnection();
+    showScreen('join');
+  }
+
+  function startConnection(server) {
+    cancelConnection();
+    var token = connection.token;
+    var status = $('connectStatus');
+    var dots = 1;
+
+    function renderConnecting() {
+      if (!status) return;
+      status.className = 'connect-status';
+      status.innerHTML = 'CONNECTING TO THE SERVER<span class="connect-dots">' + '...'.slice(0, dots) + '</span>';
+    }
+
+    renderConnecting();
+    showScreen('connect');
+
+    connection.dotsTimer = setInterval(function () {
+      dots = dots % 3 + 1;
+      renderConnecting();
+    }, 450);
+
+    /* Серверной части пока нет — попытка подключения всегда заканчивается ошибкой */
+    connection.failTimer = setTimeout(function () {
+      if (token !== connection.token) return;
+      clearInterval(connection.dotsTimer);
+      connection.dotsTimer = 0;
+      if (status) {
+        status.className = 'connect-status failed';
+        status.textContent = 'FAILED TO CONNECT';
       }
-    }
+    }, CONNECT_FAIL_DELAY_MS);
+  }
 
-    const extraNavButtons = [btnTabAchievements, btnTabIcons, btnTabPets, btnTabSkins, btnTabTaunts, btnExtraBack];
-    extraNavButtons.forEach(b => b.addEventListener('mouseenter', playHoverSfx));
-
-    btnTabAchievements.addEventListener('click', () => { playSelectSfx(); switchExtraTab('achievements'); });
-    btnTabIcons.addEventListener('click', () => { playSelectSfx(); switchExtraTab('icons'); });
-    btnTabPets.addEventListener('click', () => { playSelectSfx(); switchExtraTab('pets'); });
-    btnTabSkins.addEventListener('click', () => { playSelectSfx(); switchExtraTab('skins'); });
-    btnTabTaunts.addEventListener('click', () => { playSelectSfx(); switchExtraTab('taunts'); });
-
-    function openExtraView() {
-      hideAllViews();
-      viewExtra.style.display = 'block';
-      updateCoinDisplay();
-      initMoneyImage(document.getElementById('coinIconImg'));
-      switchExtraTab('achievements');
-    }
-
-    function closeExtraView() {
-      hideAllViews();
-      viewMainMenu.style.display = 'block';
-      selectedMenuIndex = -1;
-      updateMenuSelection();
-    }
-
-    btnExtraBack.addEventListener('click', () => { playSelectSfx(); closeExtraView(); });
-
-    /* 4. Окно ABOUT (CREDITS) */
-    const btnAboutNavBack = document.getElementById('aboutNavBack');
-
-    function openAboutView() {
-      hideAllViews();
-      viewAbout.style.setProperty('display', 'block', 'important');
-
-      const content = document.querySelector('.about-credits-content');
-      if (content) {
-        content.style.animation = 'none';
-        void content.offsetWidth;
-        content.style.animation = 'creditsRoll 28s linear infinite';
-      }
-    }
-
-    function closeAboutView() {
-      hideAllViews();
-      viewMainMenu.style.display = 'block';
-      selectedMenuIndex = -1;
-      updateMenuSelection();
-    }
-
-    btnAboutNavBack.addEventListener('mouseenter', playHoverSfx);
-    btnAboutNavBack.addEventListener('click', () => {
+  function initJoin() {
+    var pin = $('joinPinRu');
+    on(pin, 'mouseenter', playHoverSfx);
+    on(pin, 'click', function (e) {
+      e.stopPropagation();
       playSelectSfx();
-      closeAboutView();
+      pin.blur();
+      startConnection(SERVERS.ru);
     });
 
-    ['aboutNavMechanics', 'aboutNavCharInfo', 'aboutNavCredits'].forEach(id => {
-      const el = document.getElementById(id);
-      if (el) {
-        el.addEventListener('mouseenter', playHoverSfx);
-        el.addEventListener('click', () => {
-          playSelectSfx();
-          if (id !== 'aboutNavCredits') {
-            alert('РАЗДЕЛ В РАЗРАБОТКЕ');
-          }
-        });
-      }
-    });
+    var back = $('btnJoinBack');
+    on(back, 'mouseenter', playHoverSfx);
+    on(back, 'click', function () { playSelectSfx(); closeJoinView(); });
 
-    /* Интро */
-    const introScreen = document.getElementById('introScreen');
-    const introTop = document.getElementById('introTop');
-    const introCenter = document.getElementById('introCenter');
-    const introBottom = document.getElementById('introBottom');
-    const whiteFlash = document.getElementById('whiteFlashOverlay');
+    var cBack = $('btnConnectBack');
+    on(cBack, 'mouseenter', playHoverSfx);
+    on(cBack, 'click', function () { playSelectSfx(); backFromConnect(); });
+  }
 
-    let introFinished = false;
+  function initAbout() {
+    var back = $('aboutNavBack');
+    on(back, 'mouseenter', playHoverSfx);
+    on(back, 'click', function () { playSelectSfx(); closeAboutView(); });
 
-    setTimeout(() => { introCenter.classList.add('show'); }, 600);
-    setTimeout(() => { introBottom.classList.add('show'); }, 1800);
-    setTimeout(() => { introTop.classList.add('show'); }, 2900);
+    on($('aboutNavCredits'), 'mouseenter', playHoverSfx);
+  }
 
-    function exitIntroWithFlash() {
-      if (introFinished) return;
-      introFinished = true;
+  /* =========================================================================
+     КЛАВИАТУРА (после интро; интро и F11 обрабатываются в capture-фазе выше)
+     ========================================================================= */
+  function initKeyboard() {
+    on(window, 'keydown', function (e) {
+      if (!state.introDone) return;
 
-      startMenuMusic();
-
-      whiteFlash.classList.add('flash-active');
-
-      setTimeout(() => {
-        introScreen.style.display = 'none';
-        whiteFlash.classList.remove('flash-active');
-        whiteFlash.classList.add('flash-fadeout');
-
-        setTimeout(() => {
-          whiteFlash.style.display = 'none';
-        }, 850);
-      }, 120);
-    }
-
-    introScreen.addEventListener('click', exitIntroWithFlash);
-
-    window.addEventListener('keydown', (e) => {
-      if (!introFinished) {
-        exitIntroWithFlash();
-        return;
-      }
-
-      if (activeRebindBtn) {
+      /* Переназначение клавиш */
+      if (state.activeRebindBtn) {
         e.preventDefault();
         e.stopPropagation();
 
-        if (e.key === 'Escape') {
-          activeRebindBtn.classList.remove('rebinding');
-          renderControlsUI();
-          activeRebindBtn = null;
-          return;
-        }
+        if (e.key === 'Escape') { cancelRebind(); return; }
 
-        const action = activeRebindBtn.dataset.action;
-        const keyName = formatKeyName(e);
-        userKeybinds[action] = keyName;
-        localStorage.setItem('td2dr_controls', JSON.stringify(userKeybinds));
-
+        userKeybinds[state.activeRebindBtn.dataset.action] = formatKeyName(e);
+        store.set('td2dr_controls', JSON.stringify(userKeybinds));
         playSelectSfx();
-        activeRebindBtn.classList.remove('rebinding');
-        activeRebindBtn = null;
-        renderControlsUI();
+        cancelRebind();
         return;
       }
 
-      // Выход из экранов по Escape
-      if (viewJoinGame.style.display !== 'none') {
-        if (e.key === 'Escape') {
-          playSelectSfx();
-          closeJoinGameView();
-        }
+      if (state.screen === 'connect') {
+        if (e.key === 'Escape' || e.key === 'Enter') { playSelectSfx(); backFromConnect(); }
+        return;
+      }
+      if (state.screen === 'join') {
+        if (e.key === 'Escape') { playSelectSfx(); closeJoinView(); }
+        else if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); playSelectSfx(); startConnection(SERVERS.ru); }
+        return;
+      }
+      if (state.screen === 'about') {
+        if (e.key === 'Escape') { playSelectSfx(); closeAboutView(); }
+        return;
+      }
+      if (state.screen === 'extra') {
+        if (e.key === 'Escape') { playSelectSfx(); closeExtraView(); }
+        return;
+      }
+      if (state.screen === 'options') {
+        if (e.key === 'Escape') { playSelectSfx(); closeOptionsView(); }
         return;
       }
 
-      if (viewAbout.style.display === 'block') {
-        if (e.key === 'Escape') {
-          playSelectSfx();
-          closeAboutView();
-        }
-        return;
-      }
-
-      if (viewExtra.style.display !== 'none') {
-        if (e.key === 'Escape') {
-          playSelectSfx();
-          closeExtraView();
-        }
-        return;
-      }
-
-      if (viewOptions.style.display !== 'none') {
-        if (e.key === 'Escape') {
-          playSelectSfx();
-          closeOptionsView();
-          return;
-        }
-
-        if (currentOptionsTab === 'general') {
-          if (e.key === 'ArrowDown' || e.key === 's' || e.key === 'S') {
-            generalNavIndex = (generalNavIndex + 1) % generalNavElements.length;
-            updateGeneralNavFocus();
-            playHoverSfx();
-          } else if (e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W') {
-            generalNavIndex = (generalNavIndex - 1 + generalNavElements.length) % generalNavElements.length;
-            updateGeneralNavFocus();
-            playHoverSfx();
-          } else if (e.key === 'Enter') {
-            playSelectSfx();
-            const currentEl = generalNavElements[generalNavIndex];
-            if (currentEl === document.getElementById('generalNickBox')) {
-              inlineNickInput.focus();
-            } else if (currentEl === document.getElementById('btnToggleScreenSize')) {
-              triggerScreenSize();
-            } else if (currentEl === document.getElementById('btnTogglePing')) {
-              triggerTogglePing();
-            } else if (currentEl === document.getElementById('btnToggleFps')) {
-              triggerToggleFps();
-            } else if (currentEl === btnTabControls) {
-              switchOptionsTab('controls');
-            } else if (currentEl === btnTabGeneral) {
-              switchOptionsTab('general');
-            } else if (currentEl === btnOptionsBack) {
-              closeOptionsView();
-            }
-          }
-        }
-        return;
-      }
-
-      // Главное меню
-      if (viewMainMenu.style.display !== 'none') {
-        if (e.key === 'ArrowDown' || e.key === 's' || e.key === 'S') {
-          selectedMenuIndex = (selectedMenuIndex + 1) % menuItems.length;
+      /* Главное меню */
+      if (state.screen === 'main' && menuItems.length) {
+        var n = menuItems.length;
+        var k = e.key;
+        if (k === 'ArrowDown' || k === 'ArrowRight' || k === 's' || k === 'S') {
+          e.preventDefault();
+          state.selectedMenuIndex = (state.selectedMenuIndex + 1) % n;
           updateMenuSelection();
           playHoverSfx();
-        } else if (e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W') {
-          selectedMenuIndex = (selectedMenuIndex - 1 + menuItems.length) % menuItems.length;
+        } else if (k === 'ArrowUp' || k === 'ArrowLeft' || k === 'w' || k === 'W') {
+          e.preventDefault();
+          state.selectedMenuIndex = state.selectedMenuIndex <= 0 ? n - 1 : state.selectedMenuIndex - 1;
           updateMenuSelection();
           playHoverSfx();
-        } else if (e.key === 'Enter') {
-          if (selectedMenuIndex >= 0 && selectedMenuIndex < menuItems.length) {
+        } else if (k === 'Enter' || k === ' ') {
+          if (state.selectedMenuIndex >= 0 && state.selectedMenuIndex < n) {
+            e.preventDefault();
             playSelectSfx();
-            handleMenuAction(menuItems[selectedMenuIndex].dataset.action);
+            handleMenuAction(menuItems[state.selectedMenuIndex].dataset.action);
           }
         }
       }
     });
+  }
 
-    const fsBtn = document.getElementById('fsBtn');
-    fsBtn.addEventListener('click', () => {
+  /* =========================================================================
+     КНОПКА F11 В ВЕРХНЕМ БАРЕ
+     ========================================================================= */
+  function initFullscreenButton() {
+    var btn = $('fsBtn');
+    on(btn, 'mouseenter', playHoverSfx);
+    on(btn, 'click', function (e) {
+      e.stopPropagation();
       playSelectSfx();
-      triggerScreenSize();
+      toggleFullscreen();
     });
+  }
+
+  /* =========================================================================
+     ЗАГРУЗКА
+     ========================================================================= */
+  function boot() {
+    /* 1. Интро — самое первое и полностью независимое */
+    safe('intro', initIntro);
+
+    /* 2. Базовые ссылки и звук */
+    safe('views', function () {
+      views.main = $('viewMainMenu');
+      views.options = $('viewOptions');
+      views.extra = $('viewExtra');
+      views.about = $('viewAbout');
+      views.join = $('viewJoin');
+      views.connect = $('viewConnect');
+      menuBgm = $('menuBgm');
+      if (menuBgm) { menuBgm.volume = 0.6; }
+    });
+    safe('sfx', function () {
+      playHoverSfx = createSfx('./assets/sounds/hover.wav', 0.4);
+      playSelectSfx = createSfx('./assets/sounds/select.wav', 0.6);
+    });
+
+    /* 3. Остальные модули — каждый изолирован */
+    safe('mainMenu', initMainMenu);
+    safe('keyboard', initKeyboard);
+    safe('nickname', initNickname);
+    safe('clock', initClock);
+    safe('hud', initHud);
+    safe('background', initBackground);
+    safe('characters', initCharacters);
+    safe('options', initOptions);
+    safe('extra', initExtra);
+    safe('about', initAbout);
+    safe('join', initJoin);
+    safe('fullscreenBtn', initFullscreenButton);
+  }
+
+  window.addEventListener('error', function (e) {
+    console.error('[TD2DR] необработанная ошибка:', e.message, e.filename, e.lineno);
+  });
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', boot);
+  } else {
+    boot();
+  }
+})();
+
   </script>
 </body>
-  </html>
+</html>
