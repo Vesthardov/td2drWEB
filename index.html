@@ -1277,6 +1277,19 @@
       background-size: 4.6875vw 100%;
     }
 
+    @keyframes zigzagGlideLeft {
+      from { background-position-x: 0; }
+      to   { background-position-x: -4.6875vw; }
+    }
+
+    @keyframes zigzagGlideRight {
+      from { background-position-x: 0; }
+      to   { background-position-x: 4.6875vw; }
+    }
+
+    .zigzag-top    { animation: zigzagGlideLeft 2.4s linear infinite; }
+    .zigzag-bottom { animation: zigzagGlideRight 2.4s linear infinite; }
+
     .zigzag-top { top: 0; background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='90' height='42' viewBox='0 0 90 42' preserveAspectRatio='none' shape-rendering='crispEdges'><polyline points='-1,7 45,35 91,7' fill='none' stroke='%23d00000' stroke-width='13'/><polyline points='-1,7 45,35 91,7' fill='none' stroke='%23500000' stroke-width='5'/></svg>"); }
     .zigzag-bottom { bottom: 0; background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='90' height='42' viewBox='0 0 90 42' preserveAspectRatio='none' shape-rendering='crispEdges'><polyline points='-1,35 45,7 91,35' fill='none' stroke='%23d00000' stroke-width='13'/><polyline points='-1,35 45,7 91,35' fill='none' stroke='%23500000' stroke-width='5'/></svg>"); }
 
@@ -1319,6 +1332,354 @@
     }
 
     .connect-back:hover { color: #ff2222; }
+
+
+    /* =========================================================================
+       7. VIEW: LOBBY (окно сервера после подключения)
+       ========================================================================= */
+    #viewLobby {
+      position: absolute;
+      inset: 0;
+      z-index: 20;
+      display: none;
+      background: #000000;
+      overflow: hidden;
+    }
+
+    @keyframes lobbyBgScroll {
+      from { background-position: 0 0; }
+      to   { background-position: 5vw 5vw; }
+    }
+
+    @keyframes lobbyBgPulse {
+      0%   { filter: brightness(0.8); }
+      50%  { filter: brightness(1.2); }
+      100% { filter: brightness(0.8); }
+    }
+
+    .lobby-bg {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='96' height='96' viewBox='0 0 96 96' shape-rendering='crispEdges'><rect width='96' height='96' fill='%232b1348'/><rect x='6' y='6' width='84' height='84' fill='%23700a1c'/><rect x='12' y='12' width='72' height='72' fill='%23000000'/></svg>");
+      background-size: 5vw 5vw;
+      background-repeat: repeat;
+      image-rendering: pixelated;
+      animation: lobbyBgScroll 8s linear infinite;
+    }
+
+    /* красный слой плавно проявляется (5 с) и растворяется (5 с): фиолетовый -> красный -> фиолетовый */
+    .lobby-bg::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='96' height='96' viewBox='0 0 96 96' shape-rendering='crispEdges'><rect width='96' height='96' fill='%238c1226'/><rect x='6' y='6' width='84' height='84' fill='%233a0a22'/><rect x='12' y='12' width='72' height='72' fill='%23000000'/></svg>");
+      background-size: 5vw 5vw;
+      background-repeat: repeat;
+      image-rendering: pixelated;
+      opacity: 0;
+      animation: lobbyBgScroll 8s linear infinite, lobbyBgShift 10s ease-in-out infinite;
+    }
+
+    @keyframes lobbyBgShift {
+      0%   { opacity: 0; }
+      50%  { opacity: 1; }
+      100% { opacity: 0; }
+    }
+
+    .lobby-controls {
+      position: absolute;
+      top: 0;
+      left: 0;
+      z-index: 5;
+      padding: 0.1vw 0.9vw 0.6vh 0.2vw;
+      background: #000000;
+      border-right: 4px solid #d8d8d8;
+      border-bottom: 4px solid #d8d8d8;
+      font-size: 1.25vw;
+      line-height: 2.96vh;
+      color: #ffffff;
+      white-space: nowrap;
+      text-shadow: none;
+    }
+
+    .lobby-controls .key { color: #ff7a00; }
+
+    .lobby-coins {
+      position: absolute;
+      top: 0;
+      right: 0;
+      z-index: 5;
+      width: 23.4vw;
+      height: 10.2vh;
+      display: flex;
+      align-items: center;
+      gap: 1vw;
+      padding-left: 1.6vw;
+      background: #07071a;
+      border-left: 4px solid #d8d8d8;
+      border-bottom: 4px solid #d8d8d8;
+      text-shadow: none;
+    }
+
+    .lobby-coin-img {
+      height: 7.4vh;
+      width: auto;
+      image-rendering: pixelated;
+    }
+
+    .lobby-coins .lc-x { font-size: 1.3vw; color: #bdbdbd; }
+    .lobby-coins .lc-count { font-size: 2.9vw; color: #ffffff; }
+
+    .lobby-player {
+      position: absolute;
+      left: 50%;
+      top: calc(42.6vh - 2.5vw);
+      transform: translateX(-50%);
+      z-index: 4;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1.1vh;
+    }
+
+    .lobby-icon {
+      width: 5vw;
+      height: 5vw;
+    }
+
+    .lobby-icon img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      image-rendering: pixelated;
+    }
+
+    .lobby-icon.fallback {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 3px solid #8a8a8a;
+      border-radius: 50%;
+      background: #111111;
+      color: #dddddd;
+      font-size: 2.2vw;
+    }
+
+    .lobby-nick {
+      font-size: 1.25vw;
+      text-transform: uppercase;
+      white-space: nowrap;
+      text-shadow: 2px 2px 0 #000000;
+    }
+
+    .lobby-chat {
+      position: absolute;
+      left: 1vw;
+      top: 52.8vh;
+      width: 90vw;
+      height: 25vh;
+      overflow: hidden;
+      z-index: 4;
+      font-size: 1.25vw;
+      line-height: 2.96vh;
+      color: #ffffff;
+      white-space: pre;
+      text-transform: uppercase;
+      text-shadow: 2px 2px 0 #000000;
+      pointer-events: none;
+    }
+
+    .lobby-chat-input {
+      position: absolute;
+      left: 0;
+      top: 78.4vh;
+      width: 61.6vw;
+      height: 4.3vh;
+      display: block;
+      z-index: 6;
+      padding: 0 0.6vw;
+      background: rgba(0, 0, 0, 0.55);
+      border: 3px solid rgba(255, 255, 255, 0.28);
+      outline: none;
+      font-family: inherit;
+      font-size: 1.25vw;
+      color: #ffffff;
+      text-transform: uppercase;
+    }
+
+    .lobby-chat-input::placeholder { color: rgba(255, 255, 255, 0.35); }
+
+    .lobby-spikes {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 78.5vh;
+      height: 4.35vh;
+      z-index: 5;
+      pointer-events: none;
+      background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='88' height='47' viewBox='0 0 88 47' preserveAspectRatio='none' shape-rendering='crispEdges'><polygon points='0,47 44,2 88,47' fill='%23dcdcdc' stroke='%23454545' stroke-width='3'/><polygon points='16,44 44,13 72,44' fill='%238c8c8c'/></svg>");
+      background-size: 4.5833vw 100%;
+      background-repeat: repeat-x;
+      background-position: bottom left;
+      animation: lobbySpikesGlide 1.5s linear infinite;
+    }
+
+    @keyframes lobbySpikesGlide {
+      from { background-position-x: 0; }
+      to   { background-position-x: 4.5833vw; }
+    }
+
+    .lobby-floor {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 82.85vh;
+      height: 0.85vh;
+      z-index: 5;
+      background: #c9c9c9;
+      border-bottom: 3px solid #6e6e6e;
+      pointer-events: none;
+    }
+
+    .lobby-bottom {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 83.8vh;
+      bottom: 0;
+      z-index: 5;
+      background: #000000;
+      text-shadow: none;
+    }
+
+    .lobby-exe {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 9.2vh;
+      text-align: center;
+      font-size: 1.25vw;
+      color: #ff1a1a;
+      white-space: nowrap;
+    }
+
+    .lobby-exe span { color: #ffffff; }
+
+    .lobby-music {
+      position: absolute;
+      left: 0.2vw;
+      bottom: 1.2vh;
+      display: flex;
+      align-items: center;
+      gap: 0.8vw;
+      font-size: 1.25vw;
+      color: #ffffff;
+      white-space: nowrap;
+    }
+
+    .music-bar {
+      position: relative;
+      width: 13.6vw;
+      height: 1.9vh;
+      background: #c04a4a;
+      clip-path: polygon(0 0, 94% 0, 100% 50%, 94% 100%, 0 100%);
+      cursor: pointer;
+      touch-action: none;
+    }
+
+    .music-bar::before {
+      content: '';
+      position: absolute;
+      inset: 3px 3px 3px 3px;
+      background: #4a1010;
+      clip-path: polygon(0 0, 94% 0, 100% 50%, 94% 100%, 0 100%);
+    }
+
+    .music-fill {
+      position: absolute;
+      top: 3px;
+      bottom: 3px;
+      left: 3px;
+      width: calc(100% - 6px);
+      background: #a83a3a;
+      clip-path: polygon(0 0, 94% 0, 100% 50%, 94% 100%, 0 100%);
+    }
+
+
+    /* =========================================================================
+       8. ПЕРЕХОДЫ (чёрная / белая вспышка) И СЕКРЕТНЫЙ ЭКРАН
+       ========================================================================= */
+    #screenFade {
+      position: absolute;
+      inset: 0;
+      z-index: 90;
+      pointer-events: none;
+      opacity: 0;
+      background: #000000;
+    }
+
+    .lobby-icon.ready { filter: drop-shadow(0 0 0.7vw #19ff19) drop-shadow(0 0 0.25vw #19ff19); }
+
+    @keyframes lobbyIconHop {
+      0%   { transform: translateY(0) rotate(0deg); }
+      14%  { transform: translateY(-0.55vw) rotate(-6deg); }
+      28%  { transform: translateY(-0.85vw) rotate(5deg); }
+      42%  { transform: translateY(-0.5vw) rotate(-4deg); }
+      58%  { transform: translateY(0) rotate(3deg); }
+      70%  { transform: translateY(-0.25vw) rotate(-2deg); }
+      84%  { transform: translateY(0) rotate(1deg); }
+      100% { transform: translateY(0) rotate(0deg); }
+    }
+
+    .lobby-icon.hop { animation: lobbyIconHop 0.45s ease-out; }
+    .lobby-icon.ready img { filter: sepia(1) hue-rotate(60deg) saturate(5) brightness(1.15); }
+    .lobby-icon.fallback.ready { border-color: #22dd22; color: #22ff22; background: #062a06; }
+
+    #lobbyRemote {
+      position: absolute;
+      inset: 0;
+      z-index: 4;
+      pointer-events: none;
+    }
+
+    .lobby-chat-input:focus { border-color: rgba(255, 255, 255, 0.6); }
+
+    @keyframes secretDrift {
+      from { background-position: 0 0; }
+      to   { background-position: 7vw 7vw; }
+    }
+
+    #secretOverlay {
+      position: absolute;
+      inset: 0;
+      z-index: 60;
+      display: none;
+      overflow: hidden;
+      background: #140000;
+    }
+
+    .secret-smiles {
+      position: absolute;
+      inset: 0;
+      background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'><g fill='%23d40000' stroke='%23ff3030' stroke-width='3'><circle cx='25' cy='25' r='17'/><circle cx='75' cy='75' r='17'/></g><g fill='%23200000'><circle cx='19' cy='21' r='2.6'/><circle cx='31' cy='21' r='2.6'/><circle cx='69' cy='71' r='2.6'/><circle cx='81' cy='71' r='2.6'/></g><g fill='none' stroke='%23200000' stroke-width='3' stroke-linecap='round'><path d='M17,30 Q25,38 33,30'/><path d='M67,80 Q75,88 83,80'/></g></svg>");
+      background-size: 7vw 7vw;
+      background-repeat: repeat;
+      animation: secretDrift 5s linear infinite;
+    }
+
+    .secret-text {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      text-align: center;
+      font-size: 3.4vw;
+      color: #ffffff;
+      white-space: nowrap;
+      text-shadow: 4px 4px 0 #000, -4px 4px 0 #000, 4px -4px 0 #000, -4px -4px 0 #000, 0 0 24px #000;
+    }
 
     /* =========================================================================
        5. ИНТРО ЗАСТАВКА И БЕЛАЯ ВСПЫШКА
@@ -1475,7 +1836,7 @@
         <div class="build-info">
           <div class="build-row">
             <span class="build-label">GAME BUILD:</span>
-            <span class="build-val">v2.9</span>
+            <span class="build-val">v3.0</span>
           </div>
         </div>
 
@@ -1509,7 +1870,7 @@
           <span class="logo-exe">EXE</span>
         </div>
         <div class="logo-sub">THE DISASTER</div>
-        <div class="logo-sub">2D REMAKE WEB</div>
+        <div class="logo-sub">2D REMAKE</div>
       </div>
 
       <div class="menu-triangle-block"></div>
@@ -1858,6 +2219,57 @@
       </div>
     </div>
 
+    <!-- =========================================================================
+       7. VIEW: LOBBY
+       ========================================================================= -->
+    <div id="viewLobby">
+      <div class="lobby-bg"></div>
+
+      <div class="lobby-controls">
+        <div>CONTROLS:</div>
+        <div><span class="key">Z</span>-READY</div>
+        <div><span class="key">X</span>-LEAVE</div>
+        <div><span class="key">ENTER</span>-OPEN CHAT</div>
+      </div>
+
+      <div class="lobby-coins">
+        <span id="lobbyCoinSlot"></span>
+        <span class="lc-x">&times;</span>
+        <span class="lc-count" id="lobbyCoinCount">32</span>
+      </div>
+
+      <div id="lobbyRemote"></div>
+
+      <div class="lobby-player">
+        <div class="lobby-icon" id="lobbyIcon"></div>
+        <div class="lobby-nick" id="lobbyNick"></div>
+      </div>
+
+      <div class="lobby-chat" id="lobbyChat"></div>
+      <input class="lobby-chat-input" id="lobbyChatInput" type="text" maxlength="120" placeholder="ENTER MESSAGE..." autocomplete="off" spellcheck="false">
+
+      <div class="lobby-spikes"></div>
+      <div class="lobby-floor"></div>
+
+      <div class="lobby-bottom">
+        <div class="lobby-exe">CHANCE TO BE EXE: <span id="lobbyExeChance">1%</span></div>
+        <div class="lobby-music">
+          <span>MUSIC</span>
+          <div class="music-bar" id="musicBar"><div class="music-fill" id="musicFill"></div></div>
+          <span id="musicPct">100%</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Секретный экран (открывается словом "secret" в About/Credits) -->
+    <div id="secretOverlay">
+      <div class="secret-smiles"></div>
+      <div class="secret-text" id="secretText"></div>
+    </div>
+
+    <!-- Чёрная / белая вспышка при входе на сервер и выходе из него -->
+    <div id="screenFade"></div>
+
     <!-- Интро заставка -->
     <div id="introScreen">
       <div class="intro-top" id="introTop">
@@ -1940,7 +2352,7 @@
   var bgmStarted = false;
 
   function startMenuMusic() {
-    if (bgmStarted || !menuBgm) return;
+    if (bgmStarted || !menuBgm || state.screen === 'lobby') return;
     try {
       menuBgm.volume = 0.6;
       var p = menuBgm.play();
@@ -1971,6 +2383,8 @@
 
   var playHoverSfx = function () {};
   var playSelectSfx = function () {};
+  var playJoinSfx = function () {};
+  var playZSfx = function () {};
 
   /* =========================================================================
      ПОЛНЫЙ ЭКРАН (F11)
@@ -2720,6 +3134,7 @@
   }
 
   function openAboutView() {
+    secretBuffer = '';
     showScreen('about');
     safe('creditsScroll', function () {
       var win = document.querySelector('.about-credits-scroll-window');
@@ -2735,7 +3150,7 @@
      JOIN GAME: карта -> подключение -> ошибка
      ========================================================================= */
   var SERVERS = { ru: { id: 'ru', name: 'RUSSIA' } };
-  var CONNECT_FAIL_DELAY_MS = 4000;
+
   var connection = { token: 0, dotsTimer: 0, failTimer: 0 };
 
   function cancelConnection() {
@@ -2744,6 +3159,7 @@
     clearTimeout(connection.failTimer);
     connection.dotsTimer = 0;
     connection.failTimer = 0;
+    netShutdown();
   }
 
   function openJoinView() {
@@ -2763,6 +3179,7 @@
 
   function startConnection(server) {
     cancelConnection();
+    currentRoom = 1;
     var token = connection.token;
     var status = $('connectStatus');
     var dots = 1;
@@ -2773,6 +3190,15 @@
       status.innerHTML = 'CONNECTING TO THE SERVER<span class="connect-dots">' + '...'.slice(0, dots) + '</span>';
     }
 
+    function showFailed() {
+      clearInterval(connection.dotsTimer);
+      connection.dotsTimer = 0;
+      if (status) {
+        status.className = 'connect-status failed';
+        status.textContent = 'FAILED TO CONNECT';
+      }
+    }
+
     renderConnecting();
     showScreen('connect');
 
@@ -2781,16 +3207,24 @@
       renderConnecting();
     }, 450);
 
-    /* Серверной части пока нет — попытка подключения всегда заканчивается ошибкой */
-    connection.failTimer = setTimeout(function () {
-      if (token !== connection.token) return;
-      clearInterval(connection.dotsTimer);
-      connection.dotsTimer = 0;
-      if (status) {
-        status.className = 'connect-status failed';
-        status.textContent = 'FAILED TO CONNECT';
-      }
-    }, CONNECT_FAIL_DELAY_MS);
+    function isCancelled() { return token !== connection.token; }
+
+    loadPeerJs()
+      .then(function () {
+        if (isCancelled()) return null;
+        return netConnect(isCancelled).then(function () { return true; });
+      })
+      .then(function (ok) {
+        if (!ok || isCancelled()) return;
+        clearInterval(connection.dotsTimer);
+        connection.dotsTimer = 0;
+        enterLobbyWithFade();
+      })
+      .catch(function (err) {
+        if (isCancelled()) return;
+        console.warn('[TD2DR] подключение не удалось:', err && err.message);
+        showFailed();
+      });
   }
 
   function initJoin() {
@@ -2812,6 +3246,820 @@
     on(cBack, 'click', function () { playSelectSfx(); backFromConnect(); });
   }
 
+  /* =========================================================================
+     LOBBY (окно сервера)
+     ========================================================================= */
+  var LOBBY_MAX_LINES = 8;
+  var BGM_MAX_VOLUME = 0.6;
+  var lobbyReady = false;
+  var musicPercent = 100;
+  var MONTHS = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+
+  var lobbyBgm = null;
+  var secretBgm = null;
+
+  function applyMusicVolume() {
+    var vol = BGM_MAX_VOLUME * musicPercent / 100;
+    if (menuBgm) {
+      try { menuBgm.volume = vol; } catch (e) { /* ignore */ }
+    }
+    if (lobbyBgm) {
+      try { lobbyBgm.volume = vol; } catch (e) { /* ignore */ }
+    }
+    if (secretBgm) {
+      try { secretBgm.volume = vol; } catch (e) { /* ignore */ }
+    }
+    var fill = $('musicFill');
+    var pct = $('musicPct');
+    if (fill) fill.style.width = 'calc(' + musicPercent + '% - 6px)';
+    if (pct) pct.textContent = musicPercent + '%';
+  }
+
+  function addChatLine(parts, withServerPrefix) {
+    var chat = $('lobbyChat');
+    if (!chat) return;
+    var line = document.createElement('div');
+
+    if (withServerPrefix) {
+      var prefix = document.createElement('span');
+      prefix.textContent = '(SERVER): ';
+      line.appendChild(prefix);
+    }
+
+    parts.forEach(function (part) {
+      var span = document.createElement('span');
+      span.textContent = part[0];
+      if (part[1]) span.style.color = part[1];
+      line.appendChild(span);
+    });
+
+    chat.appendChild(line);
+    while (chat.children.length > LOBBY_MAX_LINES) chat.removeChild(chat.firstChild);
+  }
+
+  function buildServerHeader() {
+    var chat = $('lobbyChat');
+    if (chat) chat.innerHTML = '';
+
+    var now = new Date();
+    function pad(n) { return String(n).padStart(2, '0'); }
+    var dateStr = MONTHS[now.getMonth()] + ' ' + String(now.getDate()).padStart(2, ' ') + ' ' + now.getFullYear();
+    var timeStr = pad(now.getHours()) + ':' + pad(now.getMinutes()) + ':' + pad(now.getSeconds());
+    var dashes = '-----------------------';
+
+    addChatLine([[dashes]], true);
+    addChatLine([['BETTER', '#ff2222'], ['SERVER', '#1f3bff'], [' V1101']], true);
+    addChatLine([['BUILD FROM '], [dateStr, '#8b2cff'], [' '], [timeStr, '#22e022']], true);
+    addChatLine([['SERVER '], [String(currentRoom), '#ff2222'], [' OF '], [String(ROOMS_TOTAL), '#2b5bff']], true);
+    addChatLine([[dashes]], true);
+    addChatLine([['TYPE .HELP FOR COMMAND LIST', '#3c3c3c']], true);
+  }
+
+  /* Иконка: одна функция для локального и удалённых игроков */
+  function findIconItem(iconId) {
+    for (var i = 0; i < ICONS_DATABASE.length; i++) {
+      if (ICONS_DATABASE[i].id === iconId) return ICONS_DATABASE[i];
+    }
+    return ICONS_DATABASE[0];
+  }
+
+  function fillIcon(box, iconId, ready) {
+    if (!box) return;
+    box.innerHTML = '';
+    box.className = 'lobby-icon' + (ready ? ' ready' : '');
+
+    var item = findIconItem(iconId);
+    var img = document.createElement('img');
+    img.alt = item.name;
+    img.draggable = false;
+    img.onerror = function () {
+      img.onerror = null;
+      if (img.parentNode) img.parentNode.removeChild(img);
+      box.classList.add('fallback');
+      box.textContent = item.name;
+    };
+    img.src = './assets/sprites/icons/' + item.img;
+    box.appendChild(img);
+  }
+
+  /* Иконка игрока берётся из Extra Shop (equippedIconId); зелёная = READY */
+  function renderLobbyIcon() {
+    fillIcon($('lobbyIcon'), equippedIconId, lobbyReady);
+  }
+
+  function renderLobbyNick() {
+    var el = $('lobbyNick');
+    if (!el) return;
+    el.innerHTML = '';
+    el.appendChild(parseColoredNickname(savedNick));
+  }
+
+  function renderLobbyCoins() {
+    var slot = $('lobbyCoinSlot');
+    if (slot && !slot.firstChild) slot.appendChild(createCoinImg('lobby-coin-img'));
+    var count = $('lobbyCoinCount');
+    if (count) count.textContent = userCoins;
+  }
+
+  /* Строка чата видна всегда; Enter ставит в неё фокус */
+  function openChat() {
+    var input = $('lobbyChatInput');
+    if (!input) return;
+    input.value = '';
+    input.focus();
+  }
+
+  function closeChat() {
+    var input = $('lobbyChatInput');
+    if (!input) return;
+    input.value = '';
+    input.blur();
+  }
+
+  function addPlayerChat(nick, text) {
+    var chat = $('lobbyChat');
+    if (!chat) return;
+    var line = document.createElement('div');
+    var open = document.createElement('span');
+    open.textContent = '(';
+    line.appendChild(open);
+    line.appendChild(parseColoredNickname(nick));
+    var close = document.createElement('span');
+    close.textContent = '): ' + text;
+    line.appendChild(close);
+    chat.appendChild(line);
+    while (chat.children.length > LOBBY_MAX_LINES) chat.removeChild(chat.firstChild);
+  }
+
+  /* Команды лобби: .lobby 1 ... .lobby 10, .help */
+  function handleLobbyCommand(text) {
+    var m = /^\.(\w+)(?:\s+(.*))?$/.exec(text);
+    if (!m) return false;
+    var cmd = m[1].toLowerCase();
+
+    if (cmd === 'lobby') {
+      var arg = (m[2] || '').trim();
+      var n = /^\d+$/.test(arg) ? parseInt(arg, 10) : 0;
+      if (n < 1 || n > ROOMS_TOTAL) addChatLine([['USAGE: .LOBBY 1-' + ROOMS_TOTAL]], true);
+      else switchLobby(n);
+      return true;
+    }
+    if (cmd === 'help') {
+      addChatLine([['COMMANDS: .LOBBY 1-' + ROOMS_TOTAL]], true);
+      return true;
+    }
+    addChatLine([['UNKNOWN COMMAND. TYPE .HELP']], true);
+    return true;
+  }
+
+  /* Переход в другую комнату; чёрная вспышка после успешного входа */
+  function switchLobby(n) {
+    if (lobbySwitching || lobbyLeaving) return;
+    if (n === currentRoom) {
+      addChatLine([['YOU ARE ALREADY IN LOBBY ' + n]], true);
+      return;
+    }
+    lobbySwitching = true;
+    clearScreenFade();             /* смена комнаты: никаких затемнений */
+    var oldRoom = currentRoom;
+    addChatLine([['JOINING LOBBY ' + n + '...']], true);
+
+    lobbyReady = false;
+    var icon = $('lobbyIcon');
+    if (icon) icon.classList.remove('ready');
+    netShutdown();
+
+    function cancelled() { return state.screen !== 'lobby' || lobbyLeaving; }
+
+    netConnect(cancelled, n)
+      .then(function () {
+        if (cancelled()) { lobbySwitching = false; return; }
+        currentRoom = n;
+        clearScreenFade();
+        buildServerHeader();
+        rollChance();
+        renderRemotePlayers();
+        closeChat();
+        playJoinSfx();              /* звук входа при каждой смене комнаты */
+        startLobbyMusic();          /* музыка лобби заново с начала */
+        lobbySwitching = false;
+      })
+      .catch(function () {
+        if (cancelled()) { lobbySwitching = false; return; }
+        addChatLine([['FAILED TO JOIN LOBBY ' + n]], true);
+        netConnect(cancelled, oldRoom)
+          .then(function () { lobbySwitching = false; renderRemotePlayers(); })
+          .catch(function () {
+            lobbySwitching = false;
+            if (!cancelled()) { stopLobbyMusic(); showScreen('join'); }
+          });
+      });
+  }
+
+  function sendChatMessage(text) {
+    if (text.charAt(0) === '.' && handleLobbyCommand(text)) return;
+    addPlayerChat(savedNick, text);
+    netSendChat(text);
+  }
+
+  /* =========================================================================
+     СЕТЬ: WebRTC через PeerJS (публичный сигнальный сервер, без своего бэкенда).
+     Первый зашедший занимает фиксированный peer-id лобби и становится хостом,
+     остальные подключаются к нему. Хост ретранслирует сообщения всем.
+     Если хост уходит, оставшиеся автоматически выбирают нового.
+     ========================================================================= */
+  var PEERJS_URLS = [
+    'https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js',
+    'https://cdn.jsdelivr.net/npm/peerjs@1.5.4/dist/peerjs.min.js'
+  ];
+  var LOBBY_ID_PREFIX = 'td2dr-web-ru-lobby-';
+  var MAX_PLAYERS = 30;
+  var NET_TIMEOUT_MS = 15000;
+  var NET_CLIENT_CONNECT_TIMEOUT_MS = 8000;
+  var NET_MAX_ATTEMPTS = 3;
+
+  var net = { session: null, players: new Map(), myId: '', counter: 0 };
+  var lobbyLeaving = false;
+
+  var REMOTE_SLOTS = (function () {
+    var out = [];
+    [24, 32, 40].forEach(function (y) {
+      [10, 90, 24, 76, 38, 62, 17, 83, 31, 69].forEach(function (x) {
+        if (y === 40 && Math.abs(x - 50) < 14) return;
+        out.push([x, y]);
+      });
+    });
+    return out;
+  })();
+
+  /* Ровно 10 комнат: .lobby 1 ... .lobby 10 */
+  var ROOMS_TOTAL = 10;
+  var currentRoom = 1;
+  var lobbySwitching = false;
+  var lobbyChance = 1;
+
+  function rollChance() {
+    lobbyChance = 1 + Math.floor(Math.random() * 4);   /* целое от 1 до 4 */
+    var el = $('lobbyExeChance');
+    if (el) el.textContent = lobbyChance + '%';
+  }
+
+  function cleanStr(v, max) {
+    return typeof v === 'string' ? v.replace(/[\u0000-\u001f]/g, '').slice(0, max) : '';
+  }
+
+  function loadPeerJs() {
+    return new Promise(function (resolve, reject) {
+      if (window.Peer) { resolve(); return; }
+      var idx = 0;
+      function next() {
+        if (window.Peer) { resolve(); return; }
+        if (idx >= PEERJS_URLS.length) { reject(new Error('PeerJS library unavailable')); return; }
+        var sc = document.createElement('script');
+        sc.src = PEERJS_URLS[idx++];
+        sc.async = true;
+        var timer = setTimeout(function () { sc.onload = sc.onerror = null; next(); }, 8000);
+        sc.onload = function () { clearTimeout(timer); if (window.Peer) resolve(); else next(); };
+        sc.onerror = function () { clearTimeout(timer); next(); };
+        document.head.appendChild(sc);
+      }
+      next();
+    });
+  }
+
+  function netCreateSession() {
+    return { id: ++net.counter, peer: null, conns: Object.create(null), hostConn: null,
+             isHost: false, myId: '', closed: false, established: false };
+  }
+
+  function netDestroySession(sess) {
+    if (!sess || sess.closed) return;
+    sess.closed = true;
+    try {
+      Object.keys(sess.conns).forEach(function (id) { try { sess.conns[id].close(); } catch (e) { /* ignore */ } });
+      if (sess.hostConn) { try { sess.hostConn.close(); } catch (e) { /* ignore */ } }
+      if (sess.peer) { try { sess.peer.destroy(); } catch (e) { /* ignore */ } }
+    } catch (e2) { /* ignore */ }
+    if (net.session === sess) net.session = null;
+  }
+
+  function netShutdown() {
+    netDestroySession(net.session);
+    net.session = null;
+    net.myId = '';
+    net.players = new Map();
+    renderRemotePlayers();
+  }
+
+  function netBroadcast(sess, msg, exceptId) {
+    Object.keys(sess.conns).forEach(function (id) {
+      if (id === exceptId) return;
+      try { sess.conns[id].send(msg); } catch (e) { /* ignore */ }
+    });
+  }
+
+  function netPutPlayer(p) {
+    if (!p || typeof p !== 'object') return null;
+    var id = cleanStr(p.id, 80);
+    if (!id) return null;
+    var player = { id: id, n: cleanStr(p.n, 32) || 'PLAYER', i: findIconItem(p.i).id, r: !!p.r };
+    net.players.set(id, player);
+    return player;
+  }
+
+  function renderRemotePlayers(hopId) {
+    var box = $('lobbyRemote');
+    if (!box) return;
+    box.innerHTML = '';
+    var idx = 0;
+    net.players.forEach(function (p, id) {
+      if (id === net.myId) return;
+      var slot = REMOTE_SLOTS[idx % REMOTE_SLOTS.length];
+      idx++;
+
+      var wrap = document.createElement('div');
+      wrap.className = 'lobby-player remote';
+      wrap.style.left = slot[0] + '%';
+      wrap.style.top = 'calc(' + slot[1] + 'vh - 2.5vw)';
+
+      var icon = document.createElement('div');
+      fillIcon(icon, p.i, p.r);
+      if (hopId && hopId === id) icon.classList.add('hop');
+      var nick = document.createElement('div');
+      nick.className = 'lobby-nick';
+      nick.appendChild(parseColoredNickname(p.n));
+
+      wrap.appendChild(icon);
+      wrap.appendChild(nick);
+      box.appendChild(wrap);
+    });
+  }
+
+  /* ----- хост ----- */
+  function netSetupHost(sess) {
+    net.players = new Map();
+    net.players.set(sess.myId, { id: sess.myId, n: savedNick, i: equippedIconId, r: lobbyReady });
+
+    sess.peer.on('connection', function (conn) {
+      if (sess.closed) { try { conn.close(); } catch (e) { /* ignore */ } return; }
+      conn.on('data', function (data) { netHostData(sess, conn, data); });
+      conn.on('close', function () { netDropClient(sess, conn.peer); });
+      conn.on('error', function () { netDropClient(sess, conn.peer); });
+    });
+
+    sess.peer.on('disconnected', function () {
+      if (sess.closed) return;
+      try { sess.peer.reconnect(); } catch (e) { /* ignore */ }
+    });
+  }
+
+  function netHostData(sess, conn, data) {
+    if (sess.closed || !data || typeof data !== 'object') return;
+    var id = conn.peer;
+
+    if (data.t === 'hello') {
+      if (sess.conns[id]) return;
+      if (net.players.size >= MAX_PLAYERS) {
+        try { conn.send({ t: 'full' }); } catch (e) { /* ignore */ }
+        setTimeout(function () { try { conn.close(); } catch (e2) { /* ignore */ } }, 200);
+        return;
+      }
+      sess.conns[id] = conn;
+      var player = netPutPlayer({ id: id, n: data.n, i: data.i, r: data.r });
+      try { conn.send({ t: 'welcome', id: id, players: Array.from(net.players.values()) }); } catch (e3) { /* ignore */ }
+      netBroadcast(sess, { t: 'join', p: player }, id);
+      renderRemotePlayers();
+      return;
+    }
+
+    if (!sess.conns[id]) return;
+    var p = net.players.get(id);
+    if (!p) return;
+
+    if (data.t === 'state') {
+      if ('r' in data) p.r = !!data.r;
+      netBroadcast(sess, { t: 'state', id: id, r: p.r }, id);
+      renderRemotePlayers(id);
+    } else if (data.t === 'chat') {
+      var m = cleanStr(data.m, 120);
+      if (!m) return;
+      addPlayerChat(p.n, m);
+      netBroadcast(sess, { t: 'chat', n: p.n, m: m }, id);
+    }
+  }
+
+  function netDropClient(sess, id) {
+    if (sess.closed || !sess.conns[id]) return;
+    delete sess.conns[id];
+    net.players.delete(id);
+    netBroadcast(sess, { t: 'leave', id: id });
+    renderRemotePlayers();
+  }
+
+  /* ----- клиент ----- */
+  function netClientData(sess, data, onWelcome) {
+    if (sess.closed || !data || typeof data !== 'object') return;
+    switch (data.t) {
+      case 'welcome':
+        net.players = new Map();
+        if (Array.isArray(data.players)) {
+          data.players.slice(0, MAX_PLAYERS).forEach(function (p) { netPutPlayer(p); });
+        }
+        onWelcome(null);
+        renderRemotePlayers();
+        break;
+      case 'full':
+        onWelcome(new Error('lobby is full'));
+        break;
+      case 'join':
+        netPutPlayer(data.p);
+        renderRemotePlayers();
+        break;
+      case 'leave':
+        if (typeof data.id === 'string') { net.players.delete(data.id); renderRemotePlayers(); }
+        break;
+      case 'state':
+        var pl = net.players.get(data.id);
+        if (pl) { if ('r' in data) pl.r = !!data.r; renderRemotePlayers(data.id); }
+        break;
+      case 'chat':
+        var msg = cleanStr(data.m, 120);
+        if (msg) addPlayerChat(cleanStr(data.n, 32) || 'PLAYER', msg);
+        break;
+    }
+  }
+
+  /* Хост пропал: пробуем снова зайти в лобби (первый успевший станет новым хостом) */
+  function netOnHostLost(sess) {
+    if (sess.closed) return;
+    netDestroySession(sess);
+    net.players = new Map();
+    renderRemotePlayers();
+    if (state.screen !== 'lobby' || lobbyLeaving) return;
+
+    setTimeout(function () {
+      if (state.screen !== 'lobby' || lobbyLeaving || net.session) return;
+      netConnect(function () { return state.screen !== 'lobby' || lobbyLeaving; })
+        .then(function () { renderRemotePlayers(); })
+        .catch(function () {
+          if (state.screen === 'lobby' && !lobbyLeaving) { stopLobbyMusic(); showScreen('join'); }
+        });
+    }, 300 + Math.random() * 1000);
+  }
+
+  function netConnect(isCancelled, room) {
+    return new Promise(function (resolve, reject) {
+      var finished = false;
+      var attempts = 0;
+      var curSess = null;
+      var retryTimer = 0;
+      var hostId = LOBBY_ID_PREFIX + (typeof room === 'number' ? room : currentRoom);
+
+      var overall = setTimeout(function () { finish(new Error('timeout')); }, NET_TIMEOUT_MS);
+
+      function finish(err) {
+        if (finished) return;
+        finished = true;
+        clearTimeout(overall);
+        clearTimeout(retryTimer);
+        if (err) {
+          netDestroySession(curSess);
+          reject(err);
+        } else {
+          if (curSess) curSess.established = true;
+          resolve();
+        }
+      }
+
+      function retry(reason) {
+        if (finished) return;
+        netDestroySession(curSess);
+        attempts++;
+        if (attempts >= NET_MAX_ATTEMPTS) { finish(new Error(reason)); return; }
+        retryTimer = setTimeout(attempt, 600 + Math.random() * 500);
+      }
+
+      function joinAsClient(prevSess) {
+        netDestroySession(prevSess);
+        if (finished) return;
+        var sess = netCreateSession();
+        curSess = sess;
+        net.session = sess;
+
+        var peer;
+        try { peer = new window.Peer({ debug: 0 }); } catch (e) { finish(e); return; }
+        sess.peer = peer;
+
+        peer.on('error', function (err) {
+          if (sess.closed || finished) return;
+          retry((err && err.type) || 'error');
+        });
+
+        peer.on('open', function (id) {
+          if (sess.closed || finished) return;
+          sess.myId = id;
+          net.myId = id;
+
+          var conn = peer.connect(hostId, { reliable: true, serialization: 'json' });
+          sess.hostConn = conn;
+
+          var ct = setTimeout(function () {
+            if (!finished && !sess.closed) retry('host-timeout');
+          }, NET_CLIENT_CONNECT_TIMEOUT_MS);
+
+          conn.on('open', function () {
+            try { conn.send({ t: 'hello', n: savedNick, i: equippedIconId, r: lobbyReady }); } catch (e2) { /* ignore */ }
+          });
+          conn.on('data', function (data) {
+            clearTimeout(ct);
+            netClientData(sess, data, finish);
+          });
+          conn.on('close', function () {
+            clearTimeout(ct);
+            if (!finished) retry('host-closed'); else netOnHostLost(sess);
+          });
+          conn.on('error', function () {
+            clearTimeout(ct);
+            if (!finished) retry('host-error'); else netOnHostLost(sess);
+          });
+        });
+
+        peer.on('disconnected', function () {
+          if (sess.closed) return;
+          try { peer.reconnect(); } catch (e3) { /* ignore */ }
+        });
+      }
+
+      function attempt() {
+        if (finished) return;
+        if (isCancelled && isCancelled()) { finish(new Error('cancelled')); return; }
+
+        var sess = netCreateSession();
+        curSess = sess;
+        net.session = sess;
+
+        var peer;
+        try { peer = new window.Peer(hostId, { debug: 0 }); } catch (e) { finish(e); return; }
+        sess.peer = peer;
+        var opened = false;
+
+        peer.on('open', function (id) {
+          if (sess.closed || finished) return;
+          opened = true;
+          sess.isHost = true;
+          sess.myId = id;
+          net.myId = id;
+          netSetupHost(sess);
+          finish(null);
+        });
+
+        peer.on('error', function (err) {
+          if (sess.closed || finished || opened) return;
+          var type = err && err.type;
+          if (type === 'unavailable-id') joinAsClient(sess);   /* хост уже есть */
+          else retry(type || 'error');
+        });
+      }
+
+      attempt();
+    });
+  }
+
+  function netSendState() {
+    var sess = net.session;
+    if (!sess || sess.closed) return;
+    var me = net.players.get(net.myId);
+    if (me) me.r = lobbyReady;
+    if (sess.isHost) {
+      netBroadcast(sess, { t: 'state', id: net.myId, r: lobbyReady });
+    } else if (sess.hostConn) {
+      try { sess.hostConn.send({ t: 'state', r: lobbyReady }); } catch (e) { /* ignore */ }
+    }
+  }
+
+  function netSendChat(text) {
+    var sess = net.session;
+    if (!sess || sess.closed) return;
+    if (sess.isHost) {
+      netBroadcast(sess, { t: 'chat', n: savedNick, m: text });
+    } else if (sess.hostConn) {
+      try { sess.hostConn.send({ t: 'chat', m: text }); } catch (e) { /* ignore */ }
+    }
+  }
+
+  /* ----- вспышки при входе (чёрная) и выходе (белая) ----- */
+  var fadeBusy = false;
+
+  /* Мгновенно убирает любое затемнение/вспышку (используется при смене комнаты) */
+  function clearScreenFade() {
+    var el = $('screenFade');
+    if (el) {
+      el.style.transition = 'none';
+      el.style.opacity = '0';
+    }
+    fadeBusy = false;
+  }
+
+  function screenFlash(color, midCallback) {
+    var el = $('screenFade');
+    if (!el || fadeBusy) { midCallback(); return; }
+    fadeBusy = true;
+    el.style.transition = 'none';
+    el.style.background = color;
+    el.style.opacity = '0';
+    void el.offsetWidth;
+    el.style.transition = 'opacity 0.18s linear';
+    el.style.opacity = '1';
+    setTimeout(function () {
+      try { midCallback(); }
+      finally {
+        el.style.transition = 'opacity 0.55s ease-out';
+        el.style.opacity = '0';
+        setTimeout(function () { fadeBusy = false; }, 600);
+      }
+    }, 200);
+  }
+
+  /* Музыка лобби: assets/music/lobby.ogg (меню-музыка на это время ставится на паузу) */
+  function startLobbyMusic() {
+    try {
+      if (!lobbyBgm) {
+        lobbyBgm = new Audio('./assets/music/lobby.ogg');
+        lobbyBgm.loop = true;
+        lobbyBgm.preload = 'auto';
+      }
+      if (menuBgm) menuBgm.pause();
+      lobbyBgm.currentTime = 0;
+      applyMusicVolume();
+      var pr = lobbyBgm.play();
+      if (pr && pr.catch) pr.catch(function () {});
+    } catch (e) { /* ignore */ }
+  }
+
+  function stopLobbyMusic() {
+    try {
+      if (lobbyBgm) lobbyBgm.pause();
+      if (menuBgm && bgmStarted) {
+        applyMusicVolume();
+        var pm = menuBgm.play();
+        if (pm && pm.catch) pm.catch(function () {});
+      }
+    } catch (e) { /* ignore */ }
+  }
+
+  function enterLobbyWithFade() {
+    screenFlash('#000000', function () {
+      if (!net.session || net.session.closed || state.screen !== 'connect') return;
+      openLobby();
+    });
+  }
+
+  function openLobby() {
+    lobbyLeaving = false;
+    showScreen('lobby');
+    playJoinSfx();
+    startLobbyMusic();
+    buildServerHeader();
+    renderLobbyIcon();
+    renderLobbyNick();
+    renderLobbyCoins();
+    renderRemotePlayers();
+    rollChance();
+    closeChat();
+    applyMusicVolume();
+  }
+
+  function leaveLobby() {
+    if (lobbyLeaving || state.screen !== 'lobby') return;
+    lobbyLeaving = true;
+    closeChat();
+    cancelConnection();            /* закрывает сетевую сессию */
+    screenFlash('#ffffff', function () {
+      stopLobbyMusic();
+      lobbyReady = false;
+      showScreen('main');
+      lobbyLeaving = false;
+    });
+  }
+
+  /* Z: готов / не готов. Иконка становится зелёной, текста в чате нет */
+  function toggleReady() {
+    lobbyReady = !lobbyReady;
+    var icon = $('lobbyIcon');
+    if (icon) {
+      icon.classList.toggle('ready', lobbyReady);
+      icon.classList.remove('hop');
+      void icon.offsetWidth;             /* перезапуск анимации при каждом нажатии */
+      icon.classList.add('hop');
+    }
+    netSendState();
+  }
+
+  function initLobby() {
+    musicPercent = parseInt(store.get('td2dr_music_vol', '100'), 10);
+    if (!isFinite(musicPercent)) musicPercent = 100;
+    musicPercent = Math.max(0, Math.min(100, musicPercent));
+    applyMusicVolume();
+
+    var input = $('lobbyChatInput');
+    on(input, 'keydown', function (e) {
+      e.stopPropagation();
+      if (e.key === 'Enter') {
+        var text = input.value.trim();
+        if (text) sendChatMessage(text);
+        closeChat();
+      } else if (e.key === 'Escape') {
+        closeChat();
+      }
+    });
+
+    /* Ползунок громкости музыки */
+    var bar = $('musicBar');
+    var dragging = false;
+    function setFromPointer(e) {
+      var rect = bar.getBoundingClientRect();
+      var ratio = (e.clientX - rect.left) / rect.width;
+      musicPercent = Math.max(0, Math.min(100, Math.round(ratio * 100)));
+      store.set('td2dr_music_vol', musicPercent);
+      applyMusicVolume();
+    }
+    on(bar, 'pointerdown', function (e) {
+      dragging = true;
+      try { bar.setPointerCapture(e.pointerId); } catch (err) { /* ignore */ }
+      setFromPointer(e);
+    });
+    on(bar, 'pointermove', function (e) { if (dragging) setFromPointer(e); });
+    on(bar, 'pointerup', function () { dragging = false; });
+    on(bar, 'pointercancel', function () { dragging = false; });
+  }
+
+  /* =========================================================================
+     СЕКРЕТ В ABOUT/CREDITS: набрать "secret" (поля ввода нет, слушаем клавиши)
+     ========================================================================= */
+  var SECRET_WORD = 'secret';
+  var SECRET_DURATION_MS = 10000;
+  var secretBuffer = '';
+  var secretActive = false;
+  var secretTimer = 0;
+
+  function feedSecret(e) {
+    /* По физическим клавишам: слово набирается на любой раскладке */
+    var m = /^Key([A-Z])$/.exec(e.code || '');
+    if (!m) return;
+    secretBuffer = (secretBuffer + m[1].toLowerCase()).slice(-SECRET_WORD.length);
+    if (secretBuffer === SECRET_WORD) {
+      secretBuffer = '';
+      triggerSecret();
+    }
+  }
+
+  function triggerSecret() {
+    if (secretActive) return;
+    secretActive = true;
+
+    var overlay = $('secretOverlay');
+    var text = $('secretText');
+    if (text) {
+      text.innerHTML = '';
+      text.appendChild(parseColoredNickname('@tsigan\\lis'));
+    }
+    if (overlay) overlay.style.display = 'block';
+
+    try {
+      if (menuBgm) menuBgm.pause();
+      if (!secretBgm) {
+        secretBgm = new Audio('./assets/music/secret.ogg');
+        secretBgm.preload = 'auto';
+      }
+      secretBgm.currentTime = 0;
+      applyMusicVolume();
+      var pr = secretBgm.play();
+      if (pr && pr.catch) pr.catch(function () {});
+    } catch (e) { /* ignore */ }
+
+    secretTimer = setTimeout(endSecret, SECRET_DURATION_MS);
+  }
+
+  function endSecret() {
+    clearTimeout(secretTimer);
+    secretTimer = 0;
+    var overlay = $('secretOverlay');
+    if (overlay) overlay.style.display = 'none';
+
+    try {
+      if (secretBgm) secretBgm.pause();
+      if (menuBgm && bgmStarted) {
+        applyMusicVolume();
+        var pm = menuBgm.play();
+        if (pm && pm.catch) pm.catch(function () {});
+      }
+    } catch (e) { /* ignore */ }
+
+    secretActive = false;
+    secretBuffer = '';
+    showScreen('main');
+  }
+
   function initAbout() {
     var back = $('aboutNavBack');
     on(back, 'mouseenter', playHoverSfx);
@@ -2827,6 +4075,9 @@
     on(window, 'keydown', function (e) {
       if (!state.introDone) return;
 
+      /* Секретный экран: всё остальное заблокировано до конца 10 секунд */
+      if (secretActive) { e.preventDefault(); return; }
+
       /* Переназначение клавиш */
       if (state.activeRebindBtn) {
         e.preventDefault();
@@ -2841,6 +4092,12 @@
         return;
       }
 
+      if (state.screen === 'lobby') {
+        if (e.code === 'KeyX') { if (!e.repeat) { playSelectSfx(); leaveLobby(); } }
+        else if (e.code === 'KeyZ') { if (!e.repeat) { playZSfx(); toggleReady(); } }
+        else if (e.key === 'Enter') { e.preventDefault(); openChat(); }
+        return;
+      }
       if (state.screen === 'connect') {
         if (e.key === 'Escape' || e.key === 'Enter') { playSelectSfx(); backFromConnect(); }
         return;
@@ -2851,7 +4108,8 @@
         return;
       }
       if (state.screen === 'about') {
-        if (e.key === 'Escape') { playSelectSfx(); closeAboutView(); }
+        if (e.key === 'Escape') { playSelectSfx(); closeAboutView(); return; }
+        feedSecret(e);
         return;
       }
       if (state.screen === 'extra') {
@@ -2916,12 +4174,15 @@
       views.about = $('viewAbout');
       views.join = $('viewJoin');
       views.connect = $('viewConnect');
+      views.lobby = $('viewLobby');
       menuBgm = $('menuBgm');
       if (menuBgm) { menuBgm.volume = 0.6; }
     });
     safe('sfx', function () {
       playHoverSfx = createSfx('./assets/sounds/hover.wav', 0.4);
       playSelectSfx = createSfx('./assets/sounds/select.wav', 0.6);
+      playJoinSfx = createSfx('./assets/sounds/join.wav', 0.7);
+      playZSfx = createSfx('./assets/sounds/z.wav', 0.7);
     });
 
     /* 3. Остальные модули — каждый изолирован */
@@ -2936,6 +4197,7 @@
     safe('extra', initExtra);
     safe('about', initAbout);
     safe('join', initJoin);
+    safe('lobby', initLobby);
     safe('fullscreenBtn', initFullscreenButton);
   }
 
