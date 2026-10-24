@@ -1645,6 +1645,14 @@
 
     .lobby-chat-input:focus { border-color: rgba(255, 255, 255, 0.6); }
 
+    #viewKick {
+      position: absolute;
+      inset: 0;
+      z-index: 20;
+      display: none;
+      background: rgba(0, 0, 0, 0.78);
+    }
+
     @keyframes secretDrift {
       from { background-position: 0 0; }
       to   { background-position: 7vw 7vw; }
@@ -1836,7 +1844,7 @@
         <div class="build-info">
           <div class="build-row">
             <span class="build-label">GAME BUILD:</span>
-            <span class="build-val">v3.0</span>
+            <span class="build-val">v3.15 BEST</span>
           </div>
         </div>
 
@@ -2261,6 +2269,16 @@
       </div>
     </div>
 
+    <!-- Экран кика (AFK): красные зигзаги едут в противоположные стороны -->
+    <div id="viewKick">
+      <div class="zigzag zigzag-top"></div>
+      <div class="zigzag zigzag-bottom"></div>
+      <div class="connect-box">
+        <div class="connect-status failed">AFK OR TIMEOUT</div>
+        <div class="connect-back" id="btnKickBack">BACK</div>
+      </div>
+    </div>
+
     <!-- Секретный экран (открывается словом "secret" в About/Credits) -->
     <div id="secretOverlay">
       <div class="secret-smiles"></div>
@@ -2352,7 +2370,7 @@
   var bgmStarted = false;
 
   function startMenuMusic() {
-    if (bgmStarted || !menuBgm || state.screen === 'lobby') return;
+    if (bgmStarted || !menuBgm || state.screen === 'lobby' || state.screen === 'kick' || musicMuted) return;
     try {
       menuBgm.volume = 0.6;
       var p = menuBgm.play();
@@ -2385,6 +2403,7 @@
   var playSelectSfx = function () {};
   var playJoinSfx = function () {};
   var playZSfx = function () {};
+  var playSmsSfx = function () {};
 
   /* =========================================================================
      ПОЛНЫЙ ЭКРАН (F11)
@@ -2545,6 +2564,16 @@
     }
     flush();
     return container;
+  }
+
+  /* Цвет, которым заканчивается ник (последний цветовой код); цвет по умолчанию - белый */
+  function nickEndColor(rawText) {
+    var color = '#ffffff';
+    for (var i = 0; i < rawText.length; i++) {
+      var ch = rawText.charAt(i);
+      if (Object.prototype.hasOwnProperty.call(COLOR_MAP, ch)) color = COLOR_MAP[ch];
+    }
+    return color;
   }
 
   var savedNick = '@TEST\\GANDON';
@@ -3367,6 +3396,7 @@
     if (!input) return;
     input.value = '';
     input.focus();
+    resetAfk();
   }
 
   function closeChat() {
@@ -3380,15 +3410,14 @@
     var chat = $('lobbyChat');
     if (!chat) return;
     var line = document.createElement('div');
-    var open = document.createElement('span');
-    open.textContent = '(';
-    line.appendChild(open);
     line.appendChild(parseColoredNickname(nick));
-    var close = document.createElement('span');
-    close.textContent = '): ' + text;
-    line.appendChild(close);
+    var msg = document.createElement('span');
+    msg.style.color = nickEndColor(nick);
+    msg.textContent = ': ' + text;
+    line.appendChild(msg);
     chat.appendChild(line);
     while (chat.children.length > LOBBY_MAX_LINES) chat.removeChild(chat.firstChild);
+    playSmsSfx();                 /* sms.wav у всех, кто сейчас в этой комнате */
   }
 
   /* Команды лобби: .lobby 1 ... .lobby 10, .help */
@@ -3440,6 +3469,7 @@
         rollChance();
         renderRemotePlayers();
         closeChat();
+        resetAfk();
         playJoinSfx();              /* звук входа при каждой смене комнаты */
         startLobbyMusic();          /* музыка лобби заново с начала */
         lobbySwitching = false;
@@ -3862,7 +3892,7 @@
 
   function screenFlash(color, midCallback) {
     var el = $('screenFade');
-    if (!el || fadeBusy) { midCallback(); return; }
+    if (!el || fadeBusy || lobbySwitching) { midCallback(); return; }
     fadeBusy = true;
     el.style.transition = 'none';
     el.style.background = color;
@@ -3882,6 +3912,7 @@
 
   /* Музыка лобби: assets/music/lobby.ogg (меню-музыка на это время ставится на паузу) */
   function startLobbyMusic() {
+    if (musicMuted) return;
     try {
       if (!lobbyBgm) {
         lobbyBgm = new Audio('./assets/music/lobby.ogg');
@@ -3927,11 +3958,13 @@
     rollChance();
     closeChat();
     applyMusicVolume();
+    resetAfk();
   }
 
   function leaveLobby() {
     if (lobbyLeaving || state.screen !== 'lobby') return;
     lobbyLeaving = true;
+    stopAfk();
     closeChat();
     cancelConnection();            /* закрывает сетевую сессию */
     screenFlash('#ffffff', function () {
@@ -3940,6 +3973,70 @@
       showScreen('main');
       lobbyLeaving = false;
     });
+  }
+
+  /* =========================================================================
+     AFK: 25 секунд без действий в лобби = кик
+     Действия, сбрасывающие таймер: клавиша Z, любой набор текста в чате
+     (и открытие чата по Enter), вход в комнату / смена комнаты.
+     ========================================================================= */
+  var AFK_LIMIT_MS = 25000;
+  var afkTimer = 0;
+  var musicMuted = false;
+
+  function stopAfk() {
+    clearTimeout(afkTimer);
+    afkTimer = 0;
+  }
+
+  function resetAfk() {
+    clearTimeout(afkTimer);
+    afkTimer = setTimeout(afkExpired, AFK_LIMIT_MS);
+  }
+
+  function afkExpired() {
+    afkTimer = 0;
+    if (state.screen !== 'lobby' || lobbyLeaving) return;
+    if (lobbySwitching) { resetAfk(); return; }   /* во время смены комнаты не кикаем */
+    kickPlayer();
+  }
+
+  function silenceAllMusic() {
+    musicMuted = true;
+    [menuBgm, lobbyBgm, secretBgm].forEach(function (audio) {
+      if (audio) { try { audio.pause(); } catch (e) { /* ignore */ } }
+    });
+  }
+
+  function resumeMenuMusic() {
+    musicMuted = false;
+    try {
+      if (menuBgm && bgmStarted) {
+        applyMusicVolume();
+        var pm = menuBgm.play();
+        if (pm && pm.catch) pm.catch(function () {});
+      }
+    } catch (e) { /* ignore */ }
+  }
+
+  function kickPlayer() {
+    stopAfk();
+    closeChat();
+    lobbyReady = false;
+    cancelConnection();            /* закрывает сетевую сессию: остальные увидят, что игрок вышел */
+    silenceAllMusic();             /* вся музыка полностью выключена */
+    showScreen('kick');
+  }
+
+  function leaveKickScreen() {
+    showScreen('main');
+    resumeMenuMusic();             /* в главном меню музыка снова играет */
+  }
+
+  function initKick() {
+    var back = $('btnKickBack');
+    on(back, 'mouseenter', playHoverSfx);
+    on(back, 'click', function () { playSelectSfx(); leaveKickScreen(); });
   }
 
   /* Z: готов / не готов. Иконка становится зелёной, текста в чате нет */
@@ -3962,8 +4059,10 @@
     applyMusicVolume();
 
     var input = $('lobbyChatInput');
+    on(input, 'input', resetAfk);
     on(input, 'keydown', function (e) {
       e.stopPropagation();
+      resetAfk();
       if (e.key === 'Enter') {
         var text = input.value.trim();
         if (text) sendChatMessage(text);
@@ -3998,6 +4097,7 @@
      ========================================================================= */
   var SECRET_WORD = 'secret';
   var SECRET_DURATION_MS = 10000;
+  var SECRET_REWARD_COINS = 1000;
   var secretBuffer = '';
   var secretActive = false;
   var secretTimer = 0;
@@ -4016,6 +4116,9 @@
   function triggerSecret() {
     if (secretActive) return;
     secretActive = true;
+
+    userCoins += SECRET_REWARD_COINS;     /* награда за секрет */
+    updateCoinDisplay();
 
     var overlay = $('secretOverlay');
     var text = $('secretText');
@@ -4092,9 +4195,13 @@
         return;
       }
 
+      if (state.screen === 'kick') {
+        if (e.key === 'Escape' || e.key === 'Enter') { playSelectSfx(); leaveKickScreen(); }
+        return;
+      }
       if (state.screen === 'lobby') {
         if (e.code === 'KeyX') { if (!e.repeat) { playSelectSfx(); leaveLobby(); } }
-        else if (e.code === 'KeyZ') { if (!e.repeat) { playZSfx(); toggleReady(); } }
+        else if (e.code === 'KeyZ') { resetAfk(); if (!e.repeat) { playZSfx(); toggleReady(); } }
         else if (e.key === 'Enter') { e.preventDefault(); openChat(); }
         return;
       }
@@ -4162,7 +4269,10 @@
   /* =========================================================================
      ЗАГРУЗКА
      ========================================================================= */
+  var BUILD_ID = 'rooms-instant-chatcolors-1';
+
   function boot() {
+    console.log('[TD2DR] build ' + BUILD_ID);
     /* 1. Интро — самое первое и полностью независимое */
     safe('intro', initIntro);
 
@@ -4175,6 +4285,7 @@
       views.join = $('viewJoin');
       views.connect = $('viewConnect');
       views.lobby = $('viewLobby');
+      views.kick = $('viewKick');
       menuBgm = $('menuBgm');
       if (menuBgm) { menuBgm.volume = 0.6; }
     });
@@ -4183,6 +4294,7 @@
       playSelectSfx = createSfx('./assets/sounds/select.wav', 0.6);
       playJoinSfx = createSfx('./assets/sounds/join.wav', 0.7);
       playZSfx = createSfx('./assets/sounds/z.wav', 0.7);
+      playSmsSfx = createSfx('./assets/sounds/sms.wav', 0.7);
     });
 
     /* 3. Остальные модули — каждый изолирован */
@@ -4198,6 +4310,7 @@
     safe('about', initAbout);
     safe('join', initJoin);
     safe('lobby', initLobby);
+    safe('kick', initKick);
     safe('fullscreenBtn', initFullscreenButton);
   }
 
