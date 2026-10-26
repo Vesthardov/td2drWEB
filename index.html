@@ -1643,6 +1643,8 @@
       pointer-events: none;
     }
 
+    .lobby-chat-form { display: contents; }
+
     .lobby-chat-input:focus { border-color: rgba(255, 255, 255, 0.6); }
 
     /* =========================================================================
@@ -1978,9 +1980,7 @@
     <canvas id="bgCanvas"></canvas>
 
     <audio id="menuBgm" loop preload="auto">
-      <source src="./assets/music/menu.mp3" type="audio/mpeg">
       <source src="./assets/music/menu.ogg" type="audio/ogg">
-      <source src="./assets/music/menu.wav" type="audio/wav">
     </audio>
 
     <div class="hud-stats-overlay">
@@ -2413,7 +2413,9 @@
       </div>
 
       <div class="lobby-chat" id="lobbyChat"></div>
-      <input class="lobby-chat-input" id="lobbyChatInput" type="text" maxlength="120" placeholder="ENTER MESSAGE..." autocomplete="off" spellcheck="false" enterkeyhint="send">
+      <form id="lobbyChatForm" class="lobby-chat-form" action="javascript:void(0)" autocomplete="off">
+        <input class="lobby-chat-input" id="lobbyChatInput" type="text" maxlength="120" placeholder="ENTER MESSAGE..." autocomplete="off" spellcheck="false" enterkeyhint="send">
+      </form>
 
       <div class="lobby-spikes"></div>
       <div class="lobby-floor"></div>
@@ -2569,50 +2571,133 @@
     } catch (e) { /* автоплей заблокирован — повторим при следующем жесте */ }
   }
 
-  /* Все звуки регистрируются, чтобы «разбудить» их при первом жесте пользователя:
-     мобильные браузеры (и Safari) блокируют звук, который запускается по сетевому событию
-     (чужое сообщение, чужое нажатие Z), пока этот же звук не был запущен жестом. */
+  /* =========================================================================
+     ЗВУКИ ИНТЕРФЕЙСА
+     Основной путь: Web Audio (звук декодируется один раз и играет сколько угодно раз,
+     без состояния <audio>, ничего не обрывается и не блокируется при запуске по сети).
+     Запасной путь: обычный <audio> (например, при открытии файла как file://).
+     Все звуки «будятся» первым жестом пользователя (мобильные браузеры иначе молчат).
+     ========================================================================= */
+  var UNLOCK_EVENTS = ['pointerdown', 'pointerup', 'touchend', 'click', 'keydown'];
   var audioUnlockables = [];
   var audioUnlocked = false;
+  var audioCtx = null;
+  var sfxEntries = [];
+
+  function ensureAudioCtx() {
+    if (audioCtx) return audioCtx;
+    try {
+      var AC = window.AudioContext || window.webkitAudioContext;
+      if (AC) audioCtx = new AC();
+    } catch (e) { audioCtx = null; }
+    return audioCtx;
+  }
+
+  function sfxLoadBuffer(entry) {
+    if (!audioCtx || entry.buffer || entry.loading || entry.failed) return;
+    entry.loading = true;
+    try {
+      fetch(entry.src)
+        .then(function (r) {
+          if (!r.ok) throw new Error('HTTP ' + r.status);
+          return r.arrayBuffer();
+        })
+        .then(function (buf) {
+          return new Promise(function (resolve, reject) {
+            var pr = audioCtx.decodeAudioData(buf, resolve, reject);
+            if (pr && pr.catch) pr.catch(reject);
+          });
+        })
+        .then(function (decoded) { entry.buffer = decoded; entry.loading = false; })
+        .catch(function () { entry.loading = false; entry.failed = true; });   /* остаёмся на обычном <audio> */
+    } catch (e) { entry.loading = false; entry.failed = true; }
+  }
 
   function createSfx(src, volume) {
-    var audio = null;
+    var entry = { src: src, volume: volume, audio: null, buffer: null, loading: false, failed: false };
+
     try {
-      audio = new Audio(src);
-      audio.preload = 'auto';
-      audio.volume = volume;
-      audio.addEventListener('error', function () {
-        console.warn('[TD2DR] звук не загрузился (проверь имя и папку файла): ' + src);
+      entry.audio = new Audio(src);
+      entry.audio.preload = 'auto';
+      entry.audio.volume = Math.min(1, volume);
+      entry.audio.addEventListener('error', function () {
+        console.error('[TD2DR] звук не загрузился (проверь имя файла и папку): ' + src);
       });
-      audioUnlockables.push(audio);
-    } catch (e) { audio = null; }
-    return function play() {
-      if (!audio) return;
+      audioUnlockables.push(entry.audio);
+    } catch (e) { entry.audio = null; }
+
+    sfxEntries.push(entry);
+    if (audioCtx) sfxLoadBuffer(entry);
+
+    function playHtml() {
+      var a = entry.audio;
+      if (!a) return;
+      a._lastReal = Date.now();
+      try { if (a.readyState > 0) a.currentTime = 0; } catch (e) { /* ignore */ }
       try {
-        audio.muted = false;
-        audio.currentTime = 0;
-        var p = audio.play();
-        if (p && p.catch) {
-          p.catch(function (err) {
-            console.warn('[TD2DR] звук не воспроизведён: ' + src + ' (' + (err && err.name) + ')');
+        a.muted = false;
+        var pr = a.play();
+        if (pr && pr.catch) {
+          pr.catch(function (err) {
+            var name = err && err.name;
+            var log = (name === 'NotAllowedError' || name === 'AbortError') ? console.warn : console.error;
+            log.call(console, '[TD2DR] звук не воспроизведён: ' + src + ' (' + name + ')');
           });
         }
-      } catch (e) { /* ignore */ }
+      } catch (e2) {
+        console.error('[TD2DR] звук не воспроизведён: ' + src, e2);
+      }
+    }
+
+    return function play() {
+      if (audioCtx && audioCtx.state === 'running' && entry.buffer) {
+        try {
+          var node = audioCtx.createBufferSource();
+          node.buffer = entry.buffer;
+          var gain = audioCtx.createGain();
+          gain.gain.value = entry.volume;
+          node.connect(gain);
+          gain.connect(audioCtx.destination);
+          node.start(0);
+          return;
+        } catch (e) { /* упадём на обычный <audio> */ }
+      }
+      playHtml();
     };
   }
 
+  function removeUnlockListeners() {
+    UNLOCK_EVENTS.forEach(function (name) { window.removeEventListener(name, unlockAudio, true); });
+  }
+
   function unlockAudio() {
-    if (audioUnlocked) return;
+    var ctx = ensureAudioCtx();
+    if (ctx) {
+      try {
+        if (ctx.state !== 'running') {
+          var rp = ctx.resume();
+          if (rp && rp.then) rp.then(function () { if (audioUnlocked) removeUnlockListeners(); }).catch(function () {});
+        }
+      } catch (e) { /* ignore */ }
+      sfxEntries.forEach(sfxLoadBuffer);
+    }
+
+    if (audioUnlocked) {
+      if (!ctx || ctx.state === 'running') removeUnlockListeners();
+      return;
+    }
+
     audioUnlockables.forEach(function (a) {
       try {
-        if (!a.paused) return;                 /* уже играет - трогать нельзя */
+        if (!a.paused) return;                       /* уже играет - не трогаем */
         a.muted = true;
+        var started = Date.now();
         var pr = a.play();
         if (pr && pr.then) {
           pr.then(function () {
             audioUnlocked = true;
-            a.pause();
-            a.currentTime = 0;
+            /* если за это время запустили настоящий звук - его не прерываем */
+            if (!(a._lastReal && a._lastReal >= started)) { a.pause(); a.currentTime = 0; }
             a.muted = false;
           }).catch(function () { a.muted = false; });
         } else {
@@ -3630,6 +3715,7 @@
   }
 
   function addPlayerChat(nick, text) {
+    try { playSmsSfx(); } catch (e) { /* звук не должен зависеть от остального */ }
     var chat = $('lobbyChat');
     if (!chat) return;
     var line = document.createElement('div');
@@ -3640,7 +3726,6 @@
     line.appendChild(msg);
     chat.appendChild(line);
     while (chat.children.length > LOBBY_MAX_LINES) chat.removeChild(chat.firstChild);
-    playSmsSfx();                 /* sms.wav у всех, кто сейчас в этой комнате */
   }
 
   /* Команды лобби: .lobby 1 ... .lobby 10, .help */
@@ -3730,6 +3815,10 @@
   var NET_TIMEOUT_MS = 15000;
   var NET_CLIENT_CONNECT_TIMEOUT_MS = 8000;
   var NET_MAX_ATTEMPTS = 3;
+  var NET_PING_INTERVAL_MS = 5000;      /* проверка «живости» соединения */
+  var NET_PEER_TIMEOUT_MS = 16000;      /* столько молчания = соединение мёртвое */
+  var NET_CHAT_LIMIT = { max: 6, windowMs: 5000 };     /* защита хоста от флуда */
+  var NET_STATE_LIMIT = { max: 10, windowMs: 3000 };
 
   var net = { session: null, players: new Map(), myId: '', counter: 0 };
   var lobbyLeaving = false;
@@ -3782,12 +3871,16 @@
 
   function netCreateSession() {
     return { id: ++net.counter, peer: null, conns: Object.create(null), hostConn: null,
-             isHost: false, myId: '', closed: false, established: false };
+             isHost: false, myId: '', closed: false, established: false,
+             lastSeen: Object.create(null), rates: Object.create(null), timers: [], reconTimer: 0, lastRx: 0, hb: 0 };
   }
 
   function netDestroySession(sess) {
     if (!sess || sess.closed) return;
     sess.closed = true;
+    sess.timers.forEach(function (t) { clearInterval(t); });
+    sess.timers = [];
+    clearTimeout(sess.reconTimer);
     try {
       Object.keys(sess.conns).forEach(function (id) { try { sess.conns[id].close(); } catch (e) { /* ignore */ } });
       if (sess.hostConn) { try { sess.hostConn.close(); } catch (e) { /* ignore */ } }
@@ -3807,7 +3900,9 @@
   function netBroadcast(sess, msg, exceptId) {
     Object.keys(sess.conns).forEach(function (id) {
       if (id === exceptId) return;
-      try { sess.conns[id].send(msg); } catch (e) { /* ignore */ }
+      var c = sess.conns[id];
+      if (!c || c.open === false) return;
+      try { c.send(msg); } catch (e) { /* ignore */ }
     });
   }
 
@@ -3820,31 +3915,84 @@
     return player;
   }
 
+  var remoteEls = new Map();
+
+  function remoteFreeSlot() {
+    var used = Object.create(null);
+    remoteEls.forEach(function (rec) { used[rec.slot] = true; });
+    for (var i = 0; i < REMOTE_SLOTS.length; i++) if (!used[i]) return i;
+    return remoteEls.size % REMOTE_SLOTS.length;
+  }
+
+  /* Обновляет только то, что изменилось: места игроков стабильны, картинки не перезагружаются */
   function renderRemotePlayers(hopId) {
     var box = $('lobbyRemote');
     if (!box) return;
-    box.innerHTML = '';
-    var idx = 0;
+    var seen = Object.create(null);
+
     net.players.forEach(function (p, id) {
       if (id === net.myId) return;
-      var slot = REMOTE_SLOTS[idx % REMOTE_SLOTS.length];
-      idx++;
+      seen[id] = true;
+      var rec = remoteEls.get(id);
 
-      var wrap = document.createElement('div');
-      wrap.className = 'lobby-player remote';
-      wrap.style.left = slot[0] + '%';
-      wrap.style.top = 'calc(' + slot[1] + 'vh - 2.5vw)';
+      if (!rec) {
+        var slotIdx = remoteFreeSlot();
+        var slot = REMOTE_SLOTS[slotIdx];
+        var wrap = document.createElement('div');
+        wrap.className = 'lobby-player remote';
+        wrap.style.left = slot[0] + '%';
+        wrap.style.top = 'calc(' + slot[1] + 'vh - 2.5vw)';
+        var icon = document.createElement('div');
+        fillIcon(icon, p.i, p.r);
+        var nick = document.createElement('div');
+        nick.className = 'lobby-nick';
+        nick.appendChild(parseColoredNickname(p.n));
+        wrap.appendChild(icon);
+        wrap.appendChild(nick);
+        box.appendChild(wrap);
+        rec = { wrap: wrap, icon: icon, nick: nick, slot: slotIdx, iconId: p.i, nickText: p.n, ready: !!p.r };
+        remoteEls.set(id, rec);
+      } else {
+        if (rec.iconId !== p.i) {
+          fillIcon(rec.icon, p.i, p.r);
+          rec.iconId = p.i;
+          rec.ready = !!p.r;
+        } else if (rec.ready !== !!p.r) {
+          rec.icon.classList.toggle('ready', !!p.r);
+          rec.ready = !!p.r;
+        }
+        if (rec.nickText !== p.n) {
+          rec.nick.innerHTML = '';
+          rec.nick.appendChild(parseColoredNickname(p.n));
+          rec.nickText = p.n;
+        }
+      }
 
-      var icon = document.createElement('div');
-      fillIcon(icon, p.i, p.r);
-      if (hopId && hopId === id) icon.classList.add('hop');
-      var nick = document.createElement('div');
-      nick.className = 'lobby-nick';
-      nick.appendChild(parseColoredNickname(p.n));
+      if (hopId && hopId === id) {
+        rec.icon.classList.remove('hop');
+        void rec.icon.offsetWidth;            /* перезапуск прыжка */
+        rec.icon.classList.add('hop');
+      }
+    });
 
-      wrap.appendChild(icon);
-      wrap.appendChild(nick);
-      box.appendChild(wrap);
+    remoteEls.forEach(function (rec, id) {
+      if (!seen[id]) {
+        if (rec.wrap.parentNode) rec.wrap.parentNode.removeChild(rec.wrap);
+        remoteEls.delete(id);
+      }
+    });
+  }
+
+  /* связь с сигнальным сервером пропала: пробуем вернуться с нарастающей паузой (id сохраняется) */
+  function netKeepSignaling(sess) {
+    sess.peer.on('disconnected', function () {
+      if (sess.closed) return;
+      var tries = 0;
+      (function again() {
+        if (sess.closed || !sess.peer || sess.peer.disconnected === false) return;
+        try { sess.peer.reconnect(); } catch (e) { /* ignore */ }
+        if (++tries < 6) sess.reconTimer = setTimeout(again, Math.min(8000, 1000 * tries));
+      })();
     });
   }
 
@@ -3855,15 +4003,36 @@
 
     sess.peer.on('connection', function (conn) {
       if (sess.closed) { try { conn.close(); } catch (e) { /* ignore */ } return; }
-      conn.on('data', function (data) { netHostData(sess, conn, data); });
+      conn.on('data', function (data) {
+        try { netHostData(sess, conn, data); } catch (err) { console.warn('[TD2DR] ошибка обработки сообщения:', err); }
+      });
       conn.on('close', function () { netDropClient(sess, conn.peer); });
       conn.on('error', function () { netDropClient(sess, conn.peer); });
     });
 
-    sess.peer.on('disconnected', function () {
-      if (sess.closed) return;
-      try { sess.peer.reconnect(); } catch (e) { /* ignore */ }
-    });
+    netKeepSignaling(sess);
+
+    /* хост отключает тех, кто замолчал (закрыл вкладку, пропал интернет) */
+    sess.timers.push(setInterval(function () {
+      var now = Date.now();
+      Object.keys(sess.conns).forEach(function (id) {
+        if (now - (sess.lastSeen[id] || 0) > NET_PEER_TIMEOUT_MS) {
+          try { sess.conns[id].close(); } catch (e) { /* ignore */ }
+          netDropClient(sess, id);
+        }
+      });
+    }, NET_PING_INTERVAL_MS));
+  }
+
+  /* простой лимит частоты сообщений от одного игрока */
+  function netRateOk(sess, id, kind, limit) {
+    var r = sess.rates[id] || (sess.rates[id] = {});
+    var arr = r[kind] || (r[kind] = []);
+    var now = Date.now();
+    while (arr.length && now - arr[0] > limit.windowMs) arr.shift();
+    if (arr.length >= limit.max) return false;
+    arr.push(now);
+    return true;
   }
 
   function netHostData(sess, conn, data) {
@@ -3878,6 +4047,7 @@
         return;
       }
       sess.conns[id] = conn;
+      sess.lastSeen[id] = Date.now();
       var player = netPutPlayer({ id: id, n: data.n, i: data.i, r: data.r });
       try { conn.send({ t: 'welcome', id: id, players: Array.from(net.players.values()) }); } catch (e3) { /* ignore */ }
       netBroadcast(sess, { t: 'join', p: player }, id);
@@ -3886,16 +4056,25 @@
     }
 
     if (!sess.conns[id]) return;
+    sess.lastSeen[id] = Date.now();
+
+    if (data.t === 'ping') {
+      try { conn.send({ t: 'pong' }); } catch (e4) { /* ignore */ }
+      return;
+    }
+
     var p = net.players.get(id);
     if (!p) return;
 
     if (data.t === 'state') {
+      if (!netRateOk(sess, id, 'state', NET_STATE_LIMIT)) return;
       if ('r' in data) p.r = !!data.r;
       var zSound = data.z ? 1 : 0;
       netBroadcast(sess, { t: 'state', id: id, r: p.r, z: zSound }, id);
       renderRemotePlayers(id);
       if (zSound) playZSfx();
     } else if (data.t === 'chat') {
+      if (!netRateOk(sess, id, 'chat', NET_CHAT_LIMIT)) return;
       var m = cleanStr(data.m, 120);
       if (!m) return;
       addPlayerChat(p.n, m);
@@ -3906,21 +4085,41 @@
   function netDropClient(sess, id) {
     if (sess.closed || !sess.conns[id]) return;
     delete sess.conns[id];
+    delete sess.lastSeen[id];
+    delete sess.rates[id];
     net.players.delete(id);
     netBroadcast(sess, { t: 'leave', id: id });
     renderRemotePlayers();
   }
 
   /* ----- клиент ----- */
+  /* клиент раз в 5 секунд пингует хоста; если ответов нет 16 секунд - хост считается потерянным */
+  function netStartClientHeartbeat(sess) {
+    if (sess.hb) return;
+    sess.lastRx = Date.now();
+    sess.hb = setInterval(function () {
+      if (sess.closed) return;
+      if (Date.now() - sess.lastRx > NET_PEER_TIMEOUT_MS) { netOnHostLost(sess); return; }
+      try {
+        if (sess.hostConn && sess.hostConn.open !== false) sess.hostConn.send({ t: 'ping' });
+      } catch (e) { /* ignore */ }
+    }, NET_PING_INTERVAL_MS);
+    sess.timers.push(sess.hb);
+  }
+
   function netClientData(sess, data, onWelcome) {
     if (sess.closed || !data || typeof data !== 'object') return;
+    sess.lastRx = Date.now();
     switch (data.t) {
+      case 'pong':
+        break;
       case 'welcome':
         net.players = new Map();
         if (Array.isArray(data.players)) {
           data.players.slice(0, MAX_PLAYERS).forEach(function (p) { netPutPlayer(p); });
         }
         onWelcome(null);
+        netStartClientHeartbeat(sess);
         renderRemotePlayers();
         break;
       case 'full':
@@ -3992,7 +4191,7 @@
         netDestroySession(curSess);
         attempts++;
         if (attempts >= NET_MAX_ATTEMPTS) { finish(new Error(reason)); return; }
-        retryTimer = setTimeout(attempt, 600 + Math.random() * 500);
+        retryTimer = setTimeout(attempt, Math.min(4000, 500 * Math.pow(2, attempts - 1)) + Math.random() * 400);   /* нарастающая пауза */
       }
 
       function joinAsClient(prevSess) {
@@ -4028,7 +4227,7 @@
           });
           conn.on('data', function (data) {
             clearTimeout(ct);
-            netClientData(sess, data, finish);
+            try { netClientData(sess, data, finish); } catch (err) { console.warn('[TD2DR] ошибка обработки сообщения:', err); }
           });
           conn.on('close', function () {
             clearTimeout(ct);
@@ -4040,10 +4239,7 @@
           });
         });
 
-        peer.on('disconnected', function () {
-          if (sess.closed) return;
-          try { peer.reconnect(); } catch (e3) { /* ignore */ }
-        });
+        netKeepSignaling(sess);
       }
 
       function attempt() {
@@ -4805,14 +5001,20 @@
     applyMusicVolume();
 
     var input = $('lobbyChatInput');
+    function submitChatInput() {
+      var text = input.value.trim();
+      if (text) sendChatMessage(text);
+      closeChat();
+    }
     on(input, 'input', resetAfk);
+    /* на телефонах кнопка «Отправить» экранной клавиатуры отправляет форму, а не событие Enter */
+    on($('lobbyChatForm'), 'submit', function (e) { e.preventDefault(); submitChatInput(); });
     on(input, 'keydown', function (e) {
       e.stopPropagation();
       resetAfk();
       if (e.key === 'Enter' || e.keyCode === 13) {
-        var text = input.value.trim();
-        if (text) sendChatMessage(text);
-        closeChat();
+        e.preventDefault();
+        submitChatInput();
       } else if (e.key === 'Escape') {
         closeChat();
       }
@@ -5019,13 +5221,11 @@
   /* =========================================================================
      ЗАГРУЗКА
      ========================================================================= */
-  var BUILD_ID = 'audio-sync-size-1';
+  var BUILD_ID = 'audio-webaudio-net-2';
 
   function boot() {
     console.log('[TD2DR] build ' + BUILD_ID);
-    ['pointerdown', 'pointerup', 'touchend', 'click', 'keydown'].forEach(function (name) {
-      window.addEventListener(name, unlockAudio, true);
-    });
+    UNLOCK_EVENTS.forEach(function (name) { window.addEventListener(name, unlockAudio, true); });
     /* 1. Интро — самое первое и полностью независимое */
     safe('intro', initIntro);
 
@@ -5048,7 +5248,7 @@
       playSelectSfx = createSfx('./assets/sounds/select.wav', 0.6);
       playJoinSfx = createSfx('./assets/sounds/join.wav', 0.7);
       playZSfx = createSfx('./assets/sounds/z.wav', 0.7);
-      playSmsSfx = createSfx('./assets/sounds/sms.wav', 0.7);
+      playSmsSfx = createSfx('./assets/sounds/sms.wav', 1.0);
     });
 
     /* 3. Остальные модули — каждый изолирован */
