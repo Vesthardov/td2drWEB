@@ -1704,12 +1704,12 @@
     }
 
     /* центры и размеры (проценты от игровой области 16:9, взяты со скриншота) */
-    .mc-dpad { left: 14.14%; top: 68.92%; width: 20%; }
-    .mc-x    { left: 86.57%; top: 65.54%; width: 10%; }
-    .mc-z    { left: 78.75%; top: 81.60%; width: 10%; }
-    .mc-c    { left: 94.14%; top: 81.60%; width: 10%; }
+    .mc-dpad { left: 14.14%; top: 68.92%; width: calc(20% * var(--mc-dpad-scale, 1)); }
+    .mc-x    { left: 86.57%; top: 65.54%; width: calc(10% * var(--mc-btn-scale, 1)); }
+    .mc-z    { left: 78.75%; top: 81.60%; width: calc(10% * var(--mc-btn-scale, 1)); }
+    .mc-c    { left: 94.14%; top: 81.60%; width: calc(10% * var(--mc-btn-scale, 1)); }
 
-    .mc-emote { width: 2.93%; }
+    .mc-emote { width: calc(2.93% * var(--mc-btn-scale, 1)); }
     .mc-emote::after { inset: -45%; }
     .mc-emo-a { left: 97.07%; top: 17.80%; }
     .mc-emo-s { left: 97.07%; top: 29.51%; }
@@ -1790,7 +1790,11 @@
     #mceSave { color: #22dd22; }
     #mceCancel { color: #ff5555; }
 
-    .mce-bar { width: 22vw; height: 2.2vh; }
+    .mce-bar { width: 100%; height: 2.2vh; }
+
+    .mce-sliders { align-items: flex-start; gap: 2vw; }
+    .mce-slider { display: flex; flex-direction: column; gap: 0.8vh; width: 21vw; }
+    .mce-slider-head { display: flex; justify-content: space-between; gap: 0.6vw; }
 
     .mce-ghost { cursor: move; outline: 2px dashed rgba(255, 255, 255, 0.55); outline-offset: 2px; }
     .mce-ghost.dragging { outline-color: #ffd23a; }
@@ -2409,7 +2413,7 @@
       </div>
 
       <div class="lobby-chat" id="lobbyChat"></div>
-      <input class="lobby-chat-input" id="lobbyChatInput" type="text" maxlength="120" placeholder="ENTER MESSAGE..." autocomplete="off" spellcheck="false">
+      <input class="lobby-chat-input" id="lobbyChatInput" type="text" maxlength="120" placeholder="ENTER MESSAGE..." autocomplete="off" spellcheck="false" enterkeyhint="send">
 
       <div class="lobby-spikes"></div>
       <div class="lobby-floor"></div>
@@ -2434,10 +2438,19 @@
           <div class="mce-btn" id="mceCancel">CANCEL</div>
           <div class="mce-btn" id="mceSave">SAVE</div>
         </div>
-        <div class="mce-row">
-          <span>OPACITY</span>
-          <div class="music-bar mce-bar" id="mceOpacityBar"><div class="music-fill" id="mceOpacityFill"></div></div>
-          <span id="mceOpacityPct">70%</span>
+        <div class="mce-row mce-sliders">
+          <div class="mce-slider">
+            <div class="mce-slider-head"><span>OPACITY</span><span id="mceOpacityPct">70%</span></div>
+            <div class="music-bar mce-bar" id="mceOpacityBar"><div class="music-fill" id="mceOpacityFill"></div></div>
+          </div>
+          <div class="mce-slider">
+            <div class="mce-slider-head"><span>D-PAD SIZE</span><span id="mceDpadPct">100%</span></div>
+            <div class="music-bar mce-bar" id="mceDpadBar"><div class="music-fill" id="mceDpadFill"></div></div>
+          </div>
+          <div class="mce-slider">
+            <div class="mce-slider-head"><span>BTN SIZE</span><span id="mceBtnPct">100%</span></div>
+            <div class="music-bar mce-bar" id="mceBtnBar"><div class="music-fill" id="mceBtnFill"></div></div>
+          </div>
         </div>
       </div>
       <div class="mc-stage" id="mceStage"></div>
@@ -2556,21 +2569,57 @@
     } catch (e) { /* автоплей заблокирован — повторим при следующем жесте */ }
   }
 
+  /* Все звуки регистрируются, чтобы «разбудить» их при первом жесте пользователя:
+     мобильные браузеры (и Safari) блокируют звук, который запускается по сетевому событию
+     (чужое сообщение, чужое нажатие Z), пока этот же звук не был запущен жестом. */
+  var audioUnlockables = [];
+  var audioUnlocked = false;
+
   function createSfx(src, volume) {
     var audio = null;
     try {
       audio = new Audio(src);
       audio.preload = 'auto';
       audio.volume = volume;
+      audio.addEventListener('error', function () {
+        console.warn('[TD2DR] звук не загрузился (проверь имя и папку файла): ' + src);
+      });
+      audioUnlockables.push(audio);
     } catch (e) { audio = null; }
     return function play() {
       if (!audio) return;
       try {
+        audio.muted = false;
         audio.currentTime = 0;
         var p = audio.play();
-        if (p && p.catch) p.catch(function () {});
+        if (p && p.catch) {
+          p.catch(function (err) {
+            console.warn('[TD2DR] звук не воспроизведён: ' + src + ' (' + (err && err.name) + ')');
+          });
+        }
       } catch (e) { /* ignore */ }
     };
+  }
+
+  function unlockAudio() {
+    if (audioUnlocked) return;
+    audioUnlockables.forEach(function (a) {
+      try {
+        if (!a.paused) return;                 /* уже играет - трогать нельзя */
+        a.muted = true;
+        var pr = a.play();
+        if (pr && pr.then) {
+          pr.then(function () {
+            audioUnlocked = true;
+            a.pause();
+            a.currentTime = 0;
+            a.muted = false;
+          }).catch(function () { a.muted = false; });
+        } else {
+          a.muted = false;
+        }
+      } catch (e) { a.muted = false; }
+    });
   }
 
   var playHoverSfx = function () {};
@@ -3842,8 +3891,10 @@
 
     if (data.t === 'state') {
       if ('r' in data) p.r = !!data.r;
-      netBroadcast(sess, { t: 'state', id: id, r: p.r }, id);
+      var zSound = data.z ? 1 : 0;
+      netBroadcast(sess, { t: 'state', id: id, r: p.r, z: zSound }, id);
       renderRemotePlayers(id);
+      if (zSound) playZSfx();
     } else if (data.t === 'chat') {
       var m = cleanStr(data.m, 120);
       if (!m) return;
@@ -3885,6 +3936,7 @@
       case 'state':
         var pl = net.players.get(data.id);
         if (pl) { if ('r' in data) pl.r = !!data.r; renderRemotePlayers(data.id); }
+        if (data.z) playZSfx();
         break;
       case 'chat':
         var msg = cleanStr(data.m, 120);
@@ -4029,15 +4081,17 @@
     });
   }
 
-  function netSendState() {
+  /* withSound = true: это нажатие Z, все остальные в комнате тоже услышат z.wav */
+  function netSendState(withSound) {
     var sess = net.session;
     if (!sess || sess.closed) return;
     var me = net.players.get(net.myId);
     if (me) me.r = lobbyReady;
+    var z = withSound ? 1 : 0;
     if (sess.isHost) {
-      netBroadcast(sess, { t: 'state', id: net.myId, r: lobbyReady });
+      netBroadcast(sess, { t: 'state', id: net.myId, r: lobbyReady, z: z });
     } else if (sess.hostConn) {
-      try { sess.hostConn.send({ t: 'state', r: lobbyReady }); } catch (e) { /* ignore */ }
+      try { sess.hostConn.send({ t: 'state', r: lobbyReady, z: z }); } catch (e) { /* ignore */ }
     }
   }
 
@@ -4223,6 +4277,8 @@
   var MC_OPACITY_MIN = 0.2;
   var MC_OPACITY_MAX = 1;
   var MC_OPACITY_DEFAULT = 0.7;
+  var MC_SCALE_MIN = 0.5;
+  var MC_SCALE_MAX = 2;
   var mcControls = [];
   var mcLayout = null;
 
@@ -4293,13 +4349,13 @@
   function mcDefaultLayout() {
     var pos = {};
     MC_SPECS.forEach(function (sp) { pos[sp.id] = sp.pos.slice(); });
-    return { opacity: MC_OPACITY_DEFAULT, pos: pos };
+    return { opacity: MC_OPACITY_DEFAULT, dpadScale: 1, btnScale: 1, pos: pos };
   }
 
   function mcCloneLayout(layout) {
     var pos = {};
     Object.keys(layout.pos).forEach(function (k) { pos[k] = layout.pos[k].slice(); });
-    return { opacity: layout.opacity, pos: pos };
+    return { opacity: layout.opacity, dpadScale: layout.dpadScale, btnScale: layout.btnScale, pos: pos };
   }
 
   function mcLoadLayout() {
@@ -4309,6 +4365,9 @@
       if (typeof raw.opacity === 'number' && isFinite(raw.opacity)) {
         layout.opacity = mcClamp(raw.opacity, MC_OPACITY_MIN, MC_OPACITY_MAX);
       }
+      ['dpadScale', 'btnScale'].forEach(function (key) {
+        if (typeof raw[key] === 'number' && isFinite(raw[key])) layout[key] = mcClamp(raw[key], MC_SCALE_MIN, MC_SCALE_MAX);
+      });
       if (raw.pos && typeof raw.pos === 'object') {
         MC_SPECS.forEach(function (sp) {
           var v = raw.pos[sp.id];
@@ -4321,8 +4380,12 @@
     return layout;
   }
 
-  function mcApplyOpacity(opacity) {
-    document.body.style.setProperty('--mc-opacity', String(opacity));
+  /* прозрачность и размеры задаются CSS-переменными (общие для лобби и редактора) */
+  function mcApplyLook(layout) {
+    var st = document.body.style;
+    st.setProperty('--mc-opacity', String(layout.opacity));
+    st.setProperty('--mc-dpad-scale', String(layout.dpadScale));
+    st.setProperty('--mc-btn-scale', String(layout.btnScale));
   }
 
   function mcPlace(el, id, layout) {
@@ -4333,7 +4396,7 @@
   }
 
   function mcApplyLayoutToLobby() {
-    mcApplyOpacity(mcLayout.opacity);
+    mcApplyLook(mcLayout);
     mcControls.forEach(function (el) { mcPlace(el, el.dataset.mcId, mcLayout); });
   }
 
@@ -4441,7 +4504,7 @@
     document.body.classList.add('mobile-ui');
 
     mcLayout = mcLoadLayout();
-    mcApplyOpacity(mcLayout.opacity);
+    mcApplyLook(mcLayout);
 
     mcPreload('dpad', 5);
     mcPreload('btn', 6);
@@ -4506,19 +4569,43 @@
     if (redo) redo.classList.toggle('disabled', mce.idx >= mce.history.length - 1);
   }
 
-  function mceRenderOpacity() {
-    var op = mce.working.opacity;
-    var ratio = (op - MC_OPACITY_MIN) / (MC_OPACITY_MAX - MC_OPACITY_MIN);
-    var fill = $('mceOpacityFill');
-    var pct = $('mceOpacityPct');
-    if (fill) fill.style.width = 'calc(' + (ratio * 100) + '% - 6px)';
-    if (pct) pct.textContent = Math.round(op * 100) + '%';
-    mcApplyOpacity(op);
+  var MCE_SLIDERS = [
+    { key: 'opacity',   bar: 'mceOpacityBar', fill: 'mceOpacityFill', pct: 'mceOpacityPct', min: MC_OPACITY_MIN, max: MC_OPACITY_MAX },
+    { key: 'dpadScale', bar: 'mceDpadBar',    fill: 'mceDpadFill',    pct: 'mceDpadPct',    min: MC_SCALE_MIN,   max: MC_SCALE_MAX },
+    { key: 'btnScale',  bar: 'mceBtnBar',     fill: 'mceBtnFill',     pct: 'mceBtnPct',     min: MC_SCALE_MIN,   max: MC_SCALE_MAX }
+  ];
+
+  /* после увеличения размера кнопка не должна выйти за край экрана */
+  function mceClampAll() {
+    var stage = $('mceStage');
+    if (!stage) return;
+    var r = stage.getBoundingClientRect();
+    Object.keys(mce.ghosts).forEach(function (id) {
+      var el = mce.ghosts[id];
+      var er = el.getBoundingClientRect();
+      var halfW = er.width / 2 / r.width * 100;
+      var halfH = er.height / 2 / r.height * 100;
+      var c = mce.working.pos[id];
+      mce.working.pos[id] = [mcClamp(c[0], halfW, 100 - halfW), mcClamp(c[1], halfH, 100 - halfH)];
+      mcPlace(el, id, mce.working);
+    });
+  }
+
+  function mceRenderLook() {
+    MCE_SLIDERS.forEach(function (sl) {
+      var v = mce.working[sl.key];
+      var ratio = (v - sl.min) / (sl.max - sl.min);
+      var fill = $(sl.fill);
+      var pct = $(sl.pct);
+      if (fill) fill.style.width = 'calc(' + (ratio * 100) + '% - 6px)';
+      if (pct) pct.textContent = Math.round(v * 100) + '%';
+    });
+    mcApplyLook(mce.working);
   }
 
   function mceRender() {
     Object.keys(mce.ghosts).forEach(function (id) { mcPlace(mce.ghosts[id], id, mce.working); });
-    mceRenderOpacity();
+    mceRenderLook();
     mceUpdateButtons();
   }
 
@@ -4551,7 +4638,7 @@
   }
 
   function mceCancel() {
-    mcApplyOpacity(mcLayout.opacity);        /* возвращаем сохранённую прозрачность */
+    mcApplyLook(mcLayout);                   /* возвращаем сохранённые прозрачность и размеры */
     mceBackToSettings();
   }
 
@@ -4645,30 +4732,42 @@
       on(el, 'click', function () { playSelectSfx(); pair[1](); });
     });
 
-    /* ползунок прозрачности */
-    var bar = $('mceOpacityBar');
-    var dragging = false;
-    function setFromPointer(e) {
-      var r = bar.getBoundingClientRect();
-      var ratio = mcClamp((e.clientX - r.left) / r.width, 0, 1);
-      var op = Math.round((MC_OPACITY_MIN + ratio * (MC_OPACITY_MAX - MC_OPACITY_MIN)) * 100) / 100;
-      if (op === mce.working.opacity) return;
-      mce.working.opacity = op;
-      mceRenderOpacity();
-    }
-    on(bar, 'pointerdown', function (e) {
-      dragging = true;
-      try { bar.setPointerCapture(e.pointerId); } catch (err) { /* ignore */ }
-      setFromPointer(e);
+    /* ползунки: прозрачность, размер D-pad, размер кнопок */
+    MCE_SLIDERS.forEach(function (sl) {
+      var bar = $(sl.bar);
+      if (!bar) return;
+      var dragging = false;
+
+      function setFromPointer(e) {
+        var r = bar.getBoundingClientRect();
+        var ratio = mcClamp((e.clientX - r.left) / r.width, 0, 1);
+        var v = Math.round((sl.min + ratio * (sl.max - sl.min)) * 100) / 100;
+        if (v === mce.working[sl.key]) return;
+        mce.working[sl.key] = v;
+        mceRenderLook();
+        if (sl.key !== 'opacity') mceClampAll();
+      }
+      function endBar() {
+        if (!dragging) return;
+        dragging = false;
+        var before = mce.history[mce.idx];
+        var changed = mce.working[sl.key] !== before[sl.key];
+        if (sl.key !== 'opacity') {
+          mceClampAll();
+          changed = changed || JSON.stringify(mce.working.pos) !== JSON.stringify(before.pos);
+        }
+        if (changed) mceCommit();
+      }
+
+      on(bar, 'pointerdown', function (e) {
+        dragging = true;
+        try { bar.setPointerCapture(e.pointerId); } catch (err) { /* ignore */ }
+        setFromPointer(e);
+      });
+      on(bar, 'pointermove', function (e) { if (dragging) setFromPointer(e); });
+      on(bar, 'pointerup', endBar);
+      on(bar, 'pointercancel', endBar);
     });
-    on(bar, 'pointermove', function (e) { if (dragging) setFromPointer(e); });
-    function endBar() {
-      if (!dragging) return;
-      dragging = false;
-      if (mce.working.opacity !== mce.history[mce.idx].opacity) mceCommit();
-    }
-    on(bar, 'pointerup', endBar);
-    on(bar, 'pointercancel', endBar);
   }
 
   function initKick() {
@@ -4687,10 +4786,19 @@
       void icon.offsetWidth;             /* перезапуск анимации при каждом нажатии */
       icon.classList.add('hop');
     }
-    netSendState();
+    netSendState(true);
   }
 
   function initLobby() {
+    try {
+      lobbyBgm = new Audio('./assets/music/lobby.ogg');
+      lobbyBgm.loop = true;
+      lobbyBgm.preload = 'auto';
+      secretBgm = new Audio('./assets/music/secret.ogg');
+      secretBgm.preload = 'auto';
+      audioUnlockables.push(lobbyBgm, secretBgm);
+    } catch (e) { /* ignore */ }
+
     musicPercent = parseInt(store.get('td2dr_music_vol', '100'), 10);
     if (!isFinite(musicPercent)) musicPercent = 100;
     musicPercent = Math.max(0, Math.min(100, musicPercent));
@@ -4701,7 +4809,7 @@
     on(input, 'keydown', function (e) {
       e.stopPropagation();
       resetAfk();
-      if (e.key === 'Enter') {
+      if (e.key === 'Enter' || e.keyCode === 13) {
         var text = input.value.trim();
         if (text) sendChatMessage(text);
         closeChat();
@@ -4911,10 +5019,13 @@
   /* =========================================================================
      ЗАГРУЗКА
      ========================================================================= */
-  var BUILD_ID = 'rooms-instant-chatcolors-1';
+  var BUILD_ID = 'audio-sync-size-1';
 
   function boot() {
     console.log('[TD2DR] build ' + BUILD_ID);
+    ['pointerdown', 'pointerup', 'touchend', 'click', 'keydown'].forEach(function (name) {
+      window.addEventListener(name, unlockAudio, true);
+    });
     /* 1. Интро — самое первое и полностью независимое */
     safe('intro', initIntro);
 
