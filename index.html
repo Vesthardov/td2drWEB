@@ -1665,7 +1665,7 @@
       pointer-events: none;
     }
 
-    body.mobile-ui #mobileControls { display: block; }
+    body.mobile-ui.mc-active #mobileControls { display: block; }
 
     .mc-stage {
       position: absolute;
@@ -1800,6 +1800,131 @@
 
     .mce-ghost { cursor: move; outline: 2px dashed rgba(255, 255, 255, 0.55); outline-offset: 2px; }
     .mce-ghost.dragging { outline-color: #ffd23a; }
+
+    /* =========================================================================
+       10. ИГРОВОЙ ПОТОК: отсчёт, выбор карты, выбор персонажа, матч
+       ========================================================================= */
+    .flow-timer {
+      position: absolute;
+      top: 0.8vh;
+      left: 0;
+      right: 0;
+      z-index: 8;
+      text-align: center;
+      font-size: 3.6vw;
+      line-height: 1.2;
+      color: #ffffff;
+      text-shadow: 3px 3px 0 #000000;
+      pointer-events: none;
+    }
+
+    #viewMapSelect, #viewCharSelect, #viewGame {
+      position: absolute;
+      inset: 0;
+      z-index: 20;
+      display: none;
+      background: #000000;
+      overflow: hidden;
+    }
+
+    .preview-canvas {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      image-rendering: pixelated;
+    }
+
+    .map-cards { position: absolute; left: 0; right: 0; top: 33.9vh; height: 28.5vh; z-index: 5; }
+
+    .map-card {
+      position: absolute;
+      top: 0;
+      width: 25vw;
+      height: 100%;
+      box-sizing: border-box;
+      border: 3px solid var(--mcol, #555);
+      background: #000000;
+      opacity: 0.5;
+      filter: brightness(0.6);
+      transition: opacity 0.15s steps(3), filter 0.15s steps(3);
+    }
+
+    .map-card canvas { display: block; width: 100%; height: 100%; image-rendering: pixelated; }
+    .map-card.sel { opacity: 1; filter: none; box-shadow: 0 0 1.4vw var(--mcol, #fff); }
+
+    .map-card.sel::after {
+      content: '';
+      position: absolute;
+      inset: 4px;
+      border: 3px dashed rgba(255, 255, 255, 0.9);
+      animation: mapDash 0.5s steps(2) infinite;
+      pointer-events: none;
+    }
+
+    @keyframes mapDash { 0% { opacity: 1; } 50% { opacity: 0.35; } 100% { opacity: 1; } }
+
+    .map-card .mc-title {
+      position: absolute; left: 0.7vw; top: 3vh; font-size: 1.7vw; line-height: 2.2vh;
+      color: #ffffff; text-shadow: 2px 2px 0 #000000; width: 12vw;
+    }
+    .map-card .mc-diff {
+      position: absolute; right: 0.7vw; bottom: 0.6vh; font-size: 1.7vw; color: var(--mcol, #fff);
+      text-shadow: 2px 2px 0 #000000;
+    }
+    .map-card .mc-dots { position: absolute; left: 0.7vw; top: 0.8vh; display: flex; gap: 0.35vw; }
+    .map-card .mc-dots i { display: block; width: 0.6vw; height: 0.6vw; background: #ffffff; }
+
+    .ms-desc {
+      position: absolute; left: 0.8vw; right: 1vw; top: 1.4vh;
+      font-size: 1.25vw; line-height: 3vh; color: #ffffff; text-transform: uppercase;
+    }
+    .ms-note { color: #555555; }
+
+    .cs-iconrow { display: flex; align-items: center; gap: 1.4vw; }
+    .cs-arrow { width: 0; height: 0; border-top: 0.6vw solid transparent; border-bottom: 0.6vw solid transparent; }
+    .cs-arrow.l { border-right: 0.8vw solid #ffffff; }
+    .cs-arrow.r { border-left: 0.8vw solid #ffffff; }
+
+    .cs-info { position: absolute; left: 0; right: 0; top: 1.2vh; font-size: 1.25vw; color: #ffffff; }
+    .cs-row { display: flex; align-items: center; height: 5vh; white-space: nowrap; }
+    .cs-name { width: 12.5vw; padding-left: 0.8vw; }
+    .cs-label { position: relative; width: 12vw; height: 100%; }
+    .cs-label span { position: absolute; right: 0.4vw; top: 50%; transform: translateY(-50%); }
+    .cs-blue { color: #3b45ff; }
+    .cs-pink { color: #c4144d; }
+    .cs-val { padding-left: 0.6vw; }
+    .cs-dim { color: #6a6a6a; }
+
+    #gameCanvas {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: min(100vw, calc(100vh * 16 / 9));
+      height: min(100vh, calc(100vw * 9 / 16));
+      transform: translate(-50%, -50%);
+      image-rendering: pixelated;
+      background: #000000;
+    }
+
+    #gameHud {
+      position: absolute; top: 1vh; left: 1vw; z-index: 6; font-size: 1.3vw; color: #ffffff;
+      text-shadow: 2px 2px 0 #000000; pointer-events: none;
+    }
+
+    #gameTitleCard {
+      position: absolute; inset: 0; z-index: 10; display: none; flex-direction: column;
+      align-items: center; justify-content: center; gap: 2vh; background: #000000;
+    }
+    .tc-name { font-size: 6vw; color: #ffffff; text-shadow: 0.4vw 0.4vw 0 #b00000; letter-spacing: 0.4vw; }
+    .tc-sub { font-size: 1.8vw; color: #ff8a00; }
+
+    #gameClear {
+      position: absolute; inset: 0; z-index: 9; display: none; flex-direction: column;
+      align-items: center; justify-content: center; gap: 2vh; background: rgba(0, 0, 0, 0.45); pointer-events: none;
+    }
+    .gc-big { font-size: 4vw; color: #ffffff; text-shadow: 0.3vw 0.3vw 0 #000000; }
+    .gc-who { font-size: 2vw; text-shadow: 3px 3px 0 #000000; }
 
     #viewKick {
       position: absolute;
@@ -2405,6 +2530,7 @@
         <span class="lc-count" id="lobbyCoinCount">32</span>
       </div>
 
+      <div class="flow-timer" id="lobbyCountdown" style="display:none"></div>
       <div id="lobbyRemote"></div>
 
       <div class="lobby-player">
@@ -2466,6 +2592,58 @@
         <div class="connect-status failed">AFK OR TIMEOUT</div>
         <div class="connect-back" id="btnKickBack">BACK</div>
       </div>
+    </div>
+
+    <!-- Выбор карты -->
+    <div id="viewMapSelect">
+      <canvas class="preview-canvas" id="mapPreviewCanvas" width="480" height="270"></canvas>
+      <div class="lobby-controls">
+        <div>CONTROLS:</div>
+        <div><span class="key">Z</span>-VOTE</div>
+        <div><span class="key">X</span>+<span class="key">C</span>-SWITCH</div>
+      </div>
+      <div class="flow-timer" id="mapTimer">20</div>
+      <div class="map-cards" id="mapCards"></div>
+      <div class="lobby-spikes"></div>
+      <div class="lobby-floor"></div>
+      <div class="lobby-bottom"><div class="ms-desc" id="mapDesc"></div></div>
+    </div>
+
+    <!-- Выбор персонажа -->
+    <div id="viewCharSelect">
+      <canvas class="preview-canvas" id="charPreviewCanvas" width="480" height="270"></canvas>
+      <div class="lobby-controls">
+        <div>CONTROLS:</div>
+        <div><span class="key">Z</span>-SELECT</div>
+        <div><span class="key">&lt;</span>+<span class="key">&gt;</span>-SWITCH</div>
+      </div>
+      <div class="flow-timer" id="charTimer">30</div>
+      <div id="csRemote" style="position:absolute;inset:0;z-index:4;pointer-events:none"></div>
+      <div class="lobby-player">
+        <div class="cs-iconrow">
+          <div class="cs-arrow l" id="csArrowL"></div>
+          <div class="lobby-icon" id="csIcon"></div>
+          <div class="cs-arrow r" id="csArrowR"></div>
+        </div>
+        <div class="lobby-nick" id="csNick"></div>
+      </div>
+      <div class="lobby-spikes"></div>
+      <div class="lobby-floor"></div>
+      <div class="lobby-bottom">
+        <div class="cs-info">
+          <div class="cs-row"><span class="cs-name" id="csName">TAILS</span><span class="cs-label"><span class="cs-blue">MOBILITY:</span></span><span class="cs-val" id="csMob"></span></div>
+          <div class="cs-row"><span class="cs-name"></span><span class="cs-label"><span class="cs-pink">DEFENSE:</span></span><span class="cs-val" id="csDef"></span></div>
+          <div class="cs-row"><span class="cs-name"></span><span class="cs-label"><span class="cs-pink">PASSIVE ABILITY:</span></span><span class="cs-val" id="csPas"></span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Матч -->
+    <div id="viewGame">
+      <canvas id="gameCanvas" width="480" height="270"></canvas>
+      <div id="gameHud"></div>
+      <div id="gameClear"></div>
+      <div id="gameTitleCard"><div class="tc-name" id="tcName">TEST</div><div class="tc-sub" id="tcSub">MEDIUM</div></div>
     </div>
 
     <!-- Секретный экран (открывается словом "secret" в About/Credits) -->
@@ -2738,8 +2916,11 @@
      ========================================================================= */
   var views = {};
 
+  var MC_SCREENS = { lobby: 1, mapselect: 1, charselect: 1, game: 1 };
+
   function showScreen(name) {
     state.screen = name;
+    document.body.classList.toggle('mc-active', !!MC_SCREENS[name]);
     Object.keys(views).forEach(function (key) {
       if (views[key]) views[key].style.display = (key === name) ? 'block' : 'none';
     });
@@ -3561,6 +3742,7 @@
         if (isCancelled()) return;
         console.warn('[TD2DR] подключение не удалось:', err && err.message);
         showFailed();
+        if (err && err.message === 'busy' && status) status.textContent = 'MATCH IN PROGRESS';
       });
   }
 
@@ -3605,6 +3787,9 @@
     }
     if (secretBgm) {
       try { secretBgm.volume = vol; } catch (e) { /* ignore */ }
+    }
+    if (charBgm) {
+      try { charBgm.volume = vol; } catch (e) { /* ignore */ }
     }
     var fill = $('musicFill');
     var pct = $('musicPct');
@@ -3734,6 +3919,11 @@
     if (!m) return false;
     var cmd = m[1].toLowerCase();
 
+    if (cmd === 'testplay') {                           /* скрытая команда: запуск тестового матча */
+      flowRequestTestplay();
+      return true;
+    }
+    if (cmd === 'lobby' && flow.phase !== 'lobby') return true;
     if (cmd === 'lobby') {
       var arg = (m[2] || '').trim();
       var n = /^\d+$/.test(arg) ? parseInt(arg, 10) : 0;
@@ -3820,7 +4010,7 @@
   var NET_CHAT_LIMIT = { max: 6, windowMs: 5000 };     /* защита хоста от флуда */
   var NET_STATE_LIMIT = { max: 10, windowMs: 3000 };
 
-  var net = { session: null, players: new Map(), myId: '', counter: 0 };
+  var net = { session: null, players: new Map(), myId: '', counter: 0, quietUntil: 0 };
   var lobbyLeaving = false;
 
   var REMOTE_SLOTS = (function () {
@@ -4041,6 +4231,11 @@
 
     if (data.t === 'hello') {
       if (sess.conns[id]) return;
+      if (flow.phase !== 'lobby') {                       /* идёт игра: новых не пускаем */
+        try { conn.send({ t: 'busy' }); } catch (e0) { /* ignore */ }
+        setTimeout(function () { try { conn.close(); } catch (e00) { /* ignore */ } }, 200);
+        return;
+      }
       if (net.players.size >= MAX_PLAYERS) {
         try { conn.send({ t: 'full' }); } catch (e) { /* ignore */ }
         setTimeout(function () { try { conn.close(); } catch (e2) { /* ignore */ } }, 200);
@@ -4050,8 +4245,10 @@
       sess.lastSeen[id] = Date.now();
       var player = netPutPlayer({ id: id, n: data.n, i: data.i, r: data.r });
       try { conn.send({ t: 'welcome', id: id, players: Array.from(net.players.values()) }); } catch (e3) { /* ignore */ }
-      netBroadcast(sess, { t: 'join', p: player }, id);
+      var quiet = data.mg ? 1 : 0;
+      netBroadcast(sess, { t: 'join', p: player, q: quiet }, id);
       renderRemotePlayers();
+      if (!quiet) playJoinSfx();                           /* кто-то зашёл: хост слышит join.wav */
       return;
     }
 
@@ -4065,6 +4262,8 @@
 
     var p = net.players.get(id);
     if (!p) return;
+
+    if (flowHostMessage(sess, id, p, data)) return;
 
     if (data.t === 'state') {
       if (!netRateOk(sess, id, 'state', NET_STATE_LIMIT)) return;
@@ -4090,6 +4289,7 @@
     net.players.delete(id);
     netBroadcast(sess, { t: 'leave', id: id });
     renderRemotePlayers();
+    flowHostPlayersChanged();
   }
 
   /* ----- клиент ----- */
@@ -4128,6 +4328,10 @@
       case 'join':
         netPutPlayer(data.p);
         renderRemotePlayers();
+        if (!data.q) playJoinSfx();                        /* кто-то зашёл: join.wav слышат все в лобби */
+        break;
+      case 'busy':
+        onWelcome(new Error('busy'));
         break;
       case 'leave':
         if (typeof data.id === 'string') { net.players.delete(data.id); renderRemotePlayers(); }
@@ -4141,6 +4345,8 @@
         var msg = cleanStr(data.m, 120);
         if (msg) addPlayerChat(cleanStr(data.n, 32) || 'PLAYER', msg);
         break;
+      default:
+        flowClientMessage(sess, data);
     }
   }
 
@@ -4149,7 +4355,9 @@
     if (sess.closed) return;
     netDestroySession(sess);
     net.players = new Map();
+    net.quietUntil = Date.now() + 30000;
     renderRemotePlayers();
+    if (flow.phase !== 'lobby' || state.screen === 'mapselect' || state.screen === 'charselect' || state.screen === 'game') flowToLobby();
     if (state.screen !== 'lobby' || lobbyLeaving) return;
 
     setTimeout(function () {
@@ -4223,7 +4431,7 @@
           }, NET_CLIENT_CONNECT_TIMEOUT_MS);
 
           conn.on('open', function () {
-            try { conn.send({ t: 'hello', n: savedNick, i: equippedIconId, r: lobbyReady }); } catch (e2) { /* ignore */ }
+            try { conn.send({ t: 'hello', n: savedNick, i: equippedIconId, r: lobbyReady, mg: Date.now() < net.quietUntil ? 1 : 0 }); } catch (e2) { /* ignore */ }
           });
           conn.on('data', function (data) {
             clearTimeout(ct);
@@ -4354,6 +4562,7 @@
   function stopLobbyMusic() {
     try {
       if (lobbyBgm) lobbyBgm.pause();
+      if (charBgm) charBgm.pause();
       if (menuBgm && bgmStarted) {
         applyMusicVolume();
         var pm = menuBgm.play();
@@ -4387,8 +4596,9 @@
   }
 
   function leaveLobby() {
-    if (lobbyLeaving || state.screen !== 'lobby') return;
+    if (lobbyLeaving || !(state.screen === 'lobby' || state.screen === 'mapselect' || state.screen === 'charselect' || state.screen === 'game')) return;
     lobbyLeaving = true;
+    flowReset();
     stopAfk();
     mcReleaseAll();
     closeChat();
@@ -4429,7 +4639,7 @@
 
   function silenceAllMusic() {
     musicMuted = true;
-    [menuBgm, lobbyBgm, secretBgm].forEach(function (audio) {
+    [menuBgm, lobbyBgm, secretBgm, charBgm].forEach(function (audio) {
       if (audio) { try { audio.pause(); } catch (e) { /* ignore */ } }
     });
   }
@@ -4446,6 +4656,7 @@
   }
 
   function kickPlayer() {
+    flowReset();
     stopAfk();
     mcReleaseAll();
     closeChat();
@@ -4597,7 +4808,7 @@
   }
 
   /* ----- кнопка: нажатие, удержание, отпускание (поддерживает мультитач) ----- */
-  function mcMakeButton(cls, kind, idleN, pressedN, label, onPress, onClick) {
+  function mcMakeButton(cls, kind, idleN, pressedN, label, onPress, onClick, onRelease) {
     var el = document.createElement('div');
     el.className = 'mc-ctl ' + cls;
     var img = document.createElement('img');
@@ -4611,6 +4822,7 @@
       if (activeId === null) return;
       activeId = null;
       mcSetImg(img, kind, idleN, label);
+      if (onRelease) onRelease();
     }
     on(el, 'pointerdown', function (e) {
       if (activeId !== null) return;
@@ -4717,27 +4929,16 @@
       if (sp.kind === 'dpad') {
         el = mcMakeDpad();
       } else if (sp.id === 'z') {
-        /* Z = готов (как клавиша Z) */
-        el = mcMakeButton(sp.cls, sp.kind, sp.idle, sp.idle + 1, sp.label, function () {
-          if (state.screen !== 'lobby' || lobbyLeaving) return;
-          resetAfk();
-          playZSfx();
-          toggleReady();
-        });
+        /* Z: лобби - готов, карты - голос, персонажи - выбрать, матч - прыжок (удержание) */
+        el = mcMakeButton(sp.cls, sp.kind, sp.idle, sp.idle + 1, sp.label,
+          function () { mobileZ(true); }, null, function () { mobileZ(false); });
       } else if (sp.id === 'x') {
-        /* X = выйти (как клавиша X) */
-        el = mcMakeButton(sp.cls, sp.kind, sp.idle, sp.idle + 1, sp.label, function () {
-          if (state.screen !== 'lobby') return;
-          playSelectSfx();
-          leaveLobby();
-        });
+        /* X: лобби - выйти, карты - влево, матч - выйти (удержать секунду) */
+        el = mcMakeButton(sp.cls, sp.kind, sp.idle, sp.idle + 1, sp.label,
+          function () { mobileX(true); }, null, function () { mobileX(false); });
       } else if (sp.id === 'c') {
-        /* C = открыть чат (как Enter) */
-        el = mcMakeButton(sp.cls, sp.kind, sp.idle, sp.idle + 1, sp.label, null, function () {
-          if (state.screen !== 'lobby' || lobbyLeaving) return;
-          playSelectSfx();
-          openChat();
-        });
+        /* C: лобби - открыть чат, карты - вправо */
+        el = mcMakeButton(sp.cls, sp.kind, sp.idle, sp.idle + 1, sp.label, mobileCPress, mobileCClick);
       } else {
         el = mcMakeButton(sp.cls, sp.kind, sp.idle, sp.idle + 1, sp.label, function () {
           window.dispatchEvent(new CustomEvent('td2dr:emotion', { detail: { index: sp.emote } }));
@@ -4748,7 +4949,7 @@
       stage.appendChild(el);
     });
 
-    lobby.appendChild(root);
+    $('viewport').appendChild(root);
     initMobileEditor();
   }
 
@@ -5041,6 +5242,1628 @@
   }
 
   /* =========================================================================
+     ИГРОВОЙ ПОТОК: .testplay -> голосование за карту -> выбор персонажа -> матч
+     Хост (первый зашедший) ведёт фазы, остальные получают команды по сети.
+     ========================================================================= */
+  var CHARACTERS = {
+    tails: {
+      id: 'tails', name: 'TAILS', nameColor: '#ff8a00', body: '#f2a431', dark: '#d9791c', light: '#ffffff',
+      icon: './assets/sprites/select/icon_tails.png', portrait: './assets/sprites/tails.png',
+      mobility: 'HIGH   HIGH', ability: 'FLYING', abilityTime: '3 SEC.',
+      defense: 'ARM CANNON BLAST', defenseTime: '1-6 SEC.', passive: 'SPINNING'
+    },
+    knuckles: {
+      id: 'knuckles', name: 'KNUCKLES', nameColor: '#e02020', body: '#d62828', dark: '#9d1717', light: '#ffffff',
+      icon: './assets/sprites/select/icon_knuckles.png', portrait: './assets/sprites/knuckles.png',
+      mobility: 'MEDIUM   MEDIUM', ability: 'GLIDE', abilityTime: '5 SEC.',
+      defense: 'PUNCH', defenseTime: '3 SEC.', passive: 'SPINNING'
+    }
+  };
+  var CHAR_ORDER = ['tails', 'knuckles'];
+
+  var MAPS = [
+    { id: 'test', title: 'TEST', diff: 'MEDIUM', color: '#ff8a00', locked: false,
+      desc: 'A SHORT TEST LEVEL WITH HILLS, WALLS AND GROUND SPIKES. REACH THE SIGN AT THE END',
+      note: 'TAILS CAN FLY, KNUCKLES CAN GLIDE AND CLIMB WALLS' },
+    { id: 'locked1', title: '???', diff: 'LOCKED', color: '#555555', locked: true, desc: 'THIS MAP IS NOT AVAILABLE YET', note: '' },
+    { id: 'locked2', title: '???', diff: 'LOCKED', color: '#555555', locked: true, desc: 'THIS MAP IS NOT AVAILABLE YET', note: '' }
+  ];
+  var MAP_CARD_LEFT = [3.65, 37.6, 71.4];
+
+  var FLOW = { tp: 5, maps: 20, chars: 30, start3: 3, clearDelay: 5000, titleCard: 2800 };
+  var flow = {
+    phase: 'lobby', timers: [], votes: Object.create(null), sel: Object.create(null), locked: Object.create(null),
+    mapIndex: 0, myCh: 'tails', myLocked: false, mapId: 'test', timerIv: 0, level: null,
+    cleared: false, resolving: false, cardCtx: []
+  };
+  var charBgm = null;
+
+  /* ---------- таймеры и вспомогательные функции ---------- */
+  function flowEvery(ms, fn) { var t = setInterval(fn, ms); flow.timers.push({ iv: t }); return t; }
+  function flowAfter(ms, fn) { var t = setTimeout(fn, ms); flow.timers.push({ to: t }); return t; }
+
+  function flowClearTimers() {
+    flow.timers.forEach(function (t) {
+      if (t.iv) clearInterval(t.iv);
+      if (t.to) clearTimeout(t.to);
+    });
+    flow.timers = [];
+    flow.timerIv = 0;
+  }
+
+  function flowStopTimer() {
+    if (flow.timerIv) clearInterval(flow.timerIv);
+    flow.timerIv = 0;
+  }
+
+  function flowIsHost() { return !!(net.session && net.session.isHost && !net.session.closed); }
+
+  function flowBroadcast(msg, exceptId) {
+    if (flowIsHost()) netBroadcast(net.session, msg, exceptId);
+  }
+
+  /* сообщение хосту (если мы хост - обрабатываем сами) */
+  function flowSendToHost(msg) {
+    var sess = net.session;
+    if (!sess || sess.closed) return;
+    if (sess.isHost) {
+      flowHostMessage(sess, net.myId, net.players.get(net.myId), msg);
+    } else if (sess.hostConn && sess.hostConn.open !== false) {
+      try { sess.hostConn.send(msg); } catch (e) { /* ignore */ }
+    }
+  }
+
+  function flowNum(v, def, lo, hi) {
+    return (typeof v === 'number' && isFinite(v)) ? Math.max(lo, Math.min(hi, v)) : def;
+  }
+
+  /* обратный отсчёт на экране с таймером: показывает секунды до конца */
+  function flowTimer(elId, seconds, onEnd) {
+    flowStopTimer();
+    var el = $(elId);
+    var endAt = Date.now() + seconds * 1000;
+    function upd() {
+      var left = Math.max(0, Math.ceil((endAt - Date.now()) / 1000));
+      if (el) el.textContent = String(left);
+      return left;
+    }
+    upd();
+    var iv = flowEvery(200, function () {
+      if (upd() <= 0) {
+        clearInterval(iv);
+        if (flow.timerIv === iv) flow.timerIv = 0;
+        if (onEnd) onEnd();
+      }
+    });
+    flow.timerIv = iv;
+  }
+
+  /* 5, 4, 3, 2, 1 сверху по центру в лобби */
+  function flowLobbyCountdown(seconds, onDone) {
+    var el = $('lobbyCountdown');
+    var left = seconds;
+    if (el) { el.style.display = 'block'; el.textContent = String(left); }
+    var iv = flowEvery(1000, function () {
+      left--;
+      if (left <= 0) {
+        clearInterval(iv);
+        if (el) el.style.display = 'none';
+        if (onDone) onDone();
+      } else if (el) {
+        el.textContent = String(left);
+      }
+    });
+  }
+
+  function firstUnlockedMap() {
+    for (var i = 0; i < MAPS.length; i++) if (!MAPS[i].locked) return MAPS[i];
+    return MAPS[0];
+  }
+
+  function validMapId(id) {
+    for (var i = 0; i < MAPS.length; i++) if (MAPS[i].id === id && !MAPS[i].locked) return id;
+    return firstUnlockedMap().id;
+  }
+
+  /* ---------- команда .testplay ---------- */
+  function flowRequestTestplay() {
+    if (flow.phase !== 'lobby' || state.screen !== 'lobby') return;
+    if (flowIsHost()) hostStartTestplay();
+    else flowSendToHost({ t: 'cmd', c: 'testplay' });
+  }
+
+  /* ---------- хост: ведёт фазы ---------- */
+  function hostStartTestplay() {
+    if (flow.phase !== 'lobby' || !flowIsHost()) return;
+    flow.phase = 'countdown';
+    flowBroadcast({ t: 'tp' });
+    flowLobbyCountdown(FLOW.tp, hostStartMaps);
+  }
+
+  function hostStartMaps() {
+    if (flow.phase !== 'countdown' || !flowIsHost()) return;
+    flow.votes = Object.create(null);
+    flowBroadcast({ t: 'maps', dur: FLOW.maps });
+    flowEnterMaps(FLOW.maps);
+    flowAfter(FLOW.maps * 1000, hostResolveMaps);
+  }
+
+  function hostCheckAllVoted() {
+    if (flow.phase !== 'maps' || !flowIsHost() || flow.resolving) return;
+    var all = net.players.size > 0;
+    net.players.forEach(function (p, id) { if (!flow.votes[id]) all = false; });
+    if (all) {
+      flow.resolving = true;
+      flowAfter(700, function () { flow.resolving = false; hostResolveMaps(); });
+    }
+  }
+
+  function hostResolveMaps() {
+    if (flow.phase !== 'maps' || !flowIsHost()) return;
+    var tally = {};
+    Object.keys(flow.votes).forEach(function (id) {
+      if (net.players.has(id)) tally[flow.votes[id]] = (tally[flow.votes[id]] || 0) + 1;
+    });
+    var best = null;
+    var bestN = 0;
+    MAPS.forEach(function (m) {
+      if (!m.locked && (tally[m.id] || 0) > bestN) { best = m.id; bestN = tally[m.id]; }
+    });
+    if (!best) best = firstUnlockedMap().id;
+    flowBroadcast({ t: 'chars', map: best, dur: FLOW.chars });
+    flowEnterChars(best, FLOW.chars);
+    flowAfter(FLOW.chars * 1000 + 1500, hostCharsExpire);
+  }
+
+  function hostCheckAllLocked() {
+    if (flow.phase !== 'chars' || !flowIsHost()) return;
+    var all = net.players.size > 0;
+    net.players.forEach(function (p, id) { if (!flow.locked[id]) all = false; });
+    if (!all) return;
+    flow.phase = 'start3';
+    flowBroadcast({ t: 'start3' });
+    flowEnterStart3();
+    flowAfter(FLOW.start3 * 1000, hostStartMatch);
+  }
+
+  /* время вышло: кто не выбрал персонажа - вылетает с сервера */
+  function hostCharsExpire() {
+    if (flow.phase !== 'chars' || !flowIsHost()) return;
+    var sess = net.session;
+    var selfKick = false;
+    Array.from(net.players.keys()).forEach(function (id) {
+      if (flow.locked[id]) return;
+      if (id === net.myId) { selfKick = true; return; }
+      var c = sess.conns[id];
+      if (c) {
+        try { c.send({ t: 'kick' }); } catch (e) { /* ignore */ }
+        setTimeout(function () { try { c.close(); } catch (e2) { /* ignore */ } }, 300);
+      }
+      netDropClient(sess, id);
+    });
+    if (selfKick) { kickPlayer(); return; }
+    hostCheckAllLocked();
+  }
+
+  function hostStartMatch() {
+    if (flow.phase !== 'start3' || !flowIsHost()) return;
+    var plist = [];
+    net.players.forEach(function (p, id) { plist.push({ id: id, ch: flow.sel[id] || 'tails' }); });
+    flowBroadcast({ t: 'match', map: flow.mapId, players: plist });
+    flowStartMatch(flow.mapId, plist);
+  }
+
+  function hostOnGoal(id) {
+    if (flow.phase !== 'match' || flow.cleared || !flowIsHost()) return;
+    flow.cleared = true;
+    flowBroadcast({ t: 'clear', id: id });
+    flowOnClear(id);
+    flowAfter(FLOW.clearDelay, function () { if (flow.phase === 'match') hostToLobby(); });
+  }
+
+  function hostToLobby() {
+    flowBroadcast({ t: 'tolobby' });
+    flowToLobby();
+  }
+
+  /* кто-то вышел: проверяем, не пора ли двигаться дальше */
+  function flowHostPlayersChanged() {
+    if (!flowIsHost()) return;
+    if (flow.phase === 'maps') { flowRenderMapCards(); hostCheckAllVoted(); }
+    else if (flow.phase === 'chars') { flowRenderCsRemote(); hostCheckAllLocked(); }
+  }
+
+  /* сообщения от игроков хосту; true = сообщение игрового потока обработано */
+  function flowHostMessage(sess, id, p, data) {
+    var t = data.t;
+    if (t === 'cmd') {
+      if (data.c === 'testplay') hostStartTestplay();
+      return true;
+    }
+    if (t === 'vote') {
+      if (flow.phase !== 'maps') return true;
+      flow.votes[id] = validMapId(data.m);
+      flowBroadcast({ t: 'votes', v: flow.votes });
+      flowRenderMapCards();
+      hostCheckAllVoted();
+      return true;
+    }
+    if (t === 'sel' || t === 'lock') {
+      if (flow.phase !== 'chars' || flow.locked[id]) return true;
+      var ch = CHARACTERS[data.ch] ? data.ch : 'tails';
+      flow.sel[id] = ch;
+      if (t === 'lock') flow.locked[id] = true;
+      flowBroadcast({ t: t, id: id, ch: ch }, id);
+      flowRenderCsRemote();
+      if (t === 'lock') hostCheckAllLocked();
+      return true;
+    }
+    if (t === 'pos') {
+      if (flow.phase !== 'match') return true;
+      flowOnPos(id, data);
+      flowBroadcast({ t: 'pos', id: id, x: data.x, y: data.y, f: data.f, a: data.a, c: data.c }, id);
+      return true;
+    }
+    if (t === 'goal') {
+      hostOnGoal(id);
+      return true;
+    }
+    return false;
+  }
+
+  /* сообщения от хоста клиентам */
+  function flowClientMessage(sess, data) {
+    switch (data.t) {
+      case 'tp':
+        if (flow.phase === 'lobby') { flow.phase = 'countdown'; flowLobbyCountdown(FLOW.tp, null); }
+        break;
+      case 'maps':
+        flowEnterMaps(flowNum(data.dur, FLOW.maps, 3, 120));
+        break;
+      case 'votes':
+        if (data.v && typeof data.v === 'object') {
+          var votes = Object.create(null);
+          Object.keys(data.v).forEach(function (id) { votes[id] = validMapId(data.v[id]); });
+          flow.votes = votes;
+          flowRenderMapCards();
+        }
+        break;
+      case 'chars':
+        flowEnterChars(validMapId(data.map), flowNum(data.dur, FLOW.chars, 3, 120));
+        break;
+      case 'sel':
+      case 'lock':
+        if (typeof data.id === 'string' && CHARACTERS[data.ch]) {
+          flow.sel[data.id] = data.ch;
+          if (data.t === 'lock') flow.locked[data.id] = true;
+          flowRenderCsRemote();
+        }
+        break;
+      case 'start3':
+        flowEnterStart3();
+        break;
+      case 'match':
+        if (Array.isArray(data.players)) {
+          var plist = [];
+          data.players.slice(0, 40).forEach(function (pl) {
+            if (pl && typeof pl.id === 'string' && CHARACTERS[pl.ch]) plist.push({ id: pl.id, ch: pl.ch });
+          });
+          flowStartMatch(validMapId(data.map), plist);
+        }
+        break;
+      case 'kick':
+        kickPlayer();
+        break;
+      case 'pos':
+        if (flow.phase === 'match') flowOnPos(data.id, data);
+        break;
+      case 'clear':
+        flowOnClear(data.id);
+        break;
+      case 'tolobby':
+        flowToLobby();
+        break;
+    }
+  }
+
+  /* ---------- вход в фазы (одинаково у всех) ---------- */
+  function flowEnterMaps(dur) {
+    flow.phase = 'maps';
+    flow.mapIndex = 0;
+    flow.resolving = false;
+    if (!flowIsHost()) flow.votes = Object.create(null);
+    var cd = $('lobbyCountdown');
+    if (cd) cd.style.display = 'none';
+    closeChat();
+    stopAfk();
+    mcReleaseAll();
+    if (!flow.level) flow.level = buildTestLevel();
+    showScreen('mapselect');
+    flowBuildMapCards();
+    flowRenderMapCards();
+    startPreview('mapPreviewCanvas');
+    flowTimer('mapTimer', dur, null);
+  }
+
+  function flowEnterChars(mapId, dur) {
+    flow.phase = 'chars';
+    flow.mapId = mapId;
+    flow.sel = Object.create(null);
+    flow.locked = Object.create(null);
+    flow.myCh = 'tails';
+    flow.myLocked = false;
+    if (!flowIsHost()) flow.sel[net.myId] = 'tails';
+    mcReleaseAll();
+    if (!flow.level) flow.level = buildTestLevel();
+    showScreen('charselect');
+    startPreview('charPreviewCanvas');
+    renderCsMe();
+    renderCsInfo();
+    flowRenderCsRemote();
+    startCharMusic();
+    flowTimer('charTimer', dur, function () {
+      if (flow.phase === 'chars' && !flow.myLocked) kickPlayer();
+    });
+  }
+
+  function flowEnterStart3() {
+    flow.phase = 'start3';
+    flowStopTimer();
+    var el = $('charTimer');
+    var left = FLOW.start3;
+    if (el) el.textContent = String(left);
+    var iv = flowEvery(1000, function () {
+      left--;
+      if (left <= 0) clearInterval(iv);
+      else if (el) el.textContent = String(left);
+    });
+  }
+
+  function flowStartMatch(mapId, plist) {
+    flow.phase = 'match';
+    flow.cleared = false;
+    flowStopTimer();
+    stopPreview();
+    stopCharMusic();
+    startLobbyMusic();
+    mcReleaseAll();
+    showScreen('game');
+    gameStart(mapId, plist);
+  }
+
+  function flowReset() {
+    flowClearTimers();
+    stopPreview();
+    gameStop();
+    stopCharMusic();
+    flow.phase = 'lobby';
+    flow.votes = Object.create(null);
+    flow.sel = Object.create(null);
+    flow.locked = Object.create(null);
+    flow.myLocked = false;
+    flow.resolving = false;
+    flow.cleared = false;
+    var cd = $('lobbyCountdown');
+    if (cd) cd.style.display = 'none';
+  }
+
+  /* вернуться в лобби (конец матча / обрыв связи с хостом) */
+  function flowToLobby() {
+    var was = state.screen;
+    flowReset();
+    if (was === 'mapselect' || was === 'charselect' || was === 'game') {
+      lobbyReady = false;
+      showScreen('lobby');
+      renderLobbyIcon();
+      renderRemotePlayers();
+      startLobbyMusic();
+      resetAfk();
+      mcReleaseAll();
+    }
+  }
+
+  function startCharMusic() {
+    try {
+      if (lobbyBgm) lobbyBgm.pause();
+      if (charBgm) {
+        charBgm.currentTime = 0;
+        applyMusicVolume();
+        var pr = charBgm.play();
+        if (pr && pr.catch) pr.catch(function () {});
+      }
+    } catch (e) { /* ignore */ }
+  }
+
+  function stopCharMusic() {
+    try { if (charBgm) charBgm.pause(); } catch (e) { /* ignore */ }
+  }
+
+  /* ---------- экран выбора карты ---------- */
+  function flowBuildMapCards() {
+    var box = $('mapCards');
+    if (!box) return;
+    box.innerHTML = '';
+    flow.cardEls = [];
+    MAPS.forEach(function (m, i) {
+      var card = document.createElement('div');
+      card.className = 'map-card' + (m.locked ? ' locked' : '');
+      card.style.left = MAP_CARD_LEFT[i] + 'vw';
+      card.style.setProperty('--mcol', m.color);
+
+      var cv = document.createElement('canvas');
+      cv.width = 160;
+      cv.height = 103;
+      var cctx = cv.getContext('2d');
+      if (cctx && !m.locked && flow.level) {
+        var off = document.createElement('canvas');
+        off.width = 480;
+        off.height = 270;
+        var octx = off.getContext('2d');
+        octx.imageSmoothingEnabled = false;
+        drawLevelScene(octx, flow.level, 0, 250, null);
+        cctx.imageSmoothingEnabled = false;
+        cctx.drawImage(off, 0, 0, 480, 270, 0, 0, 160, 103);
+      } else if (cctx) {
+        cctx.fillStyle = '#0a0a0a';
+        cctx.fillRect(0, 0, 160, 103);
+        cctx.fillStyle = '#3a3a3a';
+        cctx.font = 'bold 40px monospace';
+        cctx.textAlign = 'center';
+        cctx.fillText('?', 80, 66);
+      }
+      card.appendChild(cv);
+
+      var title = document.createElement('div');
+      title.className = 'mc-title';
+      title.textContent = m.title;
+      var diff = document.createElement('div');
+      diff.className = 'mc-diff';
+      diff.textContent = m.diff;
+      var dots = document.createElement('div');
+      dots.className = 'mc-dots';
+      card.appendChild(title);
+      card.appendChild(diff);
+      card.appendChild(dots);
+
+      box.appendChild(card);
+      flow.cardEls.push({ card: card, dots: dots });
+    });
+  }
+
+  function flowRenderMapCards() {
+    if (!flow.cardEls) return;
+    var counts = {};
+    Object.keys(flow.votes).forEach(function (id) {
+      if (net.players.has(id)) counts[flow.votes[id]] = (counts[flow.votes[id]] || 0) + 1;
+    });
+    MAPS.forEach(function (m, i) {
+      var rec = flow.cardEls[i];
+      if (!rec) return;
+      rec.card.classList.toggle('sel', i === flow.mapIndex);
+      rec.dots.innerHTML = '';
+      for (var k = 0; k < (counts[m.id] || 0); k++) rec.dots.appendChild(document.createElement('i'));
+    });
+    var m2 = MAPS[flow.mapIndex];
+    var desc = $('mapDesc');
+    if (desc && m2) {
+      desc.innerHTML = '';
+      desc.appendChild(document.createTextNode(m2.desc + ' '));
+      if (m2.note) {
+        var note = document.createElement('span');
+        note.className = 'ms-note';
+        note.textContent = m2.note;
+        desc.appendChild(note);
+      }
+    }
+  }
+
+  function mapMove(dir) {
+    if (state.screen !== 'mapselect') return;
+    flow.mapIndex = (flow.mapIndex + dir + MAPS.length) % MAPS.length;
+    playHoverSfx();
+    flowRenderMapCards();
+  }
+
+  function mapVote() {
+    if (state.screen !== 'mapselect') return;
+    var m = MAPS[flow.mapIndex];
+    if (!m || m.locked) { playHoverSfx(); return; }
+    playSelectSfx();
+    if (!flowIsHost()) flow.votes[net.myId] = m.id;
+    flowRenderMapCards();
+    flowSendToHost({ t: 'vote', m: m.id });
+  }
+
+  /* ---------- экран выбора персонажа ---------- */
+  var CS_SLOTS = [[8, 21], [21, 21], [34, 21], [66, 21], [79, 21], [92, 21], [8, 32], [21, 32], [79, 32], [92, 32]];
+
+  /* круглая иконка персонажа: select/icon_<имя>.png -> портрет sprites/<имя>.png -> заглушка */
+  function fillCharIcon(box, chId, locked) {
+    if (!box) return;
+    box.innerHTML = '';
+    box.className = 'lobby-icon' + (locked ? ' ready' : '');
+    box.style.color = '';
+    var ch = CHARACTERS[chId] || CHARACTERS.tails;
+    var img = document.createElement('img');
+    img.alt = ch.name;
+    img.draggable = false;
+    var stage = 0;
+    img.onerror = function () {
+      stage++;
+      if (stage === 1) {
+        img.style.objectFit = 'cover';
+        img.style.borderRadius = '50%';
+        img.src = ch.portrait;
+      } else {
+        img.onerror = null;
+        if (img.parentNode) img.parentNode.removeChild(img);
+        box.classList.add('fallback');
+        box.style.color = ch.body;
+        box.textContent = ch.name.charAt(0);
+      }
+    };
+    img.src = ch.icon;
+    box.appendChild(img);
+  }
+
+  function renderCsMe() {
+    fillCharIcon($('csIcon'), flow.myCh, flow.myLocked);
+    var nick = $('csNick');
+    if (nick) { nick.innerHTML = ''; nick.appendChild(parseColoredNickname(savedNick)); }
+    var vis = flow.myLocked ? 'hidden' : 'visible';
+    if ($('csArrowL')) $('csArrowL').style.visibility = vis;
+    if ($('csArrowR')) $('csArrowR').style.visibility = vis;
+  }
+
+  function renderCsInfo() {
+    var ch = CHARACTERS[flow.myCh] || CHARACTERS.tails;
+    var name = $('csName');
+    if (name) { name.textContent = ch.name; name.style.color = ch.nameColor; }
+    if ($('csMob')) {
+      $('csMob').innerHTML = '';
+      var dim = document.createElement('span');
+      dim.className = 'cs-dim';
+      dim.textContent = ch.mobility + '  ';
+      var ab = document.createElement('span');
+      ab.textContent = ch.ability + ' (' + ch.abilityTime + ')';
+      $('csMob').appendChild(dim);
+      $('csMob').appendChild(ab);
+    }
+    if ($('csDef')) $('csDef').textContent = ch.defense + ' (' + ch.defenseTime + ')';
+    if ($('csPas')) $('csPas').textContent = ch.passive;
+  }
+
+  function flowRenderCsRemote() {
+    var box = $('csRemote');
+    if (!box) return;
+    box.innerHTML = '';
+    var idx = 0;
+    net.players.forEach(function (p, id) {
+      if (id === net.myId) return;
+      var slot = CS_SLOTS[idx % CS_SLOTS.length];
+      idx++;
+      var wrap = document.createElement('div');
+      wrap.className = 'lobby-player remote';
+      wrap.style.left = slot[0] + '%';
+      wrap.style.top = 'calc(' + slot[1] + 'vh - 2.5vw)';
+      var icon = document.createElement('div');
+      fillCharIcon(icon, flow.sel[id] || 'tails', !!flow.locked[id]);
+      var nick = document.createElement('div');
+      nick.className = 'lobby-nick';
+      nick.appendChild(parseColoredNickname(p.n));
+      wrap.appendChild(icon);
+      wrap.appendChild(nick);
+      box.appendChild(wrap);
+    });
+  }
+
+  function charSwitch(dir) {
+    if (state.screen !== 'charselect' || flow.myLocked || flow.phase !== 'chars') return;
+    var i = CHAR_ORDER.indexOf(flow.myCh);
+    flow.myCh = CHAR_ORDER[(i + dir + CHAR_ORDER.length) % CHAR_ORDER.length];
+    playHoverSfx();
+    renderCsMe();
+    renderCsInfo();
+    if (!flowIsHost()) flow.sel[net.myId] = flow.myCh;
+    flowSendToHost({ t: 'sel', ch: flow.myCh });
+  }
+
+  function charLock() {
+    if (state.screen !== 'charselect' || flow.myLocked || flow.phase !== 'chars') return;
+    flow.myLocked = true;
+    playSelectSfx();
+    if (!flowIsHost()) { flow.sel[net.myId] = flow.myCh; flow.locked[net.myId] = true; }
+    renderCsMe();
+    flowSendToHost({ t: 'lock', ch: flow.myCh });
+  }
+
+  /* =========================================================================
+     УРОВЕНЬ "test": высотная карта (холмы, стены, впадины) + шипы
+     ========================================================================= */
+  function buildTestLevel() {
+    var W = 6400;
+    var BASE = 420;
+    var H = new Float32Array(W + 1);
+    var i;
+    for (i = 0; i <= W; i++) H[i] = BASE;
+
+    function bump(x0, x1, h) {
+      for (var x = x0; x <= x1; x++) {
+        var t = (x - x0) / (x1 - x0);
+        H[x] -= h * (1 - Math.cos(2 * Math.PI * t)) / 2;
+      }
+    }
+    function block(x0, x1, h) {
+      for (var x = x0; x <= x1; x++) H[x] = Math.min(H[x], BASE - h);
+    }
+
+    bump(500, 900, 90);          /* холм */
+    bump(1100, 1700, -110);      /* впадина (полупайп, удобно катиться шаром) */
+    block(2300, 2340, 24);       /* низкие препятствия */
+    block(2420, 2460, 40);
+    block(2650, 2700, 150);      /* стена: перелететь (Tails) или залезть (Knuckles) */
+    bump(2900, 3500, 170);       /* большой холм */
+    block(3900, 4500, 260);      /* меза с высокой стеной */
+    bump(4700, 5000, 40);
+    bump(5000, 5300, -30);
+    block(5500, 5540, 110);      /* последняя стена */
+
+    var spikes = [];
+    function spike(x0, n) { spikes.push({ x: x0, w: 16 * n, h: 18, n: n, y: H[x0 + 8] }); }
+    spike(1850, 5);
+    spike(2140, 5);
+    spike(3640, 5);
+    spike(4150, 6);              /* на вершине мезы */
+    spike(5350, 4);
+
+    return {
+      id: 'test', name: 'TEST', width: W, H: H, bottom: 800, spikes: spikes,
+      start: { x: 80 }, goal: { x: 5950 },
+      checkpoints: [{ x: 2262, hit: false }, { x: 4650, hit: false }]
+    };
+  }
+
+  function colH(lv, x) {
+    x = Math.round(x);
+    if (x < 0) x = 0;
+    if (x > lv.width) x = lv.width;
+    return lv.H[x];
+  }
+
+  /* шахматная текстура: зелёный / тёмно-зелёный (клетки 16x16, привязана к миру) */
+  function checkerPattern(ctx) {
+    if (!ctx.__checker) {
+      var pc = document.createElement('canvas');
+      pc.width = 32;
+      pc.height = 32;
+      var pctx = pc.getContext('2d');
+      pctx.fillStyle = '#3f9d45';
+      pctx.fillRect(0, 0, 32, 32);
+      pctx.fillStyle = '#1f5f2c';
+      pctx.fillRect(16, 0, 16, 16);
+      pctx.fillRect(0, 16, 16, 16);
+      ctx.__checker = ctx.createPattern(pc, 'repeat');
+    }
+    return ctx.__checker;
+  }
+
+  /* отрисовка уровня (используется и в матче, и в тёмном фоне экранов выбора) */
+  function drawLevelScene(ctx, lv, camX, camY, spikeImg) {
+    var g = ctx.createLinearGradient(0, 0, 0, 270);
+    g.addColorStop(0, '#0a1630');
+    g.addColorStop(1, '#1b4d5c');
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, 480, 270);
+
+    /* параллакс: два слоя гор */
+    var layers = [{ f: 0.2, c: '#0f2a3d', base: 190, amp: 38, s: 90 }, { f: 0.4, c: '#143c4a', base: 215, amp: 28, s: 55 }];
+    layers.forEach(function (L) {
+      ctx.fillStyle = L.c;
+      ctx.beginPath();
+      ctx.moveTo(0, 270);
+      for (var x = 0; x <= 480; x += 6) {
+        ctx.lineTo(x, L.base - camY * 0.15 + Math.sin((x + camX * L.f) / L.s) * L.amp + Math.sin((x + camX * L.f) / (L.s * 0.37)) * 6);
+      }
+      ctx.lineTo(480, 270);
+      ctx.closePath();
+      ctx.fill();
+    });
+
+    ctx.save();
+    ctx.translate(-camX, -camY);
+
+    var x0 = Math.max(0, Math.floor(camX) - 2);
+    var x1 = Math.min(lv.width, x0 + 486);
+    ctx.beginPath();
+    ctx.moveTo(x0, lv.bottom);
+    var x;
+    for (x = x0; x <= x1; x++) ctx.lineTo(x, lv.H[x]);
+    ctx.lineTo(x1, lv.bottom);
+    ctx.closePath();
+    ctx.fillStyle = checkerPattern(ctx);
+    ctx.fill();
+
+    ctx.strokeStyle = '#8be08b';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(x0, lv.H[x0] - 1);
+    for (x = x0 + 1; x <= x1; x++) ctx.lineTo(x, lv.H[x] - 1);
+    ctx.stroke();
+
+    /* шипы */
+    lv.spikes.forEach(function (sp) {
+      if (sp.x + sp.w < camX - 4 || sp.x > camX + 484) return;
+      if (spikeImg && spikeImg.complete && spikeImg.naturalWidth) {
+        for (var k = 0; k < sp.n; k++) ctx.drawImage(spikeImg, sp.x + k * 16, sp.y - spikeImg.naturalHeight);
+      } else {
+        for (var j = 0; j < sp.n; j++) {
+          var bx = sp.x + j * 16;
+          ctx.fillStyle = '#d9d9d9';
+          ctx.beginPath();
+          ctx.moveTo(bx, sp.y);
+          ctx.lineTo(bx + 8, sp.y - sp.h);
+          ctx.lineTo(bx + 16, sp.y);
+          ctx.closePath();
+          ctx.fill();
+          ctx.fillStyle = '#8d8d8d';
+          ctx.beginPath();
+          ctx.moveTo(bx + 8, sp.y - sp.h);
+          ctx.lineTo(bx + 16, sp.y);
+          ctx.lineTo(bx + 8, sp.y);
+          ctx.closePath();
+          ctx.fill();
+        }
+      }
+    });
+
+    /* чекпоинты и финиш */
+    lv.checkpoints.forEach(function (cp) {
+      var cy = colH(lv, cp.x);
+      ctx.fillStyle = '#9aa';
+      ctx.fillRect(cp.x - 1, cy - 34, 3, 34);
+      ctx.fillStyle = cp.hit ? '#ff4040' : '#3a7bff';
+      ctx.beginPath();
+      ctx.arc(cp.x, cy - 36, 5, 0, Math.PI * 2);
+      ctx.fill();
+    });
+    var gy = colH(lv, lv.goal.x);
+    ctx.fillStyle = '#c8c8c8';
+    ctx.fillRect(lv.goal.x - 2, gy - 56, 4, 56);
+    ctx.fillStyle = '#ff3b3b';
+    ctx.fillRect(lv.goal.x + 2, gy - 56, 22, 14);
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(lv.goal.x + 2, gy - 49, 22, 3);
+
+    ctx.restore();
+  }
+
+  /* ---------- тёмный «плывущий вправо» предпросмотр карты на фоне ---------- */
+  var preview = { raf: 0, canvasId: '', camX: 0, camY: 200, last: 0 };
+
+  function startPreview(canvasId) {
+    stopPreview();
+    preview.canvasId = canvasId;
+    preview.camX = 0;
+    preview.camY = 250;
+    preview.last = performance.now();
+    preview.raf = requestAnimationFrame(previewFrame);
+  }
+
+  function stopPreview() {
+    if (preview.raf) cancelAnimationFrame(preview.raf);
+    preview.raf = 0;
+  }
+
+  function previewFrame(ts) {
+    var cv = $(preview.canvasId);
+    if (!cv || !flow.level) { preview.raf = 0; return; }
+    var ctx = cv.getContext('2d');
+    ctx.imageSmoothingEnabled = false;
+    var lv = flow.level;
+    var dt = Math.min(100, ts - preview.last);
+    preview.last = ts;
+
+    var locked = (state.screen === 'mapselect') && MAPS[flow.mapIndex] && MAPS[flow.mapIndex].locked;
+    if (locked) {
+      ctx.fillStyle = '#050505';
+      ctx.fillRect(0, 0, 480, 270);
+    } else {
+      preview.camX += 0.045 * dt;                         /* ~45 px/с плавно вправо */
+      if (preview.camX > lv.width - 500) preview.camX = 0;
+      var ty = colH(lv, preview.camX + 240) - 190;
+      preview.camY += (ty - preview.camY) * 0.03;
+      drawLevelScene(ctx, lv, Math.round(preview.camX), Math.round(preview.camY), null);
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.62)';              /* затемнение */
+      ctx.fillRect(0, 0, 480, 270);
+    }
+    preview.raf = requestAnimationFrame(previewFrame);
+  }
+
+  /* =========================================================================
+     ИГРА: игрок, физика, способности, отрисовка
+     ========================================================================= */
+  var PH = {
+    hw: 9, hStand: 34, hBall: 22,
+    acc: 0.10, dec: 0.6, frc: 0.1, top: 5.8,
+    slope: 0.15, rollUp: 0.09, rollDown: 0.32, rollFrc: 0.03, rollDec: 0.15,
+    airAcc: 0.2, grav: 0.22, jump: 6.8, maxFall: 12, maxRise: 18,
+    flyTime: 3, glideTime: 5
+  };
+
+  var SPRITE_BASE = './assets/sprites/game/';
+  /* количество кадров каждой анимации (файлы <анимация>_0.png, <анимация>_1.png, ...) */
+  var SPRITE_FRAMES = {
+    common: { idle: 1, walk: 8, run: 4, jump: 4, lookup: 1, lookdown: 1, spin: 4 },
+    tails: { fly: 2 },
+    knuckles: { glide: 1, cling: 1, climb: 2 }
+  };
+  var SPRITE_FPS = { idle: 4, walk: 10, run: 16, jump: 20, lookup: 4, lookdown: 4, spin: 20, fly: 16, glide: 8, cling: 4, climb: 8 };
+  var spriteBank = {};
+  var spikeImg = null;
+
+  var game = {
+    active: false, running: false, raf: 0, last: 0, acc: 0, lv: null, me: null,
+    remotes: new Map(), cam: { x: 0, y: 0 }, keys: {}, prevJump: false, posTick: 0, time: 0,
+    cleared: false, deaths: 0, respawn: null, leaveTimer: 0, hudTick: 0,
+    mobile: { left: false, right: false, up: false, down: false, jump: false }
+  };
+
+  /* кадры спрайтов персонажа; если idle_0.png не найден - рисуем встроенную заглушку */
+  function loadSpritesFor(chId) {
+    if (spriteBank[chId]) return;
+    var bank = { anims: {}, missing: false };
+    spriteBank[chId] = bank;
+    var probe = new Image();
+    probe.onload = function () {
+      var defs = {};
+      Object.keys(SPRITE_FRAMES.common).forEach(function (a) { defs[a] = SPRITE_FRAMES.common[a]; });
+      var extra = SPRITE_FRAMES[chId] || {};
+      Object.keys(extra).forEach(function (a) { defs[a] = extra[a]; });
+      Object.keys(defs).forEach(function (anim) {
+        var arr = [];
+        for (var n = 0; n < defs[anim]; n++) {
+          var im = (anim === 'idle' && n === 0) ? probe : new Image();
+          if (im !== probe) im.src = SPRITE_BASE + chId + '/' + anim + '_' + n + '.png';
+          arr.push(im);
+        }
+        bank.anims[anim] = arr;
+      });
+    };
+    probe.onerror = function () { bank.missing = true; };
+    probe.src = SPRITE_BASE + chId + '/idle_0.png';
+  }
+
+  function getFrames(chId, anim) {
+    var bank = spriteBank[chId];
+    if (!bank || bank.missing) return null;
+    var arr = bank.anims[anim];
+    if (!arr && anim === 'jump') arr = bank.anims.spin;
+    if (!arr) return null;
+    var ok = arr.filter(function (im) { return im && im.complete && im.naturalWidth; });
+    return ok.length ? ok : null;
+  }
+
+  function newPlayer(chId, x, lv) {
+    return {
+      ch: chId, x: x, y: colH(lv, x), vx: 0, vy: 0, grounded: true, ball: false, jumped: false,
+      action: null, facing: 1, flyTime: 0, glideTime: 0, noAbility: false, clingDir: 1,
+      invuln: 0, lookUp: false, crouch: false, lookT: 0, animT: 0, finished: false
+    };
+  }
+
+  function surfaceUnder(lv, p) {
+    var best = Infinity;
+    for (var dx = -7; dx <= 7; dx += 3.5) {
+      var h = colH(lv, p.x + dx);
+      if (h < best) best = h;
+    }
+    return best;
+  }
+
+  /* перемещение по горизонтали шагами по 1 пикселю: холмы, ступеньки, стены */
+  function moveX(lv, p, dist) {
+    var sgn = dist > 0 ? 1 : -1;
+    var steps = Math.floor(Math.abs(dist));
+    var rem = Math.abs(dist) - steps;
+    var maxDrop = 6 + Math.abs(p.vx) * 0.9;
+    for (var i = 0; i <= steps; i++) {
+      var d = (i < steps) ? 1 : rem;
+      if (d <= 0) break;
+      var nx = p.x + sgn * d;
+      var col = nx + sgn * PH.hw;
+      var h = colH(lv, col);
+      var blocked = p.grounded ? (p.y - h > PH.maxRise) : (p.y - h > 3);
+      if (nx < PH.hw + 1 || nx > lv.width - PH.hw - 1) blocked = true;
+      if (blocked) return sgn;                               /* упёрлись в стену */
+      p.x = nx;
+      if (p.grounded) {
+        var gy = colH(lv, p.x);
+        if (gy - p.y > maxDrop) {                            /* земля ушла вниз: отрываемся */
+          p.grounded = false;
+          p.vy = Math.max(0, p.vx * (gy - p.y) / Math.max(1, d));
+          return 0;
+        }
+        p.y = gy;
+      }
+    }
+    return 0;
+  }
+
+  function landPlayer(p, gy) {
+    var fromGlide = p.action === 'glide';
+    p.y = gy;
+    p.vy = 0;
+    p.grounded = true;
+    p.jumped = false;
+    p.action = null;
+    p.noAbility = false;
+    p.ball = false;
+    if (fromGlide) p.vx *= 0.5;
+  }
+
+  function killPlayer(p) {
+    game.deaths++;
+    var rp = game.respawn || { x: game.lv.start.x };
+    p.x = rp.x;
+    p.y = colH(game.lv, rp.x);
+    p.vx = 0;
+    p.vy = 0;
+    p.grounded = true;
+    p.ball = false;
+    p.action = null;
+    p.jumped = false;
+    p.noAbility = false;
+    p.invuln = 1.6;
+  }
+
+  function stepPlayer(p, inp, lv) {
+    var dt = 1 / 60;
+    var dir = (inp.right ? 1 : 0) - (inp.left ? 1 : 0);
+    var i;
+    if (p.invuln > 0) p.invuln -= dt;
+
+    if (p.action === 'cling') {
+      /* Knuckles висит на стене */
+      var wd = p.clingDir;
+      p.vx = 0;
+      if (inp.jumpPressed) {
+        p.action = null;
+        p.noAbility = true;
+        p.vy = -5.5;
+        p.vx = -wd * 3.2;
+        p.facing = -wd;
+        p.jumped = true;
+      } else {
+        var climb = (inp.down ? 1 : 0) - (inp.up ? 1 : 0);
+        p.vy = climb * 1.1;
+        p.y += p.vy;
+        var wallCol = p.x + wd * (PH.hw + 1);
+        var wh = colH(lv, wallCol);
+        if (p.y - wh <= 12) {                                 /* добрались до верха: забираемся */
+          p.x += wd * (PH.hw + 5);
+          p.y = colH(lv, p.x);
+          p.grounded = true;
+          p.action = null;
+          p.vx = 0;
+          p.vy = 0;
+          p.jumped = false;
+          p.noAbility = false;
+        } else if (p.y >= colH(lv, p.x)) {                    /* спустились на землю */
+          p.y = colH(lv, p.x);
+          p.grounded = true;
+          p.action = null;
+          p.vy = 0;
+          p.noAbility = false;
+          p.jumped = false;
+        } else if (wh > p.y - 4) {
+          p.action = null;                                    /* стена закончилась */
+        }
+      }
+      return;
+    }
+
+    if (p.grounded) {
+      var sl = (colH(lv, p.x + 5) - colH(lv, p.x - 5)) / 10;
+      var sinA = -sl / Math.sqrt(1 + sl * sl);                /* > 0, если подъём вправо */
+      if (p.ball) p.vx -= ((p.vx * sinA > 0) ? PH.rollUp : PH.rollDown) * sinA;
+      else p.vx -= PH.slope * sinA;
+
+      if (!p.ball) {
+        if (dir !== 0) {
+          p.facing = dir;
+          if (p.vx * dir < 0) p.vx += dir * PH.dec;
+          else if (Math.abs(p.vx) < PH.top) p.vx += dir * PH.acc;
+        } else if (Math.abs(p.vx) <= PH.frc) p.vx = 0;
+        else p.vx -= (p.vx > 0 ? 1 : -1) * PH.frc;
+      } else {
+        if (dir !== 0 && p.vx * dir < 0) p.vx += dir * PH.rollDec;
+        if (Math.abs(p.vx) <= PH.rollFrc) p.vx = 0;
+        else p.vx -= (p.vx > 0 ? 1 : -1) * PH.rollFrc;
+        if (Math.abs(p.vx) > 12) p.vx = (p.vx > 0 ? 12 : -12);
+      }
+
+      /* шар / взгляд вверх / присед */
+      if (!p.ball) {
+        if (inp.down && Math.abs(p.vx) >= 1.0) p.ball = true;
+      } else if (Math.abs(p.vx) < 0.4 && Math.abs(sinA) < 0.25) {
+        p.ball = false;
+      }
+      p.lookUp = false;
+      p.crouch = false;
+      if (!p.ball && Math.abs(p.vx) < 0.05) {
+        if (inp.up) p.lookUp = true;
+        else if (inp.down) p.crouch = true;
+      }
+      if (p.lookUp || p.crouch) p.lookT += dt; else p.lookT = 0;
+
+      if (inp.jumpPressed) {
+        p.vy = -PH.jump;
+        p.grounded = false;
+        p.jumped = true;
+        p.ball = false;
+        p.lookUp = false;
+        p.crouch = false;
+        p.y -= 2;
+      }
+
+      if (p.grounded && p.vx !== 0) {
+        if (moveX(lv, p, p.vx) !== 0) {                       /* стена */
+          p.vx = 0;
+          p.ball = false;
+        }
+      }
+      if (p.grounded) {
+        var g0 = colH(lv, p.x);
+        if (Math.abs(g0 - p.y) > 0.01) p.y = g0;
+      }
+    }
+
+    if (!p.grounded) {
+      p.lookUp = false;
+      p.crouch = false;
+      p.lookT = 0;
+
+      /* способности по повторному нажатию прыжка в воздухе */
+      if (inp.jumpPressed && !p.action && !p.noAbility && p.vy > -6.7) {
+        if (p.ch === 'tails') {
+          p.action = 'fly';
+          p.flyTime = PH.flyTime;
+          p.ball = false;
+        } else if (p.ch === 'knuckles') {
+          p.action = 'glide';
+          p.glideTime = PH.glideTime;
+          if (dir !== 0) p.facing = dir;
+          p.vx = p.facing * Math.max(3.5, Math.abs(p.vx));
+          p.vy = Math.max(p.vy, 0);
+        }
+      }
+
+      if (p.action === 'fly') {
+        p.flyTime -= dt;
+        if (inp.jump) p.vy = Math.max(p.vy - 0.12, -2.2);
+        else p.vy = Math.min(p.vy + 0.05, 1.2);
+        if (p.flyTime <= 0) { p.action = null; p.noAbility = true; }
+        if (dir !== 0) { p.facing = dir; if (p.vx * dir < PH.top) p.vx += dir * PH.airAcc; }
+        else p.vx *= 0.99;
+      } else if (p.action === 'glide') {
+        p.glideTime -= dt;
+        if (!inp.jump || p.glideTime <= 0) {
+          p.action = null;
+          p.noAbility = true;
+        } else {
+          p.vy += (0.55 - p.vy) * 0.12;
+          if (dir !== 0 && dir !== p.facing) {                /* разворот: сначала гасим скорость */
+            p.vx += dir * 0.10;
+            if (p.vx * p.facing <= 0.3) p.facing = dir;
+          } else if (Math.abs(p.vx) < 6) {
+            p.vx += p.facing * 0.05;
+          }
+        }
+      } else {
+        if (dir !== 0) { p.facing = dir; if (p.vx * dir < PH.top) p.vx += dir * PH.airAcc; }
+        if (p.jumped && !inp.jump && p.vy < -4) p.vy = -4;    /* переменная высота прыжка */
+        p.vy = Math.min(p.vy + PH.grav, PH.maxFall);
+      }
+
+      if (p.vx !== 0) {
+        var hit = moveX(lv, p, p.vx);
+        if (hit !== 0) {
+          if (p.action === 'glide') {                          /* Knuckles цепляется за стену */
+            p.action = 'cling';
+            p.clingDir = hit;
+            p.vx = 0;
+            p.vy = 0;
+            p.facing = hit;
+          } else {
+            p.vx = 0;
+          }
+        }
+      }
+
+      if (p.action !== 'cling') {
+        p.y += p.vy;
+        if (p.y < PH.hStand) { p.y = PH.hStand; if (p.vy < 0) p.vy = 0; }   /* потолок мира */
+        if (p.vy >= 0) {
+          var gy = surfaceUnder(lv, p);
+          if (p.y >= gy) landPlayer(p, gy);
+        }
+      }
+    }
+
+    /* шипы */
+    if (p.invuln <= 0) {
+      for (i = 0; i < lv.spikes.length; i++) {
+        var sp = lv.spikes[i];
+        if (p.x + 6 > sp.x + 2 && p.x - 6 < sp.x + sp.w - 2 && p.y > sp.y - sp.h + 5 && p.y - 30 < sp.y) {
+          killPlayer(p);
+          break;
+        }
+      }
+    }
+  }
+
+  function animOf(p) {
+    if (p.action === 'cling') return Math.abs(p.vy) > 0.2 ? 'climb' : 'cling';
+    if (p.action === 'glide') return 'glide';
+    if (p.action === 'fly') return 'fly';
+    if (!p.grounded) return 'jump';
+    if (p.ball) return 'spin';
+    if (p.lookUp) return 'lookup';
+    if (p.crouch) return 'lookdown';
+    var s = Math.abs(p.vx);
+    if (s < 0.1) return 'idle';
+    return s < 4.5 ? 'walk' : 'run';
+  }
+
+  function updateAnimT(p) {
+    var a = animOf(p);
+    var k = 1;
+    if (a === 'walk' || a === 'run') k = 0.5 + Math.abs(p.vx) * 0.25;
+    else if (a === 'spin') k = 1 + Math.abs(p.vx) * 0.1;
+    p.animT += k / 60;
+  }
+
+  /* ---------- ввод ---------- */
+  function gameInput() {
+    var k = game.keys;
+    var b = userKeybinds;
+    var m = game.mobile;
+    return {
+      left: !!(k[b.LEFT] || m.left), right: !!(k[b.RIGHT] || m.right),
+      up: !!(k[b.UP] || m.up), down: !!(k[b.DOWN] || m.down), jump: !!(k[b.JUMP] || m.jump)
+    };
+  }
+
+  /* ---------- запуск / остановка матча ---------- */
+  function gameStart(mapId, plist) {
+    var lv = flow.level || (flow.level = buildTestLevel());
+    game.lv = lv;
+    lv.checkpoints.forEach(function (cp) { cp.hit = false; });
+    game.respawn = { x: lv.start.x };
+    game.cleared = false;
+    game.deaths = 0;
+    game.time = 0;
+    game.running = false;
+    game.keys = {};
+    game.prevJump = false;
+    game.posTick = 0;
+    game.remotes = new Map();
+    var me = null;
+    plist.forEach(function (pl, i) {
+      var sx = lv.start.x + i * 14;
+      loadSpritesFor(pl.ch);
+      if (pl.id === net.myId) {
+        me = newPlayer(pl.ch, sx, lv);
+        me.id = pl.id;
+      } else {
+        game.remotes.set(pl.id, { x: sx, y: colH(lv, sx), tx: sx, ty: colH(lv, sx), f: 1, a: 'idle', c: pl.ch, animT: 0 });
+      }
+    });
+    if (!me) { me = newPlayer('tails', lv.start.x, lv); loadSpritesFor('tails'); }
+    game.me = me;
+    if (!spikeImg) {
+      spikeImg = new Image();
+      spikeImg.src = SPRITE_BASE + 'spike.png';
+    }
+    game.cam.x = Math.max(0, me.x - 240);
+    game.cam.y = Math.max(0, me.y - 170);
+
+    var map = MAPS[0];
+    $('tcName').textContent = map.title;
+    $('tcSub').textContent = map.diff;
+    $('gameTitleCard').style.display = 'flex';
+    $('gameClear').style.display = 'none';
+    flowAfter(FLOW.titleCard, function () {
+      $('gameTitleCard').style.display = 'none';
+      game.running = true;
+    });
+
+    game.active = true;
+    game.last = performance.now();
+    game.acc = 0;
+    game.raf = requestAnimationFrame(gameLoop);
+  }
+
+  function gameStop() {
+    game.active = false;
+    game.running = false;
+    if (game.raf) cancelAnimationFrame(game.raf);
+    game.raf = 0;
+    clearTimeout(game.leaveTimer);
+    game.keys = {};
+    game.mobile = { left: false, right: false, up: false, down: false, jump: false };
+    var tc = $('gameTitleCard');
+    if (tc) tc.style.display = 'none';
+    var gc = $('gameClear');
+    if (gc) gc.style.display = 'none';
+  }
+
+  function flowOnClear(id) {
+    game.cleared = true;
+    var pl = net.players.get(id);
+    var el = $('gameClear');
+    if (!el) return;
+    el.innerHTML = '';
+    var big = document.createElement('div');
+    big.className = 'gc-big';
+    big.textContent = 'LEVEL CLEAR!';
+    var who = document.createElement('div');
+    who.className = 'gc-who';
+    if (pl) who.appendChild(parseColoredNickname(pl.n));
+    el.appendChild(big);
+    el.appendChild(who);
+    el.style.display = 'flex';
+  }
+
+  function flowOnPos(id, data) {
+    if (typeof id !== 'string' || id === net.myId || !data) return;
+    var r = game.remotes.get(id);
+    if (!r) {
+      r = { x: 0, y: 0, tx: 0, ty: 0, f: 1, a: 'idle', c: 'tails', animT: 0, fresh: true };
+      game.remotes.set(id, r);
+    }
+    var x = Number(data.x);
+    var y = Number(data.y);
+    if (!isFinite(x) || !isFinite(y)) return;
+    r.tx = x;
+    r.ty = y;
+    if (r.fresh) { r.x = x; r.y = y; r.fresh = false; }
+    r.f = data.f < 0 ? -1 : 1;
+    r.a = typeof data.a === 'string' ? data.a.slice(0, 12) : 'idle';
+    r.c = CHARACTERS[data.c] ? data.c : r.c;
+  }
+
+  function flowSendPos() {
+    var p = game.me;
+    if (!p) return;
+    var msg = { t: 'pos', x: Math.round(p.x * 10) / 10, y: Math.round(p.y * 10) / 10, f: p.facing, a: animOf(p), c: p.ch };
+    var sess = net.session;
+    if (!sess || sess.closed) return;
+    if (sess.isHost) {
+      msg.id = net.myId;
+      netBroadcast(sess, msg);
+    } else if (sess.hostConn && sess.hostConn.open !== false) {
+      try { sess.hostConn.send(msg); } catch (e) { /* ignore */ }
+    }
+  }
+
+  /* ---------- игровой цикл ---------- */
+  function gameLoop(ts) {
+    if (!game.active) return;
+    var dt = Math.min(100, ts - game.last);
+    game.last = ts;
+    game.acc += dt;
+    var steps = 0;
+    while (game.acc >= 1000 / 60 && steps < 6) {
+      if (game.running) gameStep();
+      game.acc -= 1000 / 60;
+      steps++;
+    }
+    if (steps >= 6) game.acc = 0;
+    gameRender();
+    game.raf = requestAnimationFrame(gameLoop);
+  }
+
+  function gameStep() {
+    var inp = gameInput();
+    inp.jumpPressed = inp.jump && !game.prevJump;
+    game.prevJump = inp.jump;
+    if (game.cleared) {
+      inp.left = inp.right = inp.up = inp.down = inp.jump = inp.jumpPressed = false;
+    }
+    var p = game.me;
+    var lv = game.lv;
+    stepPlayer(p, inp, lv);
+    updateAnimT(p);
+    game.time += 1 / 60;
+
+    lv.checkpoints.forEach(function (cp) {
+      if (!cp.hit && p.x >= cp.x) { cp.hit = true; game.respawn = { x: cp.x }; }
+    });
+    if (!game.cleared && !p.finished && Math.abs(p.x - lv.goal.x) < 18 && p.y > colH(lv, lv.goal.x) - 60) {
+      p.finished = true;
+      flowSendToHost({ t: 'goal' });
+    }
+
+    game.remotes.forEach(function (r, id) {
+      r.x += (r.tx - r.x) * 0.25;
+      r.y += (r.ty - r.y) * 0.25;
+      r.animT += 1 / 60;
+      if (!net.players.has(id)) game.remotes.delete(id);
+    });
+
+    /* камера */
+    var look = 0;
+    if (p.lookUp && p.lookT > 0.5) look = -70;
+    else if (p.crouch && p.lookT > 0.5) look = 70;
+    var cam = game.cam;
+    cam.x += (p.x - 240 - cam.x) * 0.12;
+    cam.y += (p.y - 170 + look - cam.y) * 0.1;
+    cam.x = Math.max(0, Math.min(lv.width - 480, cam.x));
+    cam.y = Math.max(0, Math.min(lv.bottom - 270, cam.y));
+
+    game.posTick++;
+    if (game.posTick % 4 === 0) flowSendPos();
+    if (game.posTick % 10 === 0) {
+      var hud = $('gameHud');
+      if (hud) {
+        var secs = Math.floor(game.time);
+        hud.textContent = 'TIME ' + Math.floor(secs / 60) + ':' + String(secs % 60).padStart(2, '0') + '   ' + (CHARACTERS[p.ch] ? CHARACTERS[p.ch].name : '');
+      }
+    }
+  }
+
+  /* ---------- отрисовка персонажей ---------- */
+  function plainNick(raw) {
+    var out = '';
+    for (var i = 0; i < raw.length; i++) if (!Object.prototype.hasOwnProperty.call(COLOR_MAP, raw.charAt(i))) out += raw.charAt(i);
+    return out;
+  }
+
+  function drawFallbackChar(ctx, sx, sy, facing, chId, anim, t) {
+    var c = CHARACTERS[chId] || CHARACTERS.tails;
+    var tails = chId === 'tails';
+    ctx.save();
+    ctx.translate(sx, sy);
+    if (facing < 0) ctx.scale(-1, 1);
+    var bob = (anim === 'walk' || anim === 'run') ? Math.sin(t * 16) * 1.5 : 0;
+
+    if (anim === 'spin' || anim === 'jump') {
+      ctx.save();
+      ctx.translate(0, -10);
+      ctx.rotate(t * 18);
+      ctx.fillStyle = c.body;
+      ctx.beginPath();
+      ctx.arc(0, 0, 9, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = c.light;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(0, 0, 6, 0.2, 2.4);
+      ctx.stroke();
+      ctx.restore();
+    } else if (anim === 'glide') {
+      ctx.fillStyle = c.dark;
+      ctx.fillRect(-12, -17, 24, 8);
+      ctx.fillStyle = c.body;
+      ctx.fillRect(-9, -20, 18, 9);
+      ctx.fillStyle = c.light;
+      ctx.fillRect(9, -18, 7, 5);
+      ctx.fillRect(-16, -18, 7, 5);
+    } else if (anim === 'cling' || anim === 'climb') {
+      var sh = anim === 'climb' ? Math.sin(t * 12) * 2 : 0;
+      ctx.fillStyle = c.dark;
+      ctx.fillRect(-3, -32, 10, 26);
+      ctx.fillStyle = c.body;
+      ctx.fillRect(-1, -30, 8, 22);
+      ctx.fillStyle = c.light;
+      ctx.fillRect(5, -34 + sh, 5, 5);
+      ctx.fillRect(5, -20 - sh, 5, 5);
+    } else {
+      /* ноги */
+      var lp = (anim === 'walk' || anim === 'run') ? Math.sin(t * 16) * 4 : 0;
+      ctx.fillStyle = c.dark;
+      ctx.fillRect(-5 + lp, -6, 4, 6);
+      ctx.fillRect(1 - lp, -6, 4, 6);
+      /* тело */
+      var topY = anim === 'lookdown' ? -22 : -34;
+      ctx.fillStyle = c.body;
+      ctx.fillRect(-6, topY + 14 + bob, 12, 14 + (anim === 'lookdown' ? -10 : 0));
+      ctx.fillStyle = c.light;
+      ctx.fillRect(-2, topY + 18 + bob, 6, 9 + (anim === 'lookdown' ? -6 : 0));
+      /* голова */
+      var hy = topY + 4 + bob + (anim === 'lookup' ? -2 : 0);
+      ctx.fillStyle = c.body;
+      ctx.fillRect(-7, hy, 14, 12);
+      ctx.fillStyle = c.light;
+      ctx.fillRect(1, hy + 3, 7, 6);
+      ctx.fillStyle = '#101010';
+      ctx.fillRect(3, hy + 4 - (anim === 'lookup' ? 2 : 0), 2, 3);
+      if (tails) {
+        ctx.fillStyle = c.body;
+        ctx.fillRect(-7, hy - 6, 4, 7);
+        ctx.fillRect(0, hy - 6, 4, 7);
+      } else {
+        ctx.fillStyle = c.dark;
+        ctx.fillRect(-9, hy - 1, 4, 5);
+      }
+    }
+
+    if (tails) {                                              /* хвосты */
+      ctx.fillStyle = c.light;
+      if (anim === 'fly') {
+        ctx.save();
+        ctx.translate(-4, -14);
+        ctx.rotate(t * 30);
+        ctx.fillRect(-12, -2, 24, 4);
+        ctx.restore();
+      } else if (anim !== 'spin' && anim !== 'jump') {
+        ctx.fillRect(-14, -12 + Math.sin(t * 8) * 2, 8, 5);
+        ctx.fillStyle = c.body;
+        ctx.fillRect(-12, -13 + Math.sin(t * 8) * 2, 6, 4);
+      }
+    }
+    ctx.restore();
+  }
+
+  function drawChar(ctx, p, anim, animT, camX, camY, label) {
+    var sx = Math.round(p.x - camX);
+    var sy = Math.round(p.y - camY);
+    if (sx < -50 || sx > 530 || sy < -60 || sy > 340) return;
+    if (p.invuln > 0 && Math.floor(p.invuln * 20) % 2 === 0) return;     /* мигание после смерти */
+    var frames = getFrames(p.ch, anim);
+    var drawn = false;
+    if (frames) {
+      var fps = SPRITE_FPS[anim] || 8;
+      var img = frames[Math.floor(animT * fps) % frames.length];
+      if (img) {
+        ctx.save();
+        ctx.translate(sx, sy);
+        if (p.facing < 0) ctx.scale(-1, 1);
+        ctx.drawImage(img, -Math.round(img.naturalWidth / 2), -img.naturalHeight);
+        ctx.restore();
+        drawn = true;
+      }
+    }
+    if (!drawn) drawFallbackChar(ctx, sx, sy, p.facing, p.ch, anim, animT);
+    if (label) {
+      ctx.font = '8px monospace';
+      ctx.textAlign = 'center';
+      ctx.fillStyle = '#000';
+      ctx.fillText(label, sx + 1, sy - 41);
+      ctx.fillStyle = '#fff';
+      ctx.fillText(label, sx, sy - 42);
+    }
+  }
+
+  function gameRender() {
+    var cv = $('gameCanvas');
+    if (!cv || !game.lv) return;
+    var ctx = cv.getContext('2d');
+    ctx.imageSmoothingEnabled = false;
+    var camX = Math.round(game.cam.x);
+    var camY = Math.round(game.cam.y);
+    drawLevelScene(ctx, game.lv, camX, camY, spikeImg);
+    game.remotes.forEach(function (r, id) {
+      var pl = net.players.get(id);
+      drawChar(ctx, { x: r.x, y: r.y, facing: r.f, ch: r.c, invuln: 0 }, r.a, r.animT, camX, camY, pl ? plainNick(pl.n) : '');
+    });
+    drawChar(ctx, game.me, animOf(game.me), game.me.animT, camX, camY, null);
+  }
+
+  /* ---------- клавиатура и мобильные кнопки ---------- */
+  function flowKeyDown(e) {
+    var scr = state.screen;
+    if (scr === 'mapselect') {
+      if (e.repeat) return true;
+      if (e.key === 'Escape') leaveLobby();
+      else if (e.code === 'KeyX') mapMove(-1);
+      else if (e.code === 'KeyC') mapMove(1);
+      else if (e.code === 'KeyZ') mapVote();
+      return true;
+    }
+    if (scr === 'charselect') {
+      if (e.repeat) return true;
+      var name = formatKeyName(e);
+      if (e.key === 'Escape') leaveLobby();
+      else if (name === userKeybinds.LEFT) charSwitch(-1);
+      else if (name === userKeybinds.RIGHT) charSwitch(1);
+      else if (e.code === 'KeyZ') charLock();
+      return true;
+    }
+    if (scr === 'game') {
+      if (e.key === 'Escape') { leaveLobby(); return true; }
+      game.keys[formatKeyName(e)] = true;
+      if (e.key && e.key.indexOf('Arrow') === 0) e.preventDefault();
+      return true;
+    }
+    return false;
+  }
+
+  function flowKeyUp(e) {
+    if (game.keys) game.keys[formatKeyName(e)] = false;
+  }
+
+  /* на телефоне: Z / X / C меняют смысл в зависимости от экрана */
+  function mobileZ(down) {
+    var scr = state.screen;
+    if (scr === 'lobby') {
+      if (down && !lobbyLeaving) { resetAfk(); playZSfx(); toggleReady(); }
+    } else if (scr === 'mapselect') {
+      if (down) mapVote();
+    } else if (scr === 'charselect') {
+      if (down) charLock();
+    } else if (scr === 'game') {
+      game.mobile.jump = down;
+    }
+  }
+
+  function mobileX(down) {
+    var scr = state.screen;
+    if (scr === 'lobby') {
+      if (down) { playSelectSfx(); leaveLobby(); }
+    } else if (scr === 'mapselect') {
+      if (down) mapMove(-1);
+    } else if (scr === 'game') {
+      /* в матче X нужно удерживать секунду, чтобы выйти (случайные нажатия не страшны) */
+      clearTimeout(game.leaveTimer);
+      if (down) game.leaveTimer = setTimeout(leaveLobby, 1000);
+    }
+  }
+
+  function mobileCPress() {
+    if (state.screen === 'mapselect') mapMove(1);
+  }
+
+  function mobileCClick() {
+    if (state.screen === 'lobby' && !lobbyLeaving) { playSelectSfx(); openChat(); }
+  }
+
+  function initFlow() {
+    try {
+      charBgm = new Audio('./assets/music/charselect.ogg');
+      charBgm.loop = true;
+      charBgm.preload = 'none';          /* файл запрашивается только при входе на экран выбора персонажа */
+    } catch (e) { /* ignore */ }
+
+    on(window, 'keyup', flowKeyUp);
+    on(window, 'blur', function () { game.keys = {}; });
+
+    /* D-pad: в выборе персонажа - переключение, в матче - движение */
+    on(window, 'td2dr:dpad', function (e) {
+      var d = e.detail && e.detail.dir;
+      game.mobile.left = d === 'left';
+      game.mobile.right = d === 'right';
+      game.mobile.up = d === 'up';
+      game.mobile.down = d === 'down';
+      if (state.screen === 'charselect') {
+        if (d === 'left') charSwitch(-1);
+        else if (d === 'right') charSwitch(1);
+      }
+    });
+
+    if (/[?&]debug=1(&|$)/.test(window.location.search)) {
+      window.__TD2DR_DEBUG__ = {
+        game: game, flow: flow, net: net, step: gameStep, stepPlayer: stepPlayer, animOf: animOf, newPlayer: newPlayer,
+        buildTestLevel: buildTestLevel, colH: colH, CHARACTERS: CHARACTERS,
+        /* быстрый локальный запуск матча без сети (для проверки физики) */
+        startLocal: function (chId) {
+          flowClearTimers();
+          net.myId = 'local';
+          net.players = new Map();
+          net.players.set('local', { id: 'local', n: savedNick, i: 'unknown', r: false });
+          if (!flow.level) flow.level = buildTestLevel();
+          flow.phase = 'match';
+          showScreen('game');
+          gameStart('test', [{ id: 'local', ch: chId }]);
+          $('gameTitleCard').style.display = 'none';
+          game.running = false;
+        }
+      };
+    }
+  }
+
+  /* =========================================================================
      СЕКРЕТ В ABOUT/CREDITS: набрать "secret" (поля ввода нет, слушаем клавиши)
      ========================================================================= */
   var SECRET_WORD = 'secret';
@@ -5143,6 +6966,7 @@
         return;
       }
 
+      if (flowKeyDown(e)) return;
       if (state.screen === 'mobileedit') {
         if (e.key === 'Escape') { playSelectSfx(); mceCancel(); }
         return;
@@ -5221,7 +7045,7 @@
   /* =========================================================================
      ЗАГРУЗКА
      ========================================================================= */
-  var BUILD_ID = 'audio-webaudio-net-2';
+  var BUILD_ID = 'game-flow-1';
 
   function boot() {
     console.log('[TD2DR] build ' + BUILD_ID);
@@ -5240,6 +7064,9 @@
       views.lobby = $('viewLobby');
       views.kick = $('viewKick');
       views.mobileedit = $('viewMobileEdit');
+      views.mapselect = $('viewMapSelect');
+      views.charselect = $('viewCharSelect');
+      views.game = $('viewGame');
       menuBgm = $('menuBgm');
       if (menuBgm) { menuBgm.volume = 0.6; }
     });
@@ -5266,6 +7093,7 @@
     safe('lobby', initLobby);
     safe('kick', initKick);
     safe('mobile', initMobileControls);
+    safe('flow', initFlow);
     safe('fullscreenBtn', initFullscreenButton);
   }
 
