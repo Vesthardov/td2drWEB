@@ -1907,6 +1907,50 @@
       background: #000000;
     }
 
+    #gameLabels {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: min(100vw, calc(100vh * 16 / 9));
+      height: min(100vh, calc(100vw * 9 / 16));
+      transform: translate(-50%, -50%);
+      z-index: 3;
+      pointer-events: none;
+    }
+
+    #gameHp { position: absolute; top: 5.2vh; left: 1vw; z-index: 6; display: flex; gap: 0.4vw; pointer-events: none; }
+    .hp-heart {
+      display: block; width: 1.9vw; height: 1.7vw;
+      background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 9 8' shape-rendering='crispEdges'><path fill='%23e02828' d='M1 0h2v1H1zM6 0h2v1H6zM0 1h4v1H0zM5 1h4v1H5zM0 2h9v1H0zM0 3h9v1H0zM1 4h7v1H1zM2 5h5v1H2zM3 6h3v1H3zM4 7h1v1H4z'/></svg>") center / contain no-repeat;
+      image-rendering: pixelated;
+    }
+    .hp-heart.off { background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 9 8' shape-rendering='crispEdges'><path fill='%23402020' d='M1 0h2v1H1zM6 0h2v1H6zM0 1h4v1H0zM5 1h4v1H5zM0 2h9v1H0zM0 3h9v1H0zM1 4h7v1H1zM2 5h5v1H2zM3 6h3v1H3zM4 7h1v1H4z'/></svg>"); }
+
+    /* появление экрана выбора карты */
+    @keyframes msSlideLeft { from { transform: translateX(-110%); } }
+    @keyframes msSlideUp { from { transform: translateY(100%); } }
+    @keyframes msCardIn { from { opacity: 0; transform: translateY(9vh) scale(0.86); } }
+    @keyframes msPop { from { opacity: 0; transform: scale(2.4); } }
+    @keyframes msFade { from { opacity: 0; } }
+    @keyframes csPop { from { opacity: 0; transform: translateX(-50%) scale(0.3); } }
+
+    #viewMapSelect.ms-enter .preview-canvas { animation: msFade 0.9s ease-out backwards; }
+    #viewMapSelect.ms-enter .lobby-controls { animation: msSlideLeft 0.45s cubic-bezier(0.2, 0.8, 0.3, 1) backwards; }
+    #viewMapSelect.ms-enter .flow-timer { animation: msPop 0.5s ease-out 0.2s backwards; }
+    #viewMapSelect.ms-enter .map-card { animation: msCardIn 0.6s cubic-bezier(0.2, 0.9, 0.3, 1.15) backwards; }
+    #viewMapSelect.ms-enter .map-card:nth-child(1) { animation-delay: 0.2s; }
+    #viewMapSelect.ms-enter .map-card:nth-child(2) { animation-delay: 0.38s; }
+    #viewMapSelect.ms-enter .map-card:nth-child(3) { animation-delay: 0.56s; }
+    #viewMapSelect.ms-enter .lobby-spikes { animation: lobbySpikesGlide 1.5s linear infinite, msSlideUp 0.5s ease-out 0.1s backwards; }
+    #viewMapSelect.ms-enter .lobby-floor,
+    #viewMapSelect.ms-enter .lobby-bottom { animation: msSlideUp 0.5s ease-out 0.1s backwards; }
+
+    #viewCharSelect.cs-enter .lobby-controls { animation: msSlideLeft 0.4s cubic-bezier(0.2, 0.8, 0.3, 1) backwards; }
+    #viewCharSelect.cs-enter .lobby-player { animation: csPop 0.45s cubic-bezier(0.2, 0.9, 0.3, 1.2) 0.15s backwards; }
+    #viewCharSelect.cs-enter .lobby-spikes { animation: lobbySpikesGlide 1.5s linear infinite, msSlideUp 0.45s ease-out backwards; }
+    #viewCharSelect.cs-enter .lobby-floor,
+    #viewCharSelect.cs-enter .lobby-bottom { animation: msSlideUp 0.45s ease-out backwards; }
+
     #gameHud {
       position: absolute; top: 1vh; left: 1vw; z-index: 6; font-size: 1.3vw; color: #ffffff;
       text-shadow: 2px 2px 0 #000000; pointer-events: none;
@@ -2641,7 +2685,9 @@
     <!-- Матч -->
     <div id="viewGame">
       <canvas id="gameCanvas" width="480" height="270"></canvas>
+      <canvas id="gameLabels"></canvas>
       <div id="gameHud"></div>
+      <div id="gameHp"></div>
       <div id="gameClear"></div>
       <div id="gameTitleCard"><div class="tc-name" id="tcName">TEST</div><div class="tc-sub" id="tcSub">MEDIUM</div></div>
     </div>
@@ -3791,6 +3837,9 @@
     if (charBgm) {
       try { charBgm.volume = vol; } catch (e) { /* ignore */ }
     }
+    if (zoneBgm) {
+      try { zoneBgm.volume = vol; } catch (e) { /* ignore */ }
+    }
     var fill = $('musicFill');
     var pct = $('musicPct');
     if (fill) fill.style.width = 'calc(' + musicPercent + '% - 6px)';
@@ -4563,6 +4612,7 @@
     try {
       if (lobbyBgm) lobbyBgm.pause();
       if (charBgm) charBgm.pause();
+      if (zoneBgm) zoneBgm.pause();
       if (menuBgm && bgmStarted) {
         applyMusicVolume();
         var pm = menuBgm.play();
@@ -4639,7 +4689,7 @@
 
   function silenceAllMusic() {
     musicMuted = true;
-    [menuBgm, lobbyBgm, secretBgm, charBgm].forEach(function (audio) {
+    [menuBgm, lobbyBgm, secretBgm, charBgm, zoneBgm].forEach(function (audio) {
       if (audio) { try { audio.pause(); } catch (e) { /* ignore */ } }
     });
   }
@@ -5264,7 +5314,8 @@
   var MAPS = [
     { id: 'test', title: 'TEST', diff: 'MEDIUM', color: '#ff8a00', locked: false,
       desc: 'A SHORT TEST LEVEL WITH HILLS, WALLS AND GROUND SPIKES. REACH THE SIGN AT THE END',
-      note: 'TAILS CAN FLY, KNUCKLES CAN GLIDE AND CLIMB WALLS' },
+      note: 'TAILS CAN FLY, KNUCKLES CAN GLIDE AND CLIMB WALLS',
+      music: './assets/music/testzone.ogg' },
     { id: 'locked1', title: '???', diff: 'LOCKED', color: '#555555', locked: true, desc: 'THIS MAP IS NOT AVAILABLE YET', note: '' },
     { id: 'locked2', title: '???', diff: 'LOCKED', color: '#555555', locked: true, desc: 'THIS MAP IS NOT AVAILABLE YET', note: '' }
   ];
@@ -5501,7 +5552,7 @@
     if (t === 'pos') {
       if (flow.phase !== 'match') return true;
       flowOnPos(id, data);
-      flowBroadcast({ t: 'pos', id: id, x: data.x, y: data.y, f: data.f, a: data.a, c: data.c }, id);
+      flowBroadcast({ t: 'pos', id: id, x: data.x, y: data.y, f: data.f, a: data.a, c: data.c, h: data.h }, id);
       return true;
     }
     if (t === 'goal') {
@@ -5579,6 +5630,8 @@
     mcReleaseAll();
     if (!flow.level) flow.level = buildTestLevel();
     showScreen('mapselect');
+    var vms = $('viewMapSelect');
+    if (vms) { vms.classList.remove('ms-enter'); void vms.offsetWidth; vms.classList.add('ms-enter'); }
     flowBuildMapCards();
     flowRenderMapCards();
     startPreview('mapPreviewCanvas');
@@ -5596,6 +5649,8 @@
     mcReleaseAll();
     if (!flow.level) flow.level = buildTestLevel();
     showScreen('charselect');
+    var vcs = $('viewCharSelect');
+    if (vcs) { vcs.classList.remove('cs-enter'); void vcs.offsetWidth; vcs.classList.add('cs-enter'); }
     startPreview('charPreviewCanvas');
     renderCsMe();
     renderCsInfo();
@@ -5625,7 +5680,7 @@
     flowStopTimer();
     stopPreview();
     stopCharMusic();
-    startLobbyMusic();
+    startZoneMusic(mapId);
     mcReleaseAll();
     showScreen('game');
     gameStart(mapId, plist);
@@ -5636,6 +5691,7 @@
     stopPreview();
     gameStop();
     stopCharMusic();
+    stopZoneMusic();
     flow.phase = 'lobby';
     flow.votes = Object.create(null);
     flow.sel = Object.create(null);
@@ -5672,6 +5728,33 @@
         if (pr && pr.catch) pr.catch(function () {});
       }
     } catch (e) { /* ignore */ }
+  }
+
+  /* музыка зоны (матча): файл задаётся у карты, MAPS[...].music */
+  function startZoneMusic(mapId) {
+    var map = null;
+    for (var i = 0; i < MAPS.length; i++) if (MAPS[i].id === mapId) map = MAPS[i];
+    try {
+      if (lobbyBgm) lobbyBgm.pause();
+      if (!map || !map.music) { startLobbyMusic(); return; }
+      if (!zoneBgm || zoneBgm.__src !== map.music) {
+        if (zoneBgm) zoneBgm.pause();
+        zoneBgm = new Audio(map.music);
+        zoneBgm.loop = true;
+        zoneBgm.preload = 'auto';
+        zoneBgm.__src = map.music;
+        /* нет файла зоны - играем музыку лобби */
+        zoneBgm.addEventListener('error', function () { if (flow.phase === 'match') startLobbyMusic(); });
+      }
+      try { if (zoneBgm.readyState > 0) zoneBgm.currentTime = 0; } catch (e2) { /* ignore */ }
+      applyMusicVolume();
+      var pr = zoneBgm.play();
+      if (pr && pr.catch) pr.catch(function () {});
+    } catch (e) { /* ignore */ }
+  }
+
+  function stopZoneMusic() {
+    try { if (zoneBgm) zoneBgm.pause(); } catch (e) { /* ignore */ }
   }
 
   function stopCharMusic() {
@@ -5916,8 +5999,16 @@
     spike(4150, 6);              /* на вершине мезы */
     spike(5350, 4);
 
+    var springs = [];
+    function spring(x0, type) {
+      springs.push({ x: x0, w: 16, h: 12, y: H[x0 + 8], type: type, power: type === 'red' ? 12.5 : 9.0, t: 0 });
+    }
+    spring(1000, 'yellow');      /* перед впадиной */
+    spring(2575, 'yellow');      /* помогает перепрыгнуть стену */
+    spring(3850, 'red');         /* сильная: закинет на мезу */
+
     return {
-      id: 'test', name: 'TEST', width: W, H: H, bottom: 800, spikes: spikes,
+      id: 'test', name: 'TEST', width: W, H: H, bottom: 800, spikes: spikes, springs: springs,
       start: { x: 80 }, goal: { x: 5950 },
       checkpoints: [{ x: 2262, hit: false }, { x: 4650, hit: false }]
     };
@@ -6016,6 +6107,31 @@
       }
     });
 
+    /* пружины */
+    (lv.springs || []).forEach(function (sg) {
+      if (sg.x + sg.w < camX - 4 || sg.x > camX + 484) return;
+      var st = sg.t > 0.34 ? 1 : (sg.t > 0 ? 2 : 0);
+      var cx = sg.x + sg.w / 2;
+      var fr = springFramesFor(sg.type);
+      if (fr && fr[st]) {
+        var im = fr[st];
+        var sc = OBJECT_SPRITES['spring_' + sg.type].scale || 1;
+        ctx.drawImage(im, Math.round(cx - im.naturalWidth * sc / 2), Math.round(sg.y - im.naturalHeight * sc), im.naturalWidth * sc, im.naturalHeight * sc);
+      } else {
+        var hg = st === 1 ? 5 : (st === 2 ? 20 : 12);
+        ctx.fillStyle = '#7a7a82';
+        ctx.fillRect(cx - 8, sg.y - 3, 16, 3);
+        ctx.strokeStyle = '#cfcfd6';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(cx - 5, sg.y - 3);
+        for (var k = 0; k < 5; k++) ctx.lineTo(cx + (k % 2 ? -5 : 5), sg.y - 3 - (k + 1) * (hg / 5));
+        ctx.stroke();
+        ctx.fillStyle = sg.type === 'red' ? '#e03030' : '#f0c020';
+        ctx.fillRect(cx - 9, sg.y - hg - 4, 18, 4);
+      }
+    });
+
     /* чекпоинты и финиш */
     lv.checkpoints.forEach(function (cp) {
       var cy = colH(lv, cp.x);
@@ -6084,70 +6200,135 @@
      ========================================================================= */
   var PH = {
     hw: 9, hStand: 34, hBall: 22,
-    acc: 0.10, dec: 0.6, frc: 0.1, top: 5.8,
+    acc: 0.11, dec: 0.6, frc: 0.1, top: 6.2,
     slope: 0.15, rollUp: 0.09, rollDown: 0.32, rollFrc: 0.03, rollDec: 0.15,
     airAcc: 0.2, grav: 0.22, jump: 6.8, maxFall: 12, maxRise: 18,
-    flyTime: 3, glideTime: 5
+    flyTime: 3, glideTime: 5, maxHp: 5
   };
 
+  /* =========================================================================
+     НАСТРОЙКА СПРАЙТОВ - У КАЖДОГО ПЕРСОНАЖА СВОЯ
+     Кадры лежат тут: assets/sprites/game/<folder>/<анимация>_<номер>.png (номер с 0).
+       frames  - сколько кадров у анимации (0 или нет записи = анимации нет, берётся запасная);
+       fps     - скорость анимации (кадров в секунду);
+       scale   - масштаб спрайта; offsetX / offsetY - сдвиг (ступни = центр низа картинки).
+     ========================================================================= */
   var SPRITE_BASE = './assets/sprites/game/';
-  /* количество кадров каждой анимации (файлы <анимация>_0.png, <анимация>_1.png, ...) */
-  var SPRITE_FRAMES = {
-    common: { idle: 1, walk: 8, run: 4, jump: 4, lookup: 1, lookdown: 1, spin: 4 },
-    tails: { fly: 2 },
-    knuckles: { glide: 1, cling: 1, climb: 2 }
+  var CHAR_SPRITES = {
+    tails: {
+      folder: 'tails', scale: 1, offsetX: 0, offsetY: 0,
+      frames: { idle: 1, walk: 8, run: 2, jump: 4, lookup: 1, lookdown: 1, spin: 4, fly: 2 },
+      fps:    { idle: 4, walk: 12, run: 16, jump: 20, lookup: 4, lookdown: 4, spin: 20, fly: 16 }
+    },
+    knuckles: {
+      folder: 'knuckles', scale: 1, offsetX: 0, offsetY: 0,
+      frames: { idle: 1, walk: 6, run: 4, jump: 4, lookup: 1, lookdown: 1, spin: 4, glide: 1, cling: 1, climb: 2 },
+      fps:    { idle: 4, walk: 10, run: 16, jump: 20, lookup: 4, lookdown: 4, spin: 20, glide: 8, cling: 4, climb: 8 }
+    }
   };
-  var SPRITE_FPS = { idle: 4, walk: 10, run: 16, jump: 20, lookup: 4, lookdown: 4, spin: 20, fly: 16, glide: 8, cling: 4, climb: 8 };
+  /* если у персонажа нет какой-то анимации, берём запасную */
+  var ANIM_FALLBACK = { jump: 'spin', spin: 'jump', run: 'walk', climb: 'cling', cling: 'jump', glide: 'jump', fly: 'jump', lookup: 'idle', lookdown: 'idle' };
+
+  /* спрайты объектов: assets/sprites/game/spike.png, spring_yellow_0..2.png, spring_red_0..2.png
+     пружина: 0 = покой, 1 = сжата (в момент прыжка), 2 = вытянута (после прыжка) */
+  var OBJECT_SPRITES = {
+    spike:         { file: 'spike.png' },
+    spring_yellow: { frames: 3, scale: 1 },
+    spring_red:    { frames: 3, scale: 1 }
+  };
+  var objBank = { loaded: false, spike: null, springs: {} };
   var spriteBank = {};
-  var spikeImg = null;
+
+  /* звуки игры: assets/sounds/<файл>. Можно задать свой файл каждому персонажу */
+  var GAME_SOUNDS = {
+    jump:  { tails: 'jump.wav', knuckles: 'jump.wav' },
+    fly:   { tails: 'fly.wav' },              /* зациклен, пока Tails летит */
+    cling: { knuckles: 'cling.wav' }
+  };
+  var gameSnd = { jump: {}, cling: {}, flyAudio: null, flyFile: '' };
+  var zoneBgm = null;
+
+  /* ники игроков: размер (доля высоты экрана), минимум в пикселях, прозрачность */
+  var NAMETAG = { size: 0.018, minPx: 10, alpha: 0.85 };
 
   var game = {
     active: false, running: false, raf: 0, last: 0, acc: 0, lv: null, me: null,
     remotes: new Map(), cam: { x: 0, y: 0 }, keys: {}, prevJump: false, posTick: 0, time: 0,
-    cleared: false, deaths: 0, respawn: null, leaveTimer: 0, hudTick: 0,
+    cleared: false, deaths: 0, respawn: null, leaveTimer: 0, hudTick: 0, flySnd: false, hudHp: -1,
     mobile: { left: false, right: false, up: false, down: false, jump: false }
   };
 
-  /* кадры спрайтов персонажа; если idle_0.png не найден - рисуем встроенную заглушку */
+  /* кадры персонажа по его настройкам CHAR_SPRITES; если idle_0.png не найден - встроенная заглушка */
   function loadSpritesFor(chId) {
     if (spriteBank[chId]) return;
+    var cfg = CHAR_SPRITES[chId];
     var bank = { anims: {}, missing: false };
     spriteBank[chId] = bank;
+    if (!cfg) { bank.missing = true; return; }
+    var dir = SPRITE_BASE + cfg.folder + '/';
     var probe = new Image();
     probe.onload = function () {
-      var defs = {};
-      Object.keys(SPRITE_FRAMES.common).forEach(function (a) { defs[a] = SPRITE_FRAMES.common[a]; });
-      var extra = SPRITE_FRAMES[chId] || {};
-      Object.keys(extra).forEach(function (a) { defs[a] = extra[a]; });
-      Object.keys(defs).forEach(function (anim) {
+      Object.keys(cfg.frames).forEach(function (anim) {
+        var count = cfg.frames[anim] | 0;
+        if (count <= 0) return;
         var arr = [];
-        for (var n = 0; n < defs[anim]; n++) {
+        for (var n = 0; n < count; n++) {
           var im = (anim === 'idle' && n === 0) ? probe : new Image();
-          if (im !== probe) im.src = SPRITE_BASE + chId + '/' + anim + '_' + n + '.png';
+          if (im !== probe) im.src = dir + anim + '_' + n + '.png';
           arr.push(im);
         }
         bank.anims[anim] = arr;
       });
     };
     probe.onerror = function () { bank.missing = true; };
-    probe.src = SPRITE_BASE + chId + '/idle_0.png';
+    probe.src = dir + 'idle_0.png';
   }
 
-  function getFrames(chId, anim) {
+  /* возвращает { frames, anim } (anim - какая анимация реально использована) или null */
+  function getFrames(chId, anim, depth) {
     var bank = spriteBank[chId];
     if (!bank || bank.missing) return null;
     var arr = bank.anims[anim];
-    if (!arr && anim === 'jump') arr = bank.anims.spin;
+    var ok = arr ? arr.filter(function (im) { return im && im.complete && im.naturalWidth; }) : [];
+    if (ok.length) return { frames: ok, anim: anim };
+    var fb = ANIM_FALLBACK[anim];
+    if (fb && (depth || 0) < 3) return getFrames(chId, fb, (depth || 0) + 1);
+    return null;
+  }
+
+  function loadObjectSprites() {
+    if (objBank.loaded) return;
+    objBank.loaded = true;
+    objBank.spike = new Image();
+    objBank.spike.src = SPRITE_BASE + OBJECT_SPRITES.spike.file;
+    ['yellow', 'red'].forEach(function (type) {
+      var def = OBJECT_SPRITES['spring_' + type];
+      var probe = new Image();
+      probe.onload = function () {
+        var arr = [probe];
+        for (var n = 1; n < def.frames; n++) {
+          var im = new Image();
+          im.src = SPRITE_BASE + 'spring_' + type + '_' + n + '.png';
+          arr.push(im);
+        }
+        objBank.springs[type] = arr;
+      };
+      probe.src = SPRITE_BASE + 'spring_' + type + '_0.png';
+    });
+  }
+
+  function springFramesFor(type) {
+    var arr = objBank.springs[type];
     if (!arr) return null;
-    var ok = arr.filter(function (im) { return im && im.complete && im.naturalWidth; });
-    return ok.length ? ok : null;
+    for (var i = 0; i < arr.length; i++) if (!(arr[i].complete && arr[i].naturalWidth)) return null;
+    return arr;
   }
 
   function newPlayer(chId, x, lv) {
     return {
       ch: chId, x: x, y: colH(lv, x), vx: 0, vy: 0, grounded: true, ball: false, jumped: false,
       action: null, facing: 1, flyTime: 0, glideTime: 0, noAbility: false, clingDir: 1,
-      invuln: 0, lookUp: false, crouch: false, lookT: 0, animT: 0, finished: false
+      invuln: 0, lookUp: false, crouch: false, lookT: 0, animT: 0, finished: false, hp: PH.maxHp
     };
   }
 
@@ -6213,7 +6394,63 @@
     p.action = null;
     p.jumped = false;
     p.noAbility = false;
+    p.hp = PH.maxHp;
     p.invuln = 1.6;
+  }
+
+  /* урон: у игрока 5 HP; при 0 - возврат на последний чекпоинт с полным здоровьем */
+  function hurtPlayer(p, dmg) {
+    if (p.invuln > 0) return;
+    p.hp -= dmg;
+    if (p.hp <= 0) { killPlayer(p); return; }
+    p.vy = -4.5;
+    p.vx = -p.facing * 2.5;
+    p.grounded = false;
+    p.ball = false;
+    p.action = null;
+    p.jumped = true;
+    p.invuln = 1.6;
+    p.y -= 3;
+  }
+
+  /* события для звуков (только для своего персонажа) */
+  function onGameEvent(p, ev) {
+    if (p !== game.me) return;
+    var kind = ev === 'jump' ? 'jump' : (ev === 'cling' ? 'cling' : null);
+    if (!kind) return;
+    var file = GAME_SOUNDS[kind] && GAME_SOUNDS[kind][p.ch];
+    if (file && gameSnd[kind][file]) gameSnd[kind][file]();
+  }
+
+  function preloadGameSounds(chId) {
+    ['jump', 'cling'].forEach(function (kind) {
+      var file = GAME_SOUNDS[kind] && GAME_SOUNDS[kind][chId];
+      if (file && !gameSnd[kind][file]) gameSnd[kind][file] = createSfx('./assets/sounds/' + file, 0.8);
+    });
+    var ff = GAME_SOUNDS.fly && GAME_SOUNDS.fly[chId];
+    if (ff && (!gameSnd.flyAudio || gameSnd.flyFile !== ff)) {
+      try {
+        gameSnd.flyAudio = new Audio('./assets/sounds/' + ff);
+        gameSnd.flyAudio.loop = true;
+        gameSnd.flyAudio.volume = 0.6;
+        gameSnd.flyAudio.preload = 'auto';
+        gameSnd.flyFile = ff;
+      } catch (e) { gameSnd.flyAudio = null; }
+    }
+  }
+
+  function gameFlyLoop(on) {
+    var a = gameSnd.flyAudio;
+    if (!a) return;
+    try {
+      if (on) {
+        var pr = a.play();
+        if (pr && pr.catch) pr.catch(function () {});
+      } else {
+        a.pause();
+        try { a.currentTime = 0; } catch (e2) { /* ignore */ }
+      }
+    } catch (e) { /* ignore */ }
   }
 
   function stepPlayer(p, inp, lv) {
@@ -6233,6 +6470,7 @@
         p.vx = -wd * 3.2;
         p.facing = -wd;
         p.jumped = true;
+        onGameEvent(p, 'jump');
       } else {
         var climb = (inp.down ? 1 : 0) - (inp.up ? 1 : 0);
         p.vy = climb * 1.1;
@@ -6264,6 +6502,7 @@
 
     if (p.grounded) {
       var sl = (colH(lv, p.x + 5) - colH(lv, p.x - 5)) / 10;
+      if (Math.abs(sl) > 1.6) sl = 0;                         /* обрыв или стена - это не склон */
       var sinA = -sl / Math.sqrt(1 + sl * sl);                /* > 0, если подъём вправо */
       if (p.ball) p.vx -= ((p.vx * sinA > 0) ? PH.rollUp : PH.rollDown) * sinA;
       else p.vx -= PH.slope * sinA;
@@ -6304,6 +6543,7 @@
         p.lookUp = false;
         p.crouch = false;
         p.y -= 2;
+        onGameEvent(p, 'jump');
       }
 
       if (p.grounded && p.vx !== 0) {
@@ -6374,6 +6614,7 @@
             p.vx = 0;
             p.vy = 0;
             p.facing = hit;
+            onGameEvent(p, 'cling');
           } else {
             p.vx = 0;
           }
@@ -6390,12 +6631,28 @@
       }
     }
 
-    /* шипы */
+    /* пружины: подбрасывают вверх (жёлтая слабее, красная сильнее) */
+    for (i = 0; i < lv.springs.length; i++) {
+      var sg = lv.springs[i];
+      if (p.vy >= -0.5 && p.x + 6 > sg.x && p.x - 6 < sg.x + sg.w && p.y >= sg.y - sg.h - 2 && p.y <= sg.y + 6) {
+        p.vy = -sg.power;
+        p.grounded = false;
+        p.jumped = false;
+        p.ball = false;
+        p.action = null;
+        p.noAbility = false;
+        p.y = sg.y - sg.h - 1;
+        sg.t = 0.4;
+        break;
+      }
+    }
+
+    /* шипы: -1 HP и отскок */
     if (p.invuln <= 0) {
       for (i = 0; i < lv.spikes.length; i++) {
         var sp = lv.spikes[i];
         if (p.x + 6 > sp.x + 2 && p.x - 6 < sp.x + sp.w - 2 && p.y > sp.y - sp.h + 5 && p.y - 30 < sp.y) {
-          killPlayer(p);
+          hurtPlayer(p, 1);
           break;
         }
       }
@@ -6456,15 +6713,17 @@
         me = newPlayer(pl.ch, sx, lv);
         me.id = pl.id;
       } else {
-        game.remotes.set(pl.id, { x: sx, y: colH(lv, sx), tx: sx, ty: colH(lv, sx), f: 1, a: 'idle', c: pl.ch, animT: 0 });
+        game.remotes.set(pl.id, { x: sx, y: colH(lv, sx), tx: sx, ty: colH(lv, sx), f: 1, a: 'idle', c: pl.ch, animT: 0, h: PH.maxHp });
       }
     });
     if (!me) { me = newPlayer('tails', lv.start.x, lv); loadSpritesFor('tails'); }
     game.me = me;
-    if (!spikeImg) {
-      spikeImg = new Image();
-      spikeImg.src = SPRITE_BASE + 'spike.png';
-    }
+    loadObjectSprites();
+    preloadGameSounds(me.ch);
+    lv.springs.forEach(function (sg) { sg.t = 0; });
+    game.hudHp = -1;
+    game.flySnd = false;
+    renderHearts(me.hp);
     game.cam.x = Math.max(0, me.x - 240);
     game.cam.y = Math.max(0, me.y - 170);
 
@@ -6490,6 +6749,8 @@
     if (game.raf) cancelAnimationFrame(game.raf);
     game.raf = 0;
     clearTimeout(game.leaveTimer);
+    game.flySnd = false;
+    gameFlyLoop(false);
     game.keys = {};
     game.mobile = { left: false, right: false, up: false, down: false, jump: false };
     var tc = $('gameTitleCard');
@@ -6519,7 +6780,7 @@
     if (typeof id !== 'string' || id === net.myId || !data) return;
     var r = game.remotes.get(id);
     if (!r) {
-      r = { x: 0, y: 0, tx: 0, ty: 0, f: 1, a: 'idle', c: 'tails', animT: 0, fresh: true };
+      r = { x: 0, y: 0, tx: 0, ty: 0, f: 1, a: 'idle', c: 'tails', animT: 0, fresh: true, h: PH.maxHp };
       game.remotes.set(id, r);
     }
     var x = Number(data.x);
@@ -6531,12 +6792,14 @@
     r.f = data.f < 0 ? -1 : 1;
     r.a = typeof data.a === 'string' ? data.a.slice(0, 12) : 'idle';
     r.c = CHARACTERS[data.c] ? data.c : r.c;
+    var hh = Math.round(Number(data.h));
+    if (isFinite(hh)) r.h = Math.max(0, Math.min(PH.maxHp, hh));
   }
 
   function flowSendPos() {
     var p = game.me;
     if (!p) return;
-    var msg = { t: 'pos', x: Math.round(p.x * 10) / 10, y: Math.round(p.y * 10) / 10, f: p.facing, a: animOf(p), c: p.ch };
+    var msg = { t: 'pos', x: Math.round(p.x * 10) / 10, y: Math.round(p.y * 10) / 10, f: p.facing, a: animOf(p), c: p.ch, h: p.hp };
     var sess = net.session;
     if (!sess || sess.closed) return;
     if (sess.isHost) {
@@ -6576,6 +6839,10 @@
     stepPlayer(p, inp, lv);
     updateAnimT(p);
     game.time += 1 / 60;
+    lv.springs.forEach(function (sg) { if (sg.t > 0) sg.t = Math.max(0, sg.t - 1 / 60); });
+    var flying = p.action === 'fly';
+    if (flying !== game.flySnd) { game.flySnd = flying; gameFlyLoop(flying); }   /* звук полёта Tails */
+    if (p.hp !== game.hudHp) renderHearts(p.hp);
 
     lv.checkpoints.forEach(function (cp) {
       if (!cp.hit && p.x >= cp.x) { cp.hit = true; game.respawn = { x: cp.x }; }
@@ -6711,16 +6978,20 @@
     var sy = Math.round(p.y - camY);
     if (sx < -50 || sx > 530 || sy < -60 || sy > 340) return;
     if (p.invuln > 0 && Math.floor(p.invuln * 20) % 2 === 0) return;     /* мигание после смерти */
-    var frames = getFrames(p.ch, anim);
+    var fr = getFrames(p.ch, anim);
     var drawn = false;
-    if (frames) {
-      var fps = SPRITE_FPS[anim] || 8;
-      var img = frames[Math.floor(animT * fps) % frames.length];
+    if (fr) {
+      var cfg = CHAR_SPRITES[p.ch] || {};
+      var fps = (cfg.fps && cfg.fps[fr.anim]) || 8;
+      var img = fr.frames[Math.floor(animT * fps) % fr.frames.length];
       if (img) {
+        var sc = cfg.scale || 1;
+        var dw = img.naturalWidth * sc;
+        var dh = img.naturalHeight * sc;
         ctx.save();
         ctx.translate(sx, sy);
         if (p.facing < 0) ctx.scale(-1, 1);
-        ctx.drawImage(img, -Math.round(img.naturalWidth / 2), -img.naturalHeight);
+        ctx.drawImage(img, Math.round(-dw / 2 + (cfg.offsetX || 0)), Math.round(-dh + (cfg.offsetY || 0)), dw, dh);
         ctx.restore();
         drawn = true;
       }
@@ -6736,6 +7007,81 @@
     }
   }
 
+  /* ---------- сердечки HP (у своего игрока) ---------- */
+  function renderHearts(hp) {
+    game.hudHp = hp;
+    var box = $('gameHp');
+    if (!box) return;
+    box.innerHTML = '';
+    for (var i = 0; i < PH.maxHp; i++) {
+      var h = document.createElement('i');
+      h.className = 'hp-heart' + (i < hp ? '' : ' off');
+      box.appendChild(h);
+    }
+  }
+
+  /* ---------- ники: чёткий текст поверх пиксельной картинки ---------- */
+  function nickSegments(raw) {
+    var segs = [];
+    var color = '#ffffff';
+    var buf = '';
+    for (var i = 0; i < raw.length; i++) {
+      var ch = raw.charAt(i);
+      if (Object.prototype.hasOwnProperty.call(COLOR_MAP, ch)) {
+        if (buf) { segs.push({ t: buf, c: color }); buf = ''; }
+        color = COLOR_MAP[ch];
+      } else buf += ch;
+    }
+    if (buf) segs.push({ t: buf, c: color });
+    return segs;
+  }
+
+  function syncLabelCanvas() {
+    var lc = $('gameLabels');
+    var gc = $('gameCanvas');
+    if (!lc || !gc) return null;
+    var r = gc.getBoundingClientRect();
+    var dpr = window.devicePixelRatio || 1;
+    var w = Math.max(1, Math.round(r.width * dpr));
+    var h = Math.max(1, Math.round(r.height * dpr));
+    if (lc.width !== w || lc.height !== h) { lc.width = w; lc.height = h; }
+    return { ctx: lc.getContext('2d'), w: w, h: h, dpr: dpr };
+  }
+
+  function drawNameTag(L, sx, sy, raw, hp) {
+    var ctx = L.ctx;
+    var k = L.w / 480;
+    var px = Math.round(Math.max(NAMETAG.minPx * L.dpr, L.h * NAMETAG.size));
+    var segs = nickSegments(raw);
+    if (!segs.length) return;
+    ctx.font = '600 ' + px + 'px "Segoe UI", Roboto, Arial, sans-serif';
+    ctx.textBaseline = 'bottom';
+    ctx.textAlign = 'left';
+    var total = 0;
+    segs.forEach(function (sg) { sg.w = ctx.measureText(sg.t).width; total += sg.w; });
+    var x = sx * k - total / 2;
+    var y = (sy - 41) * k;
+    ctx.globalAlpha = NAMETAG.alpha;
+    ctx.lineJoin = 'round';
+    ctx.lineWidth = Math.max(2, px * 0.24);
+    ctx.strokeStyle = 'rgba(0, 0, 0, 0.8)';
+    segs.forEach(function (sg) { ctx.strokeText(sg.t, x, y); x += sg.w; });
+    x = sx * k - total / 2;
+    segs.forEach(function (sg) { ctx.fillStyle = sg.c; ctx.fillText(sg.t, x, y); x += sg.w; });
+
+    /* HP чужого игрока: пять маленьких делений под ником */
+    var ps = Math.max(2, Math.round(px * 0.3));
+    var gap = Math.max(1, Math.round(ps * 0.4));
+    var pw = PH.maxHp * ps + (PH.maxHp - 1) * gap;
+    var px0 = Math.round(sx * k - pw / 2);
+    var py0 = Math.round(y + px * 0.12);
+    for (var i = 0; i < PH.maxHp; i++) {
+      ctx.fillStyle = i < hp ? '#e84040' : 'rgba(40, 20, 20, 0.85)';
+      ctx.fillRect(px0 + i * (ps + gap), py0, ps, ps);
+    }
+    ctx.globalAlpha = 1;
+  }
+
   function gameRender() {
     var cv = $('gameCanvas');
     if (!cv || !game.lv) return;
@@ -6743,12 +7089,20 @@
     ctx.imageSmoothingEnabled = false;
     var camX = Math.round(game.cam.x);
     var camY = Math.round(game.cam.y);
-    drawLevelScene(ctx, game.lv, camX, camY, spikeImg);
+    drawLevelScene(ctx, game.lv, camX, camY, objBank.spike);
     game.remotes.forEach(function (r, id) {
-      var pl = net.players.get(id);
-      drawChar(ctx, { x: r.x, y: r.y, facing: r.f, ch: r.c, invuln: 0 }, r.a, r.animT, camX, camY, pl ? plainNick(pl.n) : '');
+      drawChar(ctx, { x: r.x, y: r.y, facing: r.f, ch: r.c, invuln: 0 }, r.a, r.animT, camX, camY, null);
     });
     drawChar(ctx, game.me, animOf(game.me), game.me.animT, camX, camY, null);
+
+    var L = syncLabelCanvas();
+    if (L) {
+      L.ctx.clearRect(0, 0, L.w, L.h);
+      game.remotes.forEach(function (r, id) {
+        var pl = net.players.get(id);
+        if (pl) drawNameTag(L, r.x - camX, r.y - camY, pl.n, r.h);
+      });
+    }
   }
 
   /* ---------- клавиатура и мобильные кнопки ---------- */
@@ -6846,6 +7200,8 @@
       window.__TD2DR_DEBUG__ = {
         game: game, flow: flow, net: net, step: gameStep, stepPlayer: stepPlayer, animOf: animOf, newPlayer: newPlayer,
         buildTestLevel: buildTestLevel, colH: colH, CHARACTERS: CHARACTERS,
+        spriteBank: spriteBank, CHAR_SPRITES: CHAR_SPRITES, getFrames: getFrames, hurtPlayer: hurtPlayer, objBank: objBank,
+        GAME_SOUNDS: GAME_SOUNDS, NAMETAG: NAMETAG,
         /* быстрый локальный запуск матча без сети (для проверки физики) */
         startLocal: function (chId) {
           flowClearTimers();
@@ -7045,7 +7401,7 @@
   /* =========================================================================
      ЗАГРУЗКА
      ========================================================================= */
-  var BUILD_ID = 'game-flow-1';
+  var BUILD_ID = 'game-flow-2';
 
   function boot() {
     console.log('[TD2DR] build ' + BUILD_ID);
